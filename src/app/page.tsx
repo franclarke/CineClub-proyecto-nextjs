@@ -1,8 +1,21 @@
-import Image from "next/image";
+import { HeroSection } from './components/home/hero-section'
+import { FeaturesSection } from './components/home/features-section'
+import { MembershipSection } from './components/home/membership-section'
+import { ExperienceSection } from './components/home/experience-section'
+import { CTASection } from './components/home/cta-section'
+import Navigation from './components/Navigation'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-    </div>
-  );
+	return (
+		<>
+			<Navigation />
+			<main className="overflow-hidden">
+				<HeroSection />
+				<FeaturesSection />
+				<ExperienceSection />
+				<MembershipSection />
+				<CTASection />
+			</main>
+		</>
+	)
 }

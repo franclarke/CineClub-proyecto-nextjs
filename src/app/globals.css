@@ -1,26 +1,214 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	/* CineClub Puff & Chill - Paleta de Colores */
+	--sunset-orange: #FF8C42;
+	--warm-red: #D94A29;
+	--deep-night: #1C1C1E;
+	--soft-gray: #3A3A3C;
+	--soft-gold: #FFC857;
+	--dark-olive: #4C4A3E;
+	--soft-beige: #F0E3CA;
+	
+	/* Variables semánticas */
+	--background: var(--deep-night);
+	--foreground: var(--soft-beige);
+	--muted: var(--soft-gray);
+	--accent: var(--sunset-orange);
+	--destructive: var(--warm-red);
+	--warning: var(--soft-gold);
+	--success: var(--dark-olive);
+	
+	/* Variables para contraste */
+	--background-light: var(--soft-beige);
+	--foreground-dark: var(--deep-night);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Configuración de utilidades personalizadas para Tailwind v4 */
+@layer utilities {
+	.font-bebas {
+		font-family: var(--font-bebas-neue), 'Bebas Neue', cursive;
+	}
+	
+	.text-display {
+		font-family: var(--font-bebas-neue), 'Bebas Neue', cursive;
+		letter-spacing: 0.05em;
+	}
+	
+	/* Color utilities */
+	.text-sunset-orange { color: var(--sunset-orange); }
+	.bg-sunset-orange { background-color: var(--sunset-orange); }
+	.text-warm-red { color: var(--warm-red); }
+	.bg-warm-red { background-color: var(--warm-red); }
+	.text-deep-night { color: var(--deep-night); }
+	.bg-deep-night { background-color: var(--deep-night); }
+	.text-soft-gray { color: var(--soft-gray); }
+	.bg-soft-gray { background-color: var(--soft-gray); }
+	.text-soft-gold { color: var(--soft-gold); }
+	.bg-soft-gold { background-color: var(--soft-gold); }
+	.text-dark-olive { color: var(--dark-olive); }
+	.bg-dark-olive { background-color: var(--dark-olive); }
+	.text-soft-beige { color: var(--soft-beige); }
+	.bg-soft-beige { background-color: var(--soft-beige); }
+	
+	/* Gradient utilities */
+	.gradient-hero {
+		background: linear-gradient(135deg, var(--deep-night) 0%, rgba(255, 140, 66, 0.1) 100%);
+	}
+	
+	.gradient-sunset {
+		background: linear-gradient(135deg, var(--sunset-orange) 0%, var(--warm-red) 100%);
+	}
+	
+	.gradient-premium {
+		background: linear-gradient(135deg, var(--soft-gold) 0%, var(--sunset-orange) 100%);
+	}
+	
+	/* Shadow utilities */
+	.shadow-glow {
+		box-shadow: var(--shadow-glow);
+	}
+	
+	.shadow-premium {
+		box-shadow: var(--shadow-premium);
+	}
+	
+	/* Animation utilities */
+	.animate-fade-in {
+		animation: fadeIn 0.6s ease-out;
+	}
+	
+	/* Custom utilities */
+	.backdrop-blur-custom {
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+	}
+	
+	.text-shadow-glow {
+		text-shadow: 0 0 20px rgba(255, 140, 66, 0.5);
+	}
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Tema claro alternativo para secciones específicas */
+.theme-light {
+	--background: var(--soft-beige);
+	--foreground: var(--deep-night);
+}
+
+/* Estilos base */
+html {
+	scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	background: var(--background);
+	color: var(--foreground);
+	font-family: var(--font-inter), Inter, system-ui, sans-serif;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Efectos de hover para botones */
+@layer components {
+	.btn-primary {
+		background: var(--sunset-orange);
+		color: var(--deep-night);
+		transition: all 0.2s ease-out;
+	}
+
+	.btn-primary:hover {
+		background: var(--warm-red);
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-glow);
+	}
+
+	.btn-secondary {
+		background: var(--dark-olive);
+		color: var(--soft-beige);
+		transition: all 0.2s ease-out;
+	}
+
+	.btn-secondary:hover {
+		background: var(--soft-gray);
+		transform: translateY(-1px);
+	}
+
+	.btn-premium {
+		background: linear-gradient(135deg, var(--soft-gold) 0%, var(--sunset-orange) 100%);
+		color: var(--deep-night);
+		transition: all 0.2s ease-out;
+	}
+
+	.btn-premium:hover {
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-premium);
+	}
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--deep-night);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--soft-gray);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--sunset-orange);
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in {
+	animation: fadeIn 0.6s ease-out;
+}
+
+/* Responsive design helpers */
+@media (max-width: 768px) {
+	body {
+		font-size: 14px;
+	}
+	
+	.text-display {
+		letter-spacing: 0.01em;
+	}
+}
+
+/* Container utility */
+.container {
+	max-width: 1200px;
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* Focus states para navegación por teclado */
+*:focus-visible {
+	outline: 2px solid var(--sunset-orange);
+	outline-offset: 2px;
+	border-radius: var(--border-radius);
 }
