@@ -1,0 +1,130 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String
+  name        String?
+  membership  MembershipTier @relation(fields: [membershipId], references: [id])
+  membershipId String
+  reservations Reservation[]
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isAdmin     Boolean   @default(false)
+}
+
+model MembershipTier {
+  id         String   @id @default(uuid())
+  name       String   // e.g. 'Bronce', 'Plata', 'Oro'
+  description String?
+  priority   Int      // 1 = highest (Oro)
+  price      Float    // monthly fee or one-time
+  benefits   String?  // textual description of benefits
+  users      User[]
+  discounts  Discount[]
+}
+
+model Seat {
+  id          String   @id @default(uuid())
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     String
+  seatNumber  Int
+  tier        String   // 'Oro', 'Plata', 'Bronce'
+  isReserved  Boolean  @default(false)
+  reservation Reservation?
+}
+
+model Reservation {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  event        Event    @relation(fields: [eventId], references: [id])
+  eventId      String
+  seat         Seat     @relation(fields: [seatId], references: [id])
+  seatId       String   @unique
+  status       String   @default("pending") // 'pending', 'confirmed', 'cancelled'
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  items       OrderItem[]
+  status      String   @default("pending") // 'pending', 'paid', 'cancelled'
+  totalAmount Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  payment     Payment?
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+  price      Float
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String   @unique
+  amount      Float
+  status      String   @default("pending") // 'pending', 'paid', 'failed'
+  paymentDate DateTime?
+  provider    String?  // e.g. Mercado Pago
+  providerRef String?  // ID from payment provider
+}
+
+model Discount {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  description   String?
+  percentage    Float
+  validFrom     DateTime?
+  validUntil    DateTime?
+  membershipTier MembershipTier? @relation(fields: [membershipTierId], references: [id])
+  membershipTierId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Event {
+  id           String    @id @default(uuid())
+  title        String
+  description  String
+  dateTime     DateTime
+  location     String
+  imdbId       String?   // store IMDb movie ID
+  spotifyUri   String?   // store Spotify playlist/track URI
+  category     String?   // e.g. Drama, Comedy (fetched from IMDb API or custom)
+  seats        Seat[]
+  reservations Reservation[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}

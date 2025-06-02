@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+/src/generated/prisma/client
+
+/src/generated/prisma/migrations
+
+/src/generated/prisma/schema.prisma
+
+/src/generated/prisma/schema.prisma
+
+/.cursor
+.cursor/
+.cursor/ProjectDescription.md
+ProjectDescription.md
+.cursorrules
