@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./components/providers/session-provider";
+import { QueryProvider } from "./components/providers/query-provider";
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -70,7 +71,9 @@ export default function RootLayout({
 				className={`${inter.variable} ${bebasNeue.variable} antialiased min-h-screen`}
 			>
 				<AuthProvider>
-					{children}
+					<QueryProvider>
+						{children}
+					</QueryProvider>
 				</AuthProvider>
 			</body>
 		</html>

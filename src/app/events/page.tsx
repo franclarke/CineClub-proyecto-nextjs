@@ -1,19 +1,24 @@
-import { EventsList } from './components/events-list'
+import { DataAccess } from './components/data-access'
 
-export default function EventsPage() {
+interface EventsPageProps {
+	searchParams: Record<string, string | string[] | undefined>
+}
+
+export default function EventsPage({ searchParams }: EventsPageProps) {
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900">
-			<div className="container mx-auto px-4 py-8">
-				<div className="text-center mb-8">
-					<h1 className="text-4xl font-bold text-white mb-4">
+		<div className="min-h-screen bg-gradient-to-br from-deep-night to-black/90 py-8">
+			<div className="container mx-auto px-4">
+				<header className="text-center mb-8">
+					<h1 className="text-display text-4xl md:text-6xl text-soft-beige mb-2">
 						Próximos Eventos
 					</h1>
-					<p className="text-gray-300">
-						Descubre nuestras sesiones de cine bajo las estrellas
+					<p className="text-soft-beige/80 max-w-2xl mx-auto">
+						Descubre nuestras sesiones de cine bajo las estrellas y reserva tu lugar
+						antes de que se agoten.
 					</p>
-				</div>
+				</header>
 
-				<EventsList />
+				<DataAccess searchParams={searchParams} />
 			</div>
 		</div>
 	)

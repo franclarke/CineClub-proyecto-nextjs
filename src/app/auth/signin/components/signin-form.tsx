@@ -75,7 +75,7 @@ export function SignInForm() {
 						name="email"
 						type="email"
 						placeholder="tu@email.com"
-						register={register}
+						register={() => register('email')}
 						error={errors.email?.message}
 						required
 						className="bg-white/5 border-white/10 text-white placeholder-gray-400 focus:border-orange-400 focus:ring-orange-400/20"
@@ -88,7 +88,7 @@ export function SignInForm() {
 						name="password"
 						type="password"
 						placeholder="••••••••"
-						register={register}
+						register={() => register('password')}
 						error={errors.password?.message}
 						required
 						className="bg-white/5 border-white/10 text-white placeholder-gray-400 focus:border-orange-400 focus:ring-orange-400/20"
@@ -158,4 +158,5 @@ export function SignInForm() {
 			</div>
 		</form>
 	)
-} 
+
+}
