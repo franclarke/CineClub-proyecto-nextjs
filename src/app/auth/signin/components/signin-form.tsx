@@ -129,33 +129,6 @@ export function SignInForm() {
 					)}
 				</Button>
 			</div>
-
-			{/* Divider */}
-			<div className="relative py-4">
-				<div className="absolute inset-0 flex items-center">
-					<div className="w-full border-t border-white/10"></div>
-				</div>
-				<div className="relative flex justify-center text-sm">
-					<span className="px-4 bg-transparent text-gray-400">
-						¿Nuevo en Puff & Chill?
-					</span>
-				</div>
-			</div>
-
-			{/* Sign Up Link */}
-			<div className="text-center">
-				<Link 
-					href="/auth/signup" 
-					className="inline-flex items-center justify-center w-full py-3 px-6 border border-white/20 rounded-lg text-white hover:bg-white/5 transition-all duration-200 group"
-				>
-					<span className="group-hover:text-orange-400 transition-colors duration-200">
-						Crear cuenta nueva
-					</span>
-					<svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-					</svg>
-				</Link>
-			</div>
 		</form>
 	)
 
