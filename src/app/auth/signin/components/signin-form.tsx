@@ -5,7 +5,6 @@ import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import Link from 'next/link'
 
 import { signInSchema, type SignInFormData } from '../../../../../lib/validations/auth'
 import { FormField } from '../../../components/ui/form-field'

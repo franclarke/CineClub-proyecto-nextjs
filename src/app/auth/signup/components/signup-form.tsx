@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
-import Link from 'next/link'
 import { MembershipTier } from '@prisma/client'
 
 import { signUpSchema, type SignUpFormData } from '../../../../../lib/validations/auth'
@@ -280,26 +279,6 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 					</div>
 				)}
 			</form>
-
-			{/* Login Link */}
-			<div className="mt-8 pt-6 border-t border-white/10">
-				<div className="text-center">
-					<p className="text-gray-400 mb-3">
-						¿Ya eres miembro del club?
-					</p>
-					<Link 
-						href="/auth/signin" 
-						className="inline-flex items-center justify-center px-6 py-2 border border-white/20 rounded-lg text-white hover:bg-white/5 transition-all duration-200 group"
-					>
-						<span className="group-hover:text-orange-400 transition-colors duration-200">
-							Iniciar sesión
-						</span>
-						<svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-						</svg>
-					</Link>
-				</div>
-			</div>
 		</div>
 	)
 } 
