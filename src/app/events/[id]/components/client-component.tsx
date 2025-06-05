@@ -3,16 +3,17 @@
 import { Event } from '@prisma/client'
 import { Button } from '../../../components/ui/button'
 import Image from 'next/image'
+import { ImdbData } from '@/types/imdb'
 
 interface ClientProps {
   event: Event
-  imdb: any
+  imdb: ImdbData | null
   tiers: Record<string, { total: number; reserved: number }>
 }
 
 export function ClientComponent({ event, imdb, tiers }: ClientProps) {
   const poster = imdb?.Poster && imdb.Poster !== 'N/A' ? imdb.Poster : '/placeholder-poster.jpg'
-  const synopsis = imdb?.Plot ?? event.description
+  const synopsis = imdb?.Plot && imdb.Plot !== 'N/A' ? imdb.Plot : event.description
 
   return (
     <section className="max-w-5xl mx-auto bg-soft-gray/30 backdrop-blur-sm border border-soft-gray/20 rounded-xl overflow-hidden shadow-soft">

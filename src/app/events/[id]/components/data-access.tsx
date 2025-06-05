@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { ClientComponent } from './client-component'
+import { ImdbData } from '@/types/imdb'
 
 interface DataAccessProps {
   id: string
@@ -20,15 +21,21 @@ export async function DataAccess({ id }: DataAccessProps) {
   }
 
   // Fetch IMDb synopsis if available (cached 24 h)
-  let imdbData: any = null
+  let imdbData: ImdbData | null = null
   if (event.imdbId) {
     try {
       const res = await fetch(`https://www.omdbapi.com/?i=${event.imdbId}&apikey=${process.env.IMDB_API_KEY}`, {
         next: { revalidate: 60 * 60 * 24 },
       })
-      imdbData = await res.json()
+      const fetchedImdbData = await res.json()
+      if (fetchedImdbData && !fetchedImdbData.Error) {
+        imdbData = fetchedImdbData as ImdbData
+      } else {
+        // Optionally log imdb.Error here if needed
+        // console.warn(`OMDb API error for ${event.imdbId}: ${fetchedImdbData.Error}`)
+      }
     } catch (err) {
-      // silently ignore errors
+      console.error('Failed to fetch IMDb data:', err) // Log the actual error
     }
   }
 

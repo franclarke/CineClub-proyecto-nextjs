@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function Footer() {
 	const scrollToTop = () => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -57,29 +59,29 @@ export default function Footer() {
 							<h4 className="text-display text-xl text-soft-beige mb-6">Experiencia</h4>
 							<ul className="space-y-4">
 								<li>
-									<a href="/events" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/events" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Eventos de Esta Noche
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/upcoming" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/upcoming" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Próximas Películas
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/membership" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/membership" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Planes de Membresía
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/venue" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/venue" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Terraza del Venue
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/private-events" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/private-events" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Proyecciones Privadas
-									</a>
+									</Link>
 								</li>
 							</ul>
 						</div>
@@ -89,29 +91,29 @@ export default function Footer() {
 							<h4 className="text-display text-xl text-soft-beige mb-6">Soporte</h4>
 							<ul className="space-y-4">
 								<li>
-									<a href="/help" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/help" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Centro de Ayuda
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/contact" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/contact" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Contáctanos
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/faq" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/faq" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Preguntas Frecuentes
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/accessibility" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/accessibility" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Accesibilidad
-									</a>
+									</Link>
 								</li>
 								<li>
-									<a href="/feedback" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
+									<Link href="/feedback" className="text-soft-beige/70 hover:text-sunset-orange transition-colors duration-200">
 										Comentarios
-									</a>
+									</Link>
 								</li>
 							</ul>
 						</div>
@@ -161,18 +163,18 @@ export default function Footer() {
 							© 2024 CineClub Puff & Chill. Todos los derechos reservados.
 						</div>
 						<div className="flex flex-wrap gap-6 text-sm">
-							<a href="/privacy" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
+							<Link href="/privacy" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
 								Política de Privacidad
-							</a>
-							<a href="/terms" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
+							</Link>
+							<Link href="/terms" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
 								Términos de Servicio
-							</a>
-							<a href="/cookies" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
+							</Link>
+							<Link href="/cookies" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
 								Política de Cookies
-							</a>
-							<a href="/disclaimer" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
+							</Link>
+							<Link href="/disclaimer" className="text-soft-beige/60 hover:text-sunset-orange transition-colors duration-200">
 								Aviso Legal
-							</a>
+							</Link>
 						</div>
 					</div>
 				</div>

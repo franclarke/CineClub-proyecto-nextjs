@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Event } from '@prisma/client'
 import { EventCard } from './event-card'
 import { Button } from '../../components/ui/button'
+import { ApiResponse, PaginationData } from '@/types/api'
 
 interface ClientComponentProps {
   initialEvents: (Event & { _count: { reservations: number } })[]
@@ -35,7 +36,6 @@ export function ClientComponent({
   initialFilters,
 }: ClientComponentProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   // Local UI state mirrors searchParams
   const [category, setCategory] = useState(initialFilters.category ?? '')
@@ -48,14 +48,14 @@ export function ClientComponent({
       const qs = buildQuery({ category: category || undefined, sort, page })
       const res = await fetch(`/api/events?${qs}`)
       if (!res.ok) throw new Error('Failed to fetch events')
-      return (await res.json()) as { data: Event[]; pagination: any }
+      return (await res.json()) as ApiResponse<(Event & { _count: { reservations: number } })[]>
     },
-    initialData: { data: initialEvents, pagination: { total, page: initialPage, perPage } },
+    initialData: { data: initialEvents, pagination: { total, page: initialPage, perPage, totalPages: Math.ceil(total / perPage) } },
   })
 
   const events = data.data
-  const pagination = data.pagination ?? { total, page, perPage }
-  const totalPages = Math.ceil(pagination.total / perPage)
+  const pagination: PaginationData = data.pagination ?? { total, page, perPage, totalPages: Math.ceil(total / perPage) }
+  const totalPages = pagination.totalPages
 
   // Sync state with URL searchParams (for SSR navigation/back/forward)
   const updateUrl = (newState: { category?: string; sort?: string; page?: number }) => {

@@ -5,6 +5,7 @@ import { AnimatedSection } from '@/app/components/ui/animated-section'
 import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import Link from 'next/link'
+import type { MembershipTier } from '@prisma/client'
 
 type MembershipCard = {
 	name: string
@@ -41,12 +42,12 @@ export default function MembershipTiers() {
 		async function fetchMemberships() {
 			const res = await fetch('/api/memberships')
 			const data = await res.json()
-			const arr = Array.isArray(data) ? data : data.memberships
+			const arr: MembershipTier[] = Array.isArray(data) ? data : data.memberships
 
 			// Encontrar el mayor valor de priority (mayor prioridad)
-			const maxPriority = Math.max(...arr.map((m: any) => m.priority ?? Infinity))
+			const maxPriority = Math.max(...arr.map((m: MembershipTier) => m.priority ?? Infinity))
 
-			const mapped = arr.map((m: any) => {
+			const mapped = arr.map((m: MembershipTier) => {
 				const style = membershipStyles[m.name] || {
 					color: 'from-gray-500 to-gray-600',
 					borderColor: 'border-gray-500',
