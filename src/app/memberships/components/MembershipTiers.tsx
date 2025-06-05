@@ -1,55 +1,82 @@
+"use client"
+
+import { useEffect, useState } from 'react'
+import { AnimatedSection } from '@/app/components/ui/animated-section'
+import { Button } from '@/app/components/ui/button'
+import { GlassCard } from '@/app/components/ui/glass-card'
 import Link from 'next/link'
-import { AnimatedSection } from '../ui/animated-section'
-import { GlassCard } from '../ui/glass-card'
-import { Button } from '../ui/button'
 
-const memberships = [
-	{
-		name: 'Bronze',
-		price: 15,
-		color: 'from-amber-600 to-orange-700',
-		borderColor: 'border-amber-500/30',
+type MembershipCard = {
+	name: string
+	price: number
+	features: string[]
+	color: string
+	popular: boolean
+	borderColor: string
+	priority: number
+}
+
+const membershipStyles: Record<string, { color: string; borderColor: string; popular: boolean }> = {
+	Oro: {
+		color: 'yellow-500/80',
+		borderColor: 'border-yellow-400',
 		popular: false,
-		features: [
-			'Acceso a eventos regulares',
-			'Reserva con 7 días de anticipación',
-			'Descuento 5% en snacks',
-		]
 	},
-	{
-		name: 'Silver',
-		price: 25,
-		color: 'from-gray-400 to-gray-600',
-		borderColor: 'border-gray-400/30',
+	Plata: {
+		color: 'from-gray-400 to-gray-500',
+		borderColor: 'border-gray-400',
 		popular: true,
-		features: [
-			'Todo lo de Bronze',
-			'Acceso prioritario a eventos',
-			'Reserva con 14 días de anticipación',
-			'Descuento 10% en snacks',
-			'Acceso a eventos especiales',
-			'Invitaciones a premieres'
-		]
 	},
-	{
-		name: 'Gold',
-		price: 40,
-		color: 'from-yellow-400 to-amber-500',
-		borderColor: 'border-yellow-400/30',
+	Bronce: {
+		color: 'from-orange-700 to-amber-700',
+		borderColor: 'border-orange-700',
 		popular: false,
-		features: [
-			'Todo lo de Silver',
-			'Acceso VIP a todos los eventos',
-			'Reserva con 21 días de anticipación',
-			'Bebida gratis por evento',
-			'Descuento 15% en snacks',
-			'Asientos preferenciales',
-			'Meet & Greet con directores'
-		]
-	}
-]
+	},
+}
 
-export function MembershipSection() {
+export default function MembershipTiers() {
+	const [memberships, setMemberships] = useState<MembershipCard[]>([])
+
+	useEffect(() => {
+		async function fetchMemberships() {
+			const res = await fetch('/api/memberships')
+			const data = await res.json()
+			const arr = Array.isArray(data) ? data : data.memberships
+
+			// Encontrar el mayor valor de priority (mayor prioridad)
+			const maxPriority = Math.max(...arr.map((m: any) => m.priority ?? Infinity))
+
+			const mapped = arr.map((m: any) => {
+				const style = membershipStyles[m.name] || {
+					color: 'from-gray-500 to-gray-600',
+					borderColor: 'border-gray-500',
+					popular: false,
+				}
+				return {
+					name: m.name,
+					price: m.price,
+					features: m.benefits ? m.benefits.split(',').map((f: string) => f.trim()) : [],
+					color: style.color,
+					popular: m.priority === maxPriority,
+					borderColor: style.borderColor,
+					priority: m.priority,
+				}
+			})
+
+			// Si hay 3 membresías, coloca la popular en el medio
+			if (mapped.length === 3) {
+				const popularIdx = mapped.findIndex(m => m.popular)
+				if (popularIdx !== 1) {
+					const popular = mapped.splice(popularIdx, 1)[0]
+					mapped.splice(1, 0, popular)
+				}
+			}
+
+			setMemberships(mapped)
+		}
+		fetchMemberships()
+	}, [])
+
 	return (
 		<section className="py-32 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
 			{/* Background Effects */}
@@ -73,13 +100,17 @@ export function MembershipSection() {
 
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
 					{memberships.map((membership, index) => (
-						<AnimatedSection 
+						<AnimatedSection
 							key={membership.name}
-							direction="up" 
+							direction="up"
 							delay={index * 200}
 						>
-							<GlassCard 
-								variant={membership.name === 'Gold' ? 'premium' : 'default'}
+							<GlassCard
+								variant={membership.name === 'Oro'
+									? 'premium'
+									: membership.name === 'Plata'
+										? 'default'
+										: 'subtle'}
 								className={`p-8 relative ${membership.popular ? 'scale-105 z-10' : ''} ${membership.borderColor}`}
 							>
 								{membership.popular && (
@@ -123,14 +154,13 @@ export function MembershipSection() {
 								</ul>
 
 								<Link href="/auth/signup" className="block">
-									<Button 
-										className={`w-full py-4 text-lg font-semibold ${
-											membership.name === 'Gold' 
-												? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-black' 
-												: membership.popular
-													? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white'
-													: 'bg-white/10 hover:bg-white/20 text-white border-white/30'
-										} transform hover:scale-105 transition-all duration-300 shadow-2xl`}
+									<Button
+										className={`w-full py-4 text-lg font-semibold ${membership.name === 'Oro'
+											? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-black'
+											: membership.popular
+												? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white'
+												: 'bg-white/10 hover:bg-white/20 text-white border-white/30'
+											} transform hover:scale-105 transition-all duration-300 shadow-2xl`}
 									>
 										Seleccionar {membership.name}
 									</Button>
@@ -151,4 +181,4 @@ export function MembershipSection() {
 			</div>
 		</section>
 	)
-} 
+}
