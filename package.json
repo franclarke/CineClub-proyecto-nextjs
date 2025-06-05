@@ -10,7 +10,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -18,7 +19,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
     "@hookform/resolvers": "^5.0.1",
-    "@prisma/client": "^6.8.2",
+    "@prisma/client": "^6.9.0",
     "@tanstack/react-query": "^5.80.6",
     "@tanstack/react-query-devtools": "^5.26.0",
     "@types/bcryptjs": "^2.4.6",
@@ -38,7 +39,8 @@
     "tailwindcss": "^4.1.8",
     "uuid": "^11.1.0",
     "zod": "^3.25.48",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "prisma": "^6.9.0"
   },
   "devDependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
