@@ -1,18 +1,19 @@
 import { ReactNode } from 'react'
+import { UseFormRegister, Path } from 'react-hook-form'
 
-interface FormFieldProps {
+interface FormFieldProps<T extends Record<string, unknown>> {
 	label: string
-	name: string
+	name: Path<T>
 	type?: string
 	placeholder?: string
 	error?: string
-	register: (name: string) => object
+	register: UseFormRegister<T>
 	required?: boolean
 	className?: string
 	icon?: ReactNode
 }
 
-export function FormField({
+export function FormField<T extends Record<string, unknown>>({
 	label,
 	name,
 	type = 'text',
@@ -22,14 +23,14 @@ export function FormField({
 	required = false,
 	className,
 	icon,
-}: FormFieldProps) {
+}: FormFieldProps<T>) {
 	const baseInputClasses = "w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200"
 	const defaultClasses = "border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:ring-orange-500 focus:border-transparent"
 	const inputClasses = className ? `${baseInputClasses} ${className}` : `${baseInputClasses} ${defaultClasses}`
 
 	return (
 		<div className="space-y-2">
-			<label htmlFor={name} className="text-sm font-medium text-gray-200 flex items-center space-x-1">
+			<label htmlFor={String(name)} className="text-sm font-medium text-gray-200 flex items-center space-x-1">
 				<span>{label}</span>
 				{required && <span className="text-red-400">*</span>}
 			</label>
@@ -43,7 +44,7 @@ export function FormField({
 				<input
 					{...register(name)}
 					type={type}
-					id={name}
+					id={String(name)}
 					placeholder={placeholder}
 					className={`${inputClasses} ${icon ? 'pl-11' : 'px-4'}`}
 				/>

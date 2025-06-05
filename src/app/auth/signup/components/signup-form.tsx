@@ -129,7 +129,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 						</div>
 
 						<div className="space-y-5">
-							<FormField
+							<FormField<SignUpFormData>
 								label="Nombre completo"
 								name="name"
 								placeholder="Ej: Juan Pérez"
@@ -143,7 +143,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 								}
 							/>
 
-							<FormField
+							<FormField<SignUpFormData>
 								label="Email"
 								name="email"
 								type="email"
@@ -160,7 +160,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 							/>
 
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<FormField
+								<FormField<SignUpFormData>
 									label="Contraseña"
 									name="password"
 									type="password"
@@ -176,7 +176,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 									}
 								/>
 
-								<FormField
+								<FormField<SignUpFormData>
 									label="Confirmar contraseña"
 									name="confirmPassword"
 									type="password"

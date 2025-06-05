@@ -70,12 +70,12 @@ export function SignInForm() {
 			{/* Form Fields */}
 			<div className="space-y-5">
 				<div className="group">
-					<FormField
+					<FormField<SignInFormData>
 						label="Email"
 						name="email"
 						type="email"
 						placeholder="tu@email.com"
-						register={() => register('email')}
+						register={register}
 						error={errors.email?.message}
 						required
 						className="bg-white/5 border-white/10 text-white placeholder-gray-400 focus:border-orange-400 focus:ring-orange-400/20"
@@ -83,12 +83,12 @@ export function SignInForm() {
 				</div>
 
 				<div className="group">
-					<FormField
+					<FormField<SignInFormData>
 						label="Contraseña"
 						name="password"
 						type="password"
 						placeholder="••••••••"
-						register={() => register('password')}
+						register={register}
 						error={errors.password?.message}
 						required
 						className="bg-white/5 border-white/10 text-white placeholder-gray-400 focus:border-orange-400 focus:ring-orange-400/20"

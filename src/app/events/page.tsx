@@ -1,10 +1,7 @@
 import { DataAccess } from './components/data-access'
 
-interface EventsPageProps {
-	searchParams: Record<string, string | string[] | undefined>
-}
-
-export default function EventsPage({ searchParams }: EventsPageProps) {
+export default async function EventsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+	const resolvedSearchParams = await searchParams
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-deep-night to-black/90 py-8">
 			<div className="container mx-auto px-4">
@@ -18,7 +15,7 @@ export default function EventsPage({ searchParams }: EventsPageProps) {
 					</p>
 				</header>
 
-				<DataAccess searchParams={searchParams} />
+				<DataAccess searchParams={resolvedSearchParams} />
 			</div>
 		</div>
 	)
