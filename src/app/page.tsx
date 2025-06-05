@@ -20,7 +20,7 @@ export default async function Home() {
 			<div className="absolute inset-0 bg-black/60" />
 
 			{/* Logo */}
-			<div className="absolute left-8 top-8 z-20">
+			<div className="absolute left-1/2 top-8 z-20 -translate-x-1/2 md:left-8 md:translate-x-0">
 				<AppLogo />
 			</div>
 
