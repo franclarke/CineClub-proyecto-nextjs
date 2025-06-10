@@ -40,6 +40,12 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.redirect(dashboardUrl)
 	}
 
+	// Si el path empieza con /dashboard y no está autenticado, redirigir a iniciar sesión
+	if (pathname.startsWith('/dashboard') && !token) {
+		const signInUrl = new URL('/auth/signin', request.url)
+		return NextResponse.redirect(signInUrl)
+	}
+
 	return NextResponse.next()
 }
 

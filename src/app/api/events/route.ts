@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
 
@@ -18,10 +19,10 @@ export async function GET(request: NextRequest) {
   const orderBy =
     sort === 'popular'
       ? {
-          reservations: {
-            _count: 'desc' as const,
-          },
-        }
+        reservations: {
+          _count: 'desc' as const,
+        },
+      }
       : { dateTime: 'asc' as const }
 
   const [events, total] = await Promise.all([
