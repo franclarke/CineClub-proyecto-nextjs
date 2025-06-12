@@ -48,9 +48,11 @@ export function DashboardContent() {
 					<p className="text-gray-300 text-sm mb-4">
 						Administrar usuarios y tipos de membresía
 					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Gestionar Usuarios
-					</Button>
+					<Link href="/dashboard/users">
+						<Button variant="primary" size="sm" className="w-full">
+							Gestionar Usuarios
+						</Button>
+					</Link>
 				</div>
 
 				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
@@ -101,6 +103,6 @@ export function DashboardContent() {
 					</Button>
 				</div>
 			</div>
-		</div>
+		</div >
 	)
 } 
