@@ -75,25 +75,6 @@ export async function getUserById(id: string) {
 }
 
 /**
- * Crea un nuevo usuario.
- */
-export async function createUser(data: {
-    name: string
-    email: string
-    password: string
-    membershipId?: string
-}) {
-    return prisma.user.create({
-        data: {
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            membershipId: data.membershipId || undefined,
-        },
-    })
-}
-
-/**
  * Actualiza un usuario existente.
  */
 export async function updateUser(id: string, data: Partial<{

@@ -4,8 +4,9 @@ import { UserIcon, ArrowLeft, Pencil } from 'lucide-react'
 import Link from 'next/link'
 
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
-    const user = await getUserById(params.id)
+export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    const user = await getUserById(id)
 
     if (!user) {
         return (
