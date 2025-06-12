@@ -3,8 +3,9 @@
 import Navigation from '@/app/components/Navigation'
 import { useState } from 'react'
 import { createEvent } from '../data-access' // Asegúrate que la ruta sea correcta
+import Link from 'next/link'
 
-const TMDB_API_KEY = 'TU_API_KEY' // Reemplaza por tu API Key de TMDb
+const TMDB_API_KEY = "b9923924bd68a99c3732d1f2c12b0996"
 
 export default function NewEventPage() {
     const [form, setForm] = useState({
@@ -33,13 +34,35 @@ export default function NewEventPage() {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
-    // Abre el modal y resetea búsqueda
-    const openModal = () => {
+    // Obtiene películas populares de TMDb
+    const fetchPopularMovies = async (pageNum = 1) => {
+        setSearching(true)
+
+        try {
+            const res = await fetch(
+                `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&page=${pageNum}`
+            )
+            const data = await res.json()
+            if (pageNum === 1) {
+                setTotalPages(data.total_pages)
+            }
+            setResults(data.results)
+            setPage(data.page)
+        } catch (err) {
+            console.error('Error al obtener películas populares:', err)
+            setResults([])
+        }
+        setSearching(false)
+    }
+
+    // Abre el modal y muestra películas populares
+    const openModal = async () => {
         setModalOpen(true)
         setSearch('')
         setResults([])
         setPage(1)
         setTotalPages(1)
+        await fetchPopularMovies(1)
     }
 
     // Cierra el modal
@@ -57,9 +80,14 @@ export default function NewEventPage() {
         )
         const data = await res.json()
         console.log('Resultados de búsqueda:', data)
+        if (!Array.isArray(data.results)) {
+            console.error('Error en la respuesta de TMDb:', data)
+        }
+        if (pageNum === 1) {
+            setTotalPages(data.total_pages)
+        }
         setResults(data.results)
         setPage(data.page)
-        setTotalPages(data.total_pages)
         setSearching(false)
     }
 
@@ -113,8 +141,27 @@ export default function NewEventPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 flex items-center justify-center relative">
             <Navigation />
+            {success && (
+                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center w-full max-w-lg pointer-events-none">
+                    <div className="flex flex-col items-center gap-2 bg-green-500/90 backdrop-blur-md text-white px-6 py-4 rounded-xl shadow-lg border border-green-300/80 mb-2 pointer-events-auto animate-fade-in">
+                        <div className="flex items-center gap-2">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="text-lg">¡Evento creado correctamente!</span>
+                            <Link
+                                href="/dashboard/events"
+                                className="hover:underline cursor-pointer text-white"
+                            >
+                                Ver Eventos
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
             <form
                 onSubmit={handleSubmit}
                 className="bg-gray-800/80 p-8 rounded-lg shadow-lg max-w-lg w-full space-y-4 border border-gray-700"
@@ -232,18 +279,30 @@ export default function NewEventPage() {
                             <div className="flex justify-between items-center mt-4">
                                 <button
                                     type="button"
-                                    onClick={() => handleSearch(page - 1)}
+                                    onClick={() => {
+                                        if (search.trim()) {
+                                            handleSearch(page - 1)
+                                        } else {
+                                            fetchPopularMovies(page - 1)
+                                        }
+                                    }}
                                     disabled={page <= 1 || searching}
-                                    className="bg-gray-700 text-white px-3 py-1 rounded disabled:opacity-50"
+                                    className="bg-gray-700 text-white hover:bg-gray-800 transition-all dration-200 px-3 py-1 rounded disabled:opacity-50"
                                 >
                                     Anterior
                                 </button>
                                 <span className="text-white">{page} / {totalPages}</span>
                                 <button
                                     type="button"
-                                    onClick={() => handleSearch(page + 1)}
+                                    onClick={() => {
+                                        if (search.trim()) {
+                                            handleSearch(page + 1)
+                                        } else {
+                                            fetchPopularMovies(page + 1)
+                                        }
+                                    }}
                                     disabled={page >= totalPages || searching}
-                                    className="bg-gray-700 text-white px-3 py-1 rounded disabled:opacity-50"
+                                    className="bg-gray-700 text-white hover:bg-gray-800  transition-all dration-200 px-3 py-1 rounded disabled:opacity-50"
                                 >
                                     Siguiente
                                 </button>
@@ -260,8 +319,7 @@ export default function NewEventPage() {
                     {loading ? 'Guardando...' : 'Añadir Evento'}
                 </button>
                 {error && <div className="text-red-500 text-sm">{error}</div>}
-                {success && <div className="text-green-500 text-sm">¡Evento creado correctamente!</div>}
             </form>
-        </div>
+        </div >
     )
 }
