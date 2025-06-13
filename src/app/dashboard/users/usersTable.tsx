@@ -41,14 +41,14 @@ export default function UsersTable() {
                             placeholder="Buscar por nombre..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
+                            className="w-full pl-10 pr-3 py-2 rounded-xl bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
                         />
                         <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     </div>
                     <select
                         value={filter}
                         onChange={e => setFilter(e.target.value)}
-                        className="p-2 rounded bg-gray-800 text-white border border-gray-700"
+                        className="p-2 w-24 rounded-xl bg-gray-800 text-white border border-gray-700"
                     >
                         {MEMBERSHIP_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -56,7 +56,7 @@ export default function UsersTable() {
                     </select>
                 </div>
             </div>
-            <div className="overflow-x-auto rounded shadow border border-gray-800">
+            <div className="overflow-x-auto rounded-xl shadow border border-gray-800">
                 <table className="min-w-full bg-gray-900 text-white rounded">
                     <thead>
                         <tr>

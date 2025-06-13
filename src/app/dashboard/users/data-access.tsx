@@ -81,7 +81,7 @@ export async function updateUser(id: string, data: Partial<{
     name: string
     email: string
     password: string
-    membershipId: string
+    membershipId?: string
 }>) {
     return prisma.user.update({
         where: { id },
@@ -110,5 +110,14 @@ export async function getUsersByMembership(name: string) {
         },
         include: { membership: true },
         orderBy: { createdAt: 'asc' },
+    })
+}
+
+/**
+ * Lista todas las membresías.
+ */
+export async function getAllMemberships() {
+    return prisma.membershipTier.findMany({
+        orderBy: { name: 'asc' },
     })
 }
