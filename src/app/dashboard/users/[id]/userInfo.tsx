@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getAllMemberships, getUserById, updateUser, } from '../data-access'
+import { getAllMemberships, getUserById, updateUser } from '../data-access'
 import { UserIcon, ArrowLeft, Pencil, Save, X } from 'lucide-react'
 import Link from 'next/link'
 
@@ -19,6 +19,8 @@ export default function UserInfo({ userId }: UserInfoProps) {
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [memberships, setMemberships] = useState<Membership[]>([])
+    const [success, setSuccess] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
 
     // Cargar usuario y membresías al montar
     useEffect(() => {
@@ -64,10 +66,27 @@ export default function UserInfo({ userId }: UserInfoProps) {
         await updateUser(userId, form)
         setUser({ ...user, ...form, membership: memberships.find(m => m.id === form.membershipId) })
         setIsEditing(false)
+        setSuccess(true)
+        setShowSuccess(true)
+        setTimeout(() => setSuccess(false), 2000)   // inicia animación de salida
+        setTimeout(() => setShowSuccess(false), 2500) // oculta el div después de la animación
     }
 
     return (
-        <div className="flex flex-col items-center justify-center mt-10">
+        <div className="flex items-center justify-center min-h-[60vh] relative">
+            {/* Mensaje de éxito flotante, centrado arriba */}
+            {(showSuccess || success) && (
+                <div
+                    className={`
+                        fixed top-20 left-1/2 transform -translate-x-1/2
+                        bg-green-500/90 text-white px-6 py-3 rounded-xl shadow-lg z-50
+                        transition-all duration-500
+                        ${success ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}
+                    `}
+                >
+                    Cambios guardados correctamente
+                </div>
+            )}
             <div className="bg-gray-800/90 border border-gray-700 rounded-2xl shadow-lg p-8 w-full max-w-md flex flex-col items-center gap-6 relative">
                 <Link
                     href="/dashboard/users"
@@ -153,7 +172,6 @@ export default function UserInfo({ userId }: UserInfoProps) {
                                 onChange={handleChange}
                                 className="px-2 py-1 rounded text-xs font-semibold border bg-gray-700 text-gray-200"
                             >
-                                <option value="">Sin membresía</option>
                                 {memberships.map(m => (
                                     <option key={m.id} value={m.id}>{m.name}</option>
                                 ))}
