@@ -58,3 +58,17 @@ export async function createEvent(form: {
         return { success: false, error: (error as Error).message }
     }
 }
+/**
+ * Actualiza la imagen de un evento. Falta agregar fila a columna Events
+ */
+// export async function updateEventImage(eventId: string, imageUrl: string) {
+//     try {
+//         const event = await prisma.event.update({
+//             where: { id: eventId },
+//             data: { image: imageUrl },
+//         })
+//         return { success: true, event }
+//     } catch (error) {
+//         return { success: false, error: (error as Error).message }
+//     }
+// }

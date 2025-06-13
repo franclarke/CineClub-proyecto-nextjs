@@ -1,3 +1,5 @@
+"use server"
+
 import { prisma } from '@/lib/prisma'
 import { Suspense } from 'react'
 import { ClientComponent } from './client-component'
@@ -26,10 +28,10 @@ export async function DataAccess({ searchParams }: DataAccessProps) {
   const orderBy =
     sort === 'popular'
       ? {
-          reservations: {
-            _count: 'desc' as const,
-          },
-        }
+        reservations: {
+          _count: 'desc' as const,
+        },
+      }
       : { dateTime: 'asc' as const }
 
   const [events, total] = await Promise.all([
@@ -58,4 +60,52 @@ export async function DataAccess({ searchParams }: DataAccessProps) {
       />
     </Suspense>
   )
-} 
+}
+
+/**
+ * Elimina un evento por su ID.
+ * @param eventId - ID del evento a eliminar
+ * @returns Un objeto con success y el evento eliminado, o un error
+ */
+export async function deleteEvent(eventId: string) {
+  try {
+    // 1. Elimina reservas relacionadas a los asientos de este evento
+    await prisma.reservation.deleteMany({
+      where: {
+        seat: {
+          eventId: eventId,
+        },
+      },
+    })
+    // 2. Elimina asientos relacionados a este evento
+    await prisma.seat.deleteMany({
+      where: { eventId },
+    })
+    // 3. Elimina el evento
+    const event = await prisma.event.delete({
+      where: { id: eventId },
+    })
+    return { success: true, event }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+}
+
+/**
+ * Obtiene todos los eventos de la base de datos.
+ */
+export async function fetchAllEvents() {
+  try {
+    const events = await prisma.event.findMany({
+      orderBy: { dateTime: 'asc' },
+      include: {
+        _count: {
+          select: { reservations: true },
+        },
+      },
+    })
+    return events
+  } catch (error) {
+    return []
+  }
+}

@@ -2,7 +2,7 @@
 
 import Navigation from '@/app/components/Navigation'
 import { useState } from 'react'
-import { createEvent } from '../data-access' // Asegúrate que la ruta sea correcta
+import { createEvent } from '../data-access'
 import Link from 'next/link'
 
 const TMDB_API_KEY = "b9923924bd68a99c3732d1f2c12b0996"
@@ -21,6 +21,8 @@ export default function NewEventPage() {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [selectedMovie, setSelectedMovie] = useState<any>(null)
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
 
     // Modal y búsqueda
     const [modalOpen, setModalOpen] = useState(false)
@@ -110,17 +112,41 @@ export default function NewEventPage() {
         setModalOpen(false)
     }
 
-    // Usa createEvent de data-access en vez de fetch
+    // Maneja la selección de imagen y muestra preview
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setImageFile(file)
+            setImagePreview(URL.createObjectURL(file))
+        } else {
+            setImageFile(null)
+            setImagePreview(null)
+        }
+    }
+
+    // Modifica handleSubmit para subir la imagen después de crear el evento
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError(null)
         setSuccess(false)
-        console.log('Enviando formulario:', form)
         try {
             const result = await createEvent(form)
-            console.log('Resultado de createEvent:', result)
             if (!result.success) throw new Error(result.error || 'Error al crear el evento')
+
+            // Si hay imagen, sube la imagen y actualiza el evento
+            if (imageFile) {
+                // Sube la imagen a algún storage (ejemplo: Cloudinary, S3, etc.)
+                // Aquí solo se muestra cómo obtener la URL local, deberías reemplazarlo por tu lógica real de upload
+                // Por ejemplo, podrías usar fetch o axios para subir la imagen y obtener la URL pública
+                // Supongamos que tienes una función uploadImage que devuelve la URL:
+                // const imageUrl = await uploadImage(imageFile)
+                // await updateEventImage(result.event.id, imageUrl)
+
+                // Ejemplo temporal: solo guarda la URL local (no recomendado para producción)
+                // await updateEventImage(result.event.id, imagePreview || '')
+            }
+
             setSuccess(true)
             setForm({
                 title: '',
@@ -132,8 +158,9 @@ export default function NewEventPage() {
                 category: '',
             })
             setSelectedMovie(null)
+            setImageFile(null)
+            setImagePreview(null)
         } catch (err: any) {
-            console.log('Error al crear el evento:', err)
             setError(err.message)
         } finally {
             setLoading(false)
@@ -310,6 +337,31 @@ export default function NewEventPage() {
                         </div>
                     </div>
                 )}
+
+                {/* Selector de imagen con mejor UI */}
+                <div className="flex flex-col items-center mb-4">
+                    <label className="block text-white font-semibold mb-2">Imagen del evento (opcional)</label>
+                    <label
+                        htmlFor="event-image"
+                        className="w-40 h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-500 rounded-lg cursor-pointer bg-gray-900 hover:border-orange-500 transition-all"
+                    >
+                        {imagePreview ? (
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                        ) : (
+                            <span className="text-gray-400 text-center">
+                                Seleccionar Imagen<br />
+                                <span className="text-xs text-gray-500">(JPG, PNG, etc.)</span>
+                            </span>
+                        )}
+                    </label>
+                    <input
+                        id="event-image"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                    />
+                </div>
 
                 <button
                     type="submit"
