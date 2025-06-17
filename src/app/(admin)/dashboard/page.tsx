@@ -1,5 +1,5 @@
-import Navigation from '../components/Navigation'
-import { DashboardContent } from './dashboard-content'
+import Navigation from "@/app/components/Navigation";
+import { DashboardContent } from "./components/dashboard-content";
 
 export default function DashboardPage() {
 	return (

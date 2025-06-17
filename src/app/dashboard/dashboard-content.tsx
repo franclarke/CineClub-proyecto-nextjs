@@ -1,14 +1,9 @@
 "use client"
 
-import { Button } from "@/app/components/ui/button"
-import { useAuth } from "@/app/hooks/use-auth"
+import { Link } from "lucide-react"
+import { useAuth } from "../hooks/use-auth"
+import { Button } from "../components/ui/button"
 
-<<<<<<< HEAD:src/app/dashboard/dashboard-content.tsx
-import { useAuth } from '../hooks/use-auth'
-import { Button } from '../components/ui/button'
-import Link from 'next/link'
-=======
->>>>>>> 7532301b1c41c8f2d9fde77d5466cb541cbe3336:src/app/(admin)/dashboard/components/dashboard-content.tsx
 
 export function DashboardContent() {
 	const { user, signOut, isLoading } = useAuth()
