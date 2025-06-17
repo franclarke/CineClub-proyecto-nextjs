@@ -1,7 +1,6 @@
-'use client'
+import { Button } from "@/app/components/ui/button"
+import { useAuth } from "@/app/hooks/use-auth"
 
-import { useAuth } from '../../hooks/use-auth'
-import { Button } from '../../components/ui/button'
 
 export function DashboardContent() {
 	const { user, signOut, isLoading } = useAuth()
