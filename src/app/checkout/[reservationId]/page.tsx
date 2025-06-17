@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation'
 import { DataAccess } from './components/DataAccess'
 
 interface CheckoutPageProps {
-	params: {
+	params: Promise<{
 		reservationId: string
-	}
+	}>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,9 +16,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CheckoutPage({ params }: CheckoutPageProps) {
-	if (!params.reservationId) {
+	const { reservationId } = await params
+	
+	if (!reservationId) {
 		notFound()
 	}
 
-	return <DataAccess reservationId={params.reservationId} />
+	return <DataAccess reservationId={reservationId} />
 } 

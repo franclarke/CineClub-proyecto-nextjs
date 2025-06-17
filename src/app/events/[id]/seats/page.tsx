@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation'
 import { DataAccess } from './components/DataAccess'
 
 interface SeatMapPageProps {
-	params: {
+	params: Promise<{
 		id: string
-	}
+	}>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,9 +16,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SeatMapPage({ params }: SeatMapPageProps) {
-	if (!params.id) {
+	const { id } = await params
+	
+	if (!id) {
 		notFound()
 	}
 
-	return <DataAccess eventId={params.id} />
+	return <DataAccess eventId={id} />
 } 
