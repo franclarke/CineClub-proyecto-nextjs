@@ -1,6 +1,7 @@
 import { Order, OrderItem, Product, Payment } from '@prisma/client'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { Button } from '@/app/components/ui/button'
+import Link from 'next/link'
 
 type OrderWithExtras = Order & {
 	items: (OrderItem & {
@@ -31,12 +32,12 @@ export function ProductsSection({ orders }: ProductsSectionProps) {
 				<p className="text-soft-gray mb-6">
 					Los productos que compres aparecerán aquí para su canje
 				</p>
-				<a
+				<Link
 					href="/events"
 					className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-lg font-medium"
 				>
 					Ver Eventos y Productos
-				</a>
+				</Link>
 			</GlassCard>
 		)
 	}

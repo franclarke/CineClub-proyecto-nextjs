@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { CheckoutClient } from './CheckoutClient'
+import { EventWithCount, ReservationWithDetails } from '@/types/api'
 
 interface DataAccessProps {
 	reservationId: string
@@ -58,6 +59,11 @@ export async function DataAccess({ reservationId }: DataAccessProps) {
 						}
 					}
 				}
+			},
+			user: {
+				include: {
+					membership: true
+				}
 			}
 		},
 		orderBy: {
@@ -86,7 +92,7 @@ export async function DataAccess({ reservationId }: DataAccessProps) {
 		}
 		acc[eventId].reservations.push(reservation)
 		return acc
-	}, {} as Record<string, { event: any, reservations: any[] }>)
+	}, {} as Record<string, { event: EventWithCount, reservations: ReservationWithDetails[] }>)
 
 	// Get available products for cart
 	const products = await prisma.product.findMany({

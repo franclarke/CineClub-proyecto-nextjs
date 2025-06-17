@@ -8,7 +8,7 @@ interface CheckoutPageProps {
 	}
 }
 
-export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
 	return {
 		title: 'Checkout | Puff & Chill',
 		description: 'Completa tu reserva y pago'

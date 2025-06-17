@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Order, OrderItem, Product, Payment } from '@prisma/client'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { WalletSummary } from './WalletSummary'
 import { TicketsSection } from './TicketsSection'
 import { ProductsSection } from './ProductsSection'
 import { HistorySection } from './HistorySection'
+import { ReservationsByEvent } from '@/types/api'
 
 type OrderWithExtras = Order & {
 	items: (OrderItem & {
@@ -24,10 +26,7 @@ interface Summary {
 }
 
 interface WalletClientProps {
-	reservationsByEvent: Record<string, {
-		event: any
-		reservations: any[]
-	}>
+	reservationsByEvent: ReservationsByEvent
 	orders: OrderWithExtras[]
 	summary: Summary
 }
@@ -149,7 +148,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 							<p className="text-soft-gray mb-6">
 								Cuando compres tickets o productos, aparecerán aquí
 							</p>
-							<a
+							<Link
 								href="/events"
 								className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-lg font-medium"
 							>
@@ -157,7 +156,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 								</svg>
 								Ver Eventos
-							</a>
+							</Link>
 						</GlassCard>
 					</div>
 				)}

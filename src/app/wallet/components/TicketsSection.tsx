@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { Button } from '@/app/components/ui/button'
+import { ReservationsByEvent } from '@/types/api'
 
 interface TicketsSectionProps {
-	reservationsByEvent: Record<string, {
-		event: any
-		reservations: any[]
-	}>
+	reservationsByEvent: ReservationsByEvent
 }
 
 type FilterType = 'all' | 'upcoming' | 'past'
@@ -19,7 +19,7 @@ export function TicketsSection({ reservationsByEvent }: TicketsSectionProps) {
 
 	const now = new Date()
 	
-	const filteredEvents = Object.entries(reservationsByEvent).filter(([_, { event }]) => {
+	const filteredEvents = Object.entries(reservationsByEvent).filter(([, { event }]) => {
 		const eventDate = new Date(event.dateTime)
 		switch (filter) {
 			case 'upcoming':
@@ -65,12 +65,12 @@ export function TicketsSection({ reservationsByEvent }: TicketsSectionProps) {
 				<p className="text-soft-gray mb-6">
 					Compra tickets para tus próximos eventos y aparecerán aquí
 				</p>
-				<a
+				<Link
 					href="/events"
 					className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-lg font-medium"
 				>
 					Ver Eventos Disponibles
-				</a>
+				</Link>
 			</GlassCard>
 		)
 	}
@@ -110,7 +110,6 @@ export function TicketsSection({ reservationsByEvent }: TicketsSectionProps) {
 				{filteredEvents.map(([eventId, { event, reservations }]) => {
 					const eventDate = new Date(event.dateTime)
 					const isUpcoming = eventDate > now
-					const isPast = eventDate <= now
 
 					return (
 						<GlassCard key={eventId} className="p-6">
@@ -198,18 +197,25 @@ export function TicketsSection({ reservationsByEvent }: TicketsSectionProps) {
 								</div>
 
 								{/* QR Code */}
-								{selectedTicket === eventId && (
+								{selectedTicket === eventId && isUpcoming && (
 									<div className="lg:w-48 flex flex-col items-center">
-										<div className="bg-white p-4 rounded-lg mb-3">
-											<img
-												src={generateTicketQR(reservations[0].id)}
-												alt="QR Code"
-												className="w-32 h-32"
+										<div className="bg-white p-4 rounded-lg mb-4">
+											<Image
+												src={generateTicketQR(reservations[0]?.id || '')}
+												alt="Código QR del ticket"
+												width={200}
+												height={200}
+												className="rounded"
 											/>
 										</div>
-										<p className="text-soft-gray text-xs text-center">
-											Presenta este código QR en el evento
-										</p>
+										<div className="text-center">
+											<p className="text-soft-beige text-sm font-medium mb-1">
+												Código de Entrada
+											</p>
+											<p className="text-soft-gray text-xs">
+												Presenta este código en la entrada del evento
+											</p>
+										</div>
 									</div>
 								)}
 							</div>

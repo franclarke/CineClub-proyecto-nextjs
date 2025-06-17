@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Badge, Calendar, Clock, MapPin, Star, Users } from "lucide-react"
+import { Badge, Calendar, Clock, MapPin, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { GlassCard } from "@/app/components/ui/glass-card"
 import { Button } from "@/app/components/ui/button"

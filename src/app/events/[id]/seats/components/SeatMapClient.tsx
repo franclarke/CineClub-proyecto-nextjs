@@ -6,7 +6,7 @@ import { Event, Seat, Reservation, User, MembershipTier } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { Separator } from '@/app/components/ui/separator'
-import { Crown, Users, Calendar, MapPin, Clock, Sparkles, AlertCircle } from 'lucide-react'
+import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle } from 'lucide-react'
 
 type SeatWithReservation = Seat & {
 	reservation: (Reservation & {
@@ -80,7 +80,7 @@ const AmphitheaterSeatMap = ({
 		const isPremiumTier = tier === 'Gold';
 		const isVipTier = tier === 'Silver';
 
-		let baseClasses = "transition-all duration-200 flex items-center justify-center text-xs font-semibold rounded-lg relative border";
+		const baseClasses = "transition-all duration-200 flex items-center justify-center text-xs font-semibold rounded-lg relative border";
 		
 		if (isReserved) {
 			return `${baseClasses} bg-neutral-600 text-neutral-400 cursor-not-allowed opacity-50 border-neutral-500`;

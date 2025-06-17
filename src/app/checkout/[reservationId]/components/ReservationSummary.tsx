@@ -1,10 +1,8 @@
 import { GlassCard } from '@/app/components/ui/glass-card'
+import { ReservationsByEvent } from '@/types/api'
 
 interface ReservationSummaryProps {
-	reservationsByEvent: Record<string, {
-		event: any
-		reservations: any[]
-	}>
+	reservationsByEvent: ReservationsByEvent
 }
 
 export function ReservationSummary({ reservationsByEvent }: ReservationSummaryProps) {

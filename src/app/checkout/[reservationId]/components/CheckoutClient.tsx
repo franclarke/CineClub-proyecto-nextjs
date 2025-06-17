@@ -9,6 +9,7 @@ import { CountdownTimer } from './CountdownTimer'
 import { ReservationSummary } from './ReservationSummary'
 import { ProductCart } from './ProductCart'
 import { OrderSummary } from './OrderSummary'
+import { ReservationsByEvent } from '@/types/api'
 
 type OrderWithExtras = Order & {
 	user: User & {
@@ -17,10 +18,7 @@ type OrderWithExtras = Order & {
 	items: (OrderItem & {
 		product: Product
 	})[]
-	reservationsByEvent: Record<string, {
-		event: any
-		reservations: any[]
-	}>
+	reservationsByEvent: ReservationsByEvent
 }
 
 interface CheckoutClientProps {

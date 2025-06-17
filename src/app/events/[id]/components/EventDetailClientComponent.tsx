@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { 
 	CalendarIcon, 
 	MapPinIcon, 
-	UsersIcon, 
 	ClockIcon, 
 	PlayIcon,
 	ChevronLeftIcon,
@@ -132,10 +132,11 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 									</div>
 								</div>
 							) : imdbData?.poster ? (
-								<img 
+								<Image 
 									src={imdbData.poster} 
 									alt={event.title}
-									className="w-full h-full object-cover"
+									fill
+									className="object-cover"
 								/>
 							) : (
 								<div className="text-center">

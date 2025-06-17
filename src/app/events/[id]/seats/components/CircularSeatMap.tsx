@@ -37,7 +37,7 @@ export function CircularSeatMap({
 		const centerY = 300
 		const baseRadius = 80
 
-		seatsByTier.forEach(([tier, seats], tierIndex) => {
+		seatsByTier.forEach(([, seats], tierIndex) => {
 			const radius = baseRadius + (tierIndex * 60)
 			const angleStep = (2 * Math.PI) / seats.length
 			const startAngle = -Math.PI / 2 // Start from top

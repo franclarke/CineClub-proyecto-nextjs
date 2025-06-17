@@ -8,7 +8,7 @@ interface SeatMapPageProps {
 	}
 }
 
-export async function generateMetadata({ params }: SeatMapPageProps): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
 	return {
 		title: 'Seleccionar Asientos | Puff & Chill',
 		description: 'Elige tu asiento perfecto para esta experiencia de cine bajo las estrellas'

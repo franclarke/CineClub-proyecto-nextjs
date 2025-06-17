@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { WalletClient } from './WalletClient'
+import { EventWithCount, ReservationWithDetails } from '@/types/api'
 
 export async function DataAccess() {
 	const session = await getServerSession(authOptions)
@@ -26,6 +27,11 @@ export async function DataAccess() {
 							reservations: true
 						}
 					}
+				}
+			},
+			user: {
+				include: {
+					membership: true
 				}
 			}
 		},
@@ -64,7 +70,7 @@ export async function DataAccess() {
 		}
 		acc[eventId].reservations.push(reservation)
 		return acc
-	}, {} as Record<string, { event: any, reservations: any[] }>)
+	}, {} as Record<string, { event: EventWithCount, reservations: ReservationWithDetails[] }>)
 
 	// Calculate summary statistics
 	const now = new Date()

@@ -1,5 +1,6 @@
 import { Order, OrderItem, Product, Payment } from '@prisma/client'
 import { GlassCard } from '@/app/components/ui/glass-card'
+import { ReservationsByEvent, EventWithReservations } from '@/types/api'
 
 type OrderWithExtras = Order & {
 	items: (OrderItem & {
@@ -10,10 +11,7 @@ type OrderWithExtras = Order & {
 
 interface HistorySectionProps {
 	orders: OrderWithExtras[]
-	reservationsByEvent: Record<string, {
-		event: any
-		reservations: any[]
-	}>
+	reservationsByEvent: ReservationsByEvent
 }
 
 export function HistorySection({ orders, reservationsByEvent }: HistorySectionProps) {
@@ -62,7 +60,7 @@ export function HistorySection({ orders, reservationsByEvent }: HistorySectionPr
 					{transaction.type === 'order' ? (
 						<OrderHistoryItem order={transaction.data as OrderWithExtras} />
 					) : (
-						<ReservationHistoryItem data={transaction.data as { event: any, reservations: any[] }} />
+						<ReservationHistoryItem data={transaction.data as EventWithReservations} />
 					)}
 				</GlassCard>
 			))}
@@ -72,7 +70,6 @@ export function HistorySection({ orders, reservationsByEvent }: HistorySectionPr
 
 function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 	const hasProducts = order.items.length > 0
-	const hasOnlyTickets = !hasProducts
 
 	return (
 		<div className="flex items-start justify-between">
@@ -151,7 +148,7 @@ function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 	)
 }
 
-function ReservationHistoryItem({ data }: { data: { event: any, reservations: any[] } }) {
+function ReservationHistoryItem({ data }: { data: EventWithReservations }) {
 	const { event, reservations } = data
 	const eventDate = new Date(event.dateTime)
 	const isUpcoming = eventDate > new Date()
