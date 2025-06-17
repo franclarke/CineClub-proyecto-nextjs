@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import type { MembershipTier } from '@prisma/client'
 
-import { SignInForm } from '../../auth/signin/components/signin-form'
-import { SignUpForm } from '../../auth/signup/components/signup-form'
+import { SignInForm } from './signin-form'
+import { SignUpForm } from './signup-form'
 
 interface AuthFormProps {
   memberships: MembershipTier[]

@@ -18,17 +18,17 @@ type MembershipCard = {
 }
 
 const membershipStyles: Record<string, { color: string; borderColor: string; popular: boolean }> = {
-	Oro: {
+	Gold: {
 		color: 'yellow-500/80',
 		borderColor: 'border-yellow-400',
 		popular: false,
 	},
-	Plata: {
+	Silver: {
 		color: 'from-gray-400 to-gray-500',
 		borderColor: 'border-gray-400',
 		popular: true,
 	},
-	Bronce: {
+	Bronze: {
 		color: 'from-orange-700 to-amber-700',
 		borderColor: 'border-orange-700',
 		popular: false,
@@ -107,9 +107,9 @@ export default function MembershipTiers() {
 							delay={index * 200}
 						>
 							<GlassCard
-								variant={membership.name === 'Oro'
+								variant={membership.name === 'Gold'
 									? 'premium'
-									: membership.name === 'Plata'
+									: membership.name === 'Silver'
 										? 'default'
 										: 'subtle'}
 								className={`p-8 relative ${membership.popular ? 'scale-105 z-10' : ''} ${membership.borderColor}`}
@@ -156,7 +156,7 @@ export default function MembershipTiers() {
 
 								<Link href="/auth/signup" className="block">
 									<Button
-										className={`w-full py-4 text-lg font-semibold ${membership.name === 'Oro'
+										className={`w-full py-4 text-lg font-semibold ${membership.name === 'Gold'
 											? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-black'
 											: membership.popular
 												? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white'

@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { signInSchema, type SignInFormData } from '../../../../../lib/validations/auth'
-import { FormField } from '../../../components/ui/form-field'
-import { Button } from '../../../components/ui/button'
+import { signInSchema, type SignInFormData } from '../../../../lib/validations/auth'
+import { FormField } from '../ui/form-field'
+import { Button } from '../ui/button'
 
 export function SignInForm() {
 	const [isLoading, setIsLoading] = useState(false)

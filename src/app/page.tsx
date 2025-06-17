@@ -1,9 +1,49 @@
-import { prisma } from '../../lib/prisma'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { HeroSection } from './components/home/hero-section'
 import { AuthForm } from './components/auth/auth-form'
 import { AppLogo } from './components/ui/app-logo'
+import { DashboardHome } from './components/home/dashboard-home'
+import Navigation from './components/Navigation'
+
+async function getUserWithMembership(email: string) {
+	return await prisma.user.findUnique({
+		where: { email },
+		include: {
+			membership: {
+				select: {
+					name: true,
+				},
+			},
+		},
+	})
+}
 
 export default async function Home() {
+	const session = await getServerSession(authOptions)
+	
+	// Si el usuario está autenticado, mostramos el dashboard
+	if (session?.user?.email) {
+		const userWithMembership = await getUserWithMembership(session.user.email)
+		
+		if (userWithMembership) {
+			const userData = {
+				name: userWithMembership.name,
+				email: userWithMembership.email,
+				membershipName: userWithMembership.membership.name,
+			}
+			
+			return (
+				<>
+					<Navigation />
+					<DashboardHome user={userData} />
+				</>
+			)
+		}
+	}
+
+	// Si no está autenticado, mostramos la página de landing/auth
 	const memberships = await prisma.membershipTier.findMany({
 		orderBy: {
 			price: 'asc',
