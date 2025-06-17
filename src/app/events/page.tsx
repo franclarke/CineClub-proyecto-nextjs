@@ -1,17 +1,27 @@
 import { Suspense } from 'react'
+import { Metadata } from 'next'
 import Navigation from '../components/Navigation'
 import { EventsSkeletonComponent } from './components/EventsSkeletonComponent'
 import { EventsDataAccess } from './components/EventsDataAccess'
 
 interface EventsPageProps {
-	searchParams: {
+	searchParams: Promise<{
 		category?: string
 		sort?: 'date' | 'popular' | 'name'
 		search?: string
+	}>
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+	return {
+		title: 'Eventos | Puff & Chill',
+		description: 'Descubre nuestras próximas experiencias de cine bajo las estrellas'
 	}
 }
 
-export default function EventsPage({ searchParams }: EventsPageProps) {
+export default async function EventsPage({ searchParams }: EventsPageProps) {
+	const resolvedSearchParams = await searchParams
+	
 	return (
 		<>
 			<Navigation />
@@ -27,7 +37,7 @@ export default function EventsPage({ searchParams }: EventsPageProps) {
 					</div>
 
 					<Suspense fallback={<EventsSkeletonComponent />}>
-						<EventsDataAccess searchParams={searchParams} />
+						<EventsDataAccess searchParams={resolvedSearchParams} />
 					</Suspense>
 				</div>
 			</main>

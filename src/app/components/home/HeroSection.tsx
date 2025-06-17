@@ -4,8 +4,8 @@ import * as React from "react"
 import Link from "next/link"
 import { Star, ArrowRight, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { GlassCard } from "@/components/ui/glass-card"
+import { Button } from "../ui/button"
+import { GlassCard } from "../ui/glass-card"
 
 export function HeroSection({
   className,
