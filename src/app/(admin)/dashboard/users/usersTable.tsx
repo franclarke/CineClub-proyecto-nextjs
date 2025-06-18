@@ -31,8 +31,8 @@ export default function UsersTable() {
     )
 
     return (
-        <div className="w-full max-w-4xl mx-auto mt-8 pt-14">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+        <div className="w-full max-w-4xl mx-auto pt-14">
+            <div className="flex flex-col m-8 sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                 <h2 className="text-2xl font-bold text-white">Usuarios</h2>
                 <div className="flex gap-2 w-full sm:w-auto">
                     <div className="relative flex-1">
@@ -56,7 +56,7 @@ export default function UsersTable() {
                     </select>
                 </div>
             </div>
-            <div className="overflow-x-auto rounded-xl shadow border border-gray-800">
+            <div className="overflow-x-auto rounded-xl m-4 shadow border border-gray-800">
                 <table className="min-w-full bg-gray-900 text-white rounded">
                     <thead>
                         <tr>
@@ -78,7 +78,7 @@ export default function UsersTable() {
                             filteredUsers.map(user => (
                                 <tr
                                     key={user.id}
-                                    className="hover:bg-gray-800 transition-colors cursor-pointer"
+                                    className="hover:bg-gray-800 transition-colors"
                                 >
                                     <td className="py-2 px-4 border-b border-gray-800">
                                         <Link

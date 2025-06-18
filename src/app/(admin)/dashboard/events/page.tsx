@@ -1,5 +1,5 @@
 "use client"
-import Navigation from '../../components/Navigation'
+import Navigation from '../../../components/Navigation'
 import { Suspense, useState } from 'react'
 import EventsList from './EventsList'
 import Link from 'next/link'
@@ -10,13 +10,12 @@ export default function EventsPage() {
     const [deleteMode, setDeleteMode] = useState(false)
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900">
-            <Navigation />
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 pt-8">
             <div className="container mx-auto px-2 sm:px-4 py-8">
-                <div className="text-center mb-8">
+                <div className="text-center mb-4">
                     <div className="max-w-6xl mx-auto">
                         {/* Header del admin */}
-                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6 mt-8 sm:mt-12 mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg  sm:p-6 mt-8 sm:mt-12  flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div className="flex items-center gap-3 justify-center">
                                 <Home className="h-7 w-7 text-orange-500" />
                                 <h1 className="text-xl sm:text-2xl font-bold text-white">Gestionar Eventos</h1>

@@ -4,8 +4,9 @@ import Navigation from '@/app/components/Navigation'
 import { useState } from 'react'
 import { createEvent } from '../data-access'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
-const TMDB_API_KEY = "b9923924bd68a99c3732d1f2c12b0996"
+const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
 
 export default function NewEventPage() {
     const [form, setForm] = useState({
@@ -42,13 +43,13 @@ export default function NewEventPage() {
 
         try {
             const res = await fetch(
-                `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&page=${pageNum}`
+                `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbApiKey}&page=${pageNum}`
             )
             const data = await res.json()
             if (pageNum === 1) {
                 setTotalPages(data.total_pages)
             }
-            setResults(data.results)
+            setResults(Array.isArray(data.results) ? data.results : [])
             setPage(data.page)
         } catch (err) {
             console.error('Error al obtener películas populares:', err)
@@ -78,7 +79,7 @@ export default function NewEventPage() {
         setSearching(true)
         console.log('Buscando películas:', search, 'Página:', pageNum)
         const res = await fetch(
-            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(search)}&page=${pageNum}`
+            `https://api.themoviedb.org/3/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(search)}&page=${pageNum}`
         )
         const data = await res.json()
         console.log('Resultados de búsqueda:', data)
@@ -88,7 +89,7 @@ export default function NewEventPage() {
         if (pageNum === 1) {
             setTotalPages(data.total_pages)
         }
-        setResults(data.results)
+        setResults(Array.isArray(data.results) ? data.results : [])
         setPage(data.page)
         setSearching(false)
     }
@@ -100,7 +101,7 @@ export default function NewEventPage() {
         // Intentar obtener el imdb_id, pero no mostrar error si no existe
         try {
             const res = await fetch(
-                `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}`
+                `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${tmdbApiKey}`
             )
             const data = await res.json()
             console.log('Detalles de la película seleccionada:', data)
@@ -130,21 +131,28 @@ export default function NewEventPage() {
         setLoading(true)
         setError(null)
         setSuccess(false)
+
+        // Validar que haya una película seleccionada
+        if (!selectedMovie) {
+            setError('Debes seleccionar una película antes de crear el evento.')
+            setLoading(false)
+            return
+        }
+
         try {
-            const result = await createEvent(form)
+            // El título del evento será el nombre de la película seleccionada
+            const result = await createEvent({
+                ...form,
+                title: selectedMovie.title,
+            })
+
             if (!result.success) throw new Error(result.error || 'Error al crear el evento')
 
             // Si hay imagen, sube la imagen y actualiza el evento
             if (imageFile) {
-                // Sube la imagen a algún storage (ejemplo: Cloudinary, S3, etc.)
-                // Aquí solo se muestra cómo obtener la URL local, deberías reemplazarlo por tu lógica real de upload
-                // Por ejemplo, podrías usar fetch o axios para subir la imagen y obtener la URL pública
-                // Supongamos que tienes una función uploadImage que devuelve la URL:
+                // Aquí deberías subir la imagen y obtener la URL pública
                 // const imageUrl = await uploadImage(imageFile)
                 // await updateEventImage(result.event.id, imageUrl)
-
-                // Ejemplo temporal: solo guarda la URL local (no recomendado para producción)
-                // await updateEventImage(result.event.id, imagePreview || '')
             }
 
             setSuccess(true)
@@ -169,7 +177,7 @@ export default function NewEventPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 flex items-center justify-center relative">
-            <Navigation />
+
             {success && (
                 <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center w-full max-w-lg pointer-events-none">
                     <div className="flex flex-col items-center gap-2 bg-green-500/90 backdrop-blur-md text-white px-6 py-4 rounded-xl shadow-lg border border-green-300/80 mb-2 pointer-events-auto animate-fade-in">
@@ -193,16 +201,29 @@ export default function NewEventPage() {
                 onSubmit={handleSubmit}
                 className="bg-gray-800/80 p-8 rounded-lg shadow-lg max-w-lg w-full space-y-4 border border-gray-700"
             >
+
                 <h1 className="text-2xl font-bold text-white mb-4">Añadir Nuevo Evento</h1>
-                <input
-                    type="text"
-                    name="title"
-                    placeholder="Título"
-                    value={form.title}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
-                />
+                {/* Botón para abrir el modal de búsqueda */}
+                <div>
+                    <Link
+                        href="/dashboard/events"
+                        className="absolute left-4 top-20 flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors"
+                    >
+                        <ArrowLeft className="w-8 h-8" />
+                    </Link>
+                    <button
+                        type="button"
+                        onClick={openModal}
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded transition mb-2"
+                    >
+                        {selectedMovie ? 'Cambiar Película' : 'Buscar Película'}
+                    </button>
+                    {selectedMovie && (
+                        <div className="mt-2 p-2 rounded bg-gray-700">
+                            <strong className="text-white">Seleccionado:</strong> {selectedMovie.title}
+                        </div>
+                    )}
+                </div>
                 <textarea
                     name="description"
                     placeholder="Descripción"
@@ -238,21 +259,7 @@ export default function NewEventPage() {
                     className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
                 />
 
-                {/* Botón para abrir el modal de búsqueda */}
-                <div>
-                    <button
-                        type="button"
-                        onClick={openModal}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded transition mb-2"
-                    >
-                        {selectedMovie ? 'Cambiar Película' : 'Buscar Película'}
-                    </button>
-                    {selectedMovie && (
-                        <div className="mt-2 p-2 rounded bg-gray-700">
-                            <strong className="text-white">Seleccionado:</strong> {selectedMovie.title}
-                        </div>
-                    )}
-                </div>
+
 
                 {/* Modal de búsqueda */}
                 {modalOpen && (
