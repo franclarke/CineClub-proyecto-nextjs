@@ -31,15 +31,9 @@ export async function middleware(request: NextRequest) {
 	// Obtener el token de sesión (JWT) de NextAuth
 	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
 
-	// Si está autenticado y está en /auth/signin, redirigir a /
-	if (token && pathname === '/auth/signin') {
-		const homeUrl = new URL('/', request.url)
-		return NextResponse.redirect(homeUrl)
-	}
-
 	// Si la ruta está protegida y no hay token, redirigir a /auth/signin
 	if (isProtected && !token) {
-		const signInUrl = new URL('/auth/signin', request.url)
+		const signInUrl = new URL('/', request.url)
 		return NextResponse.redirect(signInUrl)
 	}
 
