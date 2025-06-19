@@ -83,12 +83,7 @@ export default function AdminNavigation() {
 								<button
 									onClick={() => setIsProfileOpen(!isProfileOpen)}
 									className="flex items-center space-x-4 px-4 py-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
-								>
-									{/* Admin Badge */}
-									<div className="w-10 h-10 bg-gradient-to-br from-sunset-orange to-soft-gold rounded-xl flex items-center justify-center">
-										<ShieldCheckIcon className="w-5 h-5 text-deep-night" />
-									</div>
-									
+								>	
 									{/* User Info */}
 									<div className="text-left">
 										<div className="text-soft-beige font-semibold text-sm">

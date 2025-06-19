@@ -86,8 +86,6 @@ export default function Navigation() {
 									onClick={() => setIsProfileOpen(!isProfileOpen)}
 									className="flex items-center space-x-4 px-4 py-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
 								>
-									
-										
 										{/* User Info */}
 										<div className="text-left">
 											<div className="text-soft-beige font-semibold text-sm">
