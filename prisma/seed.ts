@@ -14,7 +14,7 @@ async function main() {
 			create: {
 				name: 'Bronze',
 				description: 'Membresía básica para disfrutar del cine bajo las estrellas',
-				priority: 3,
+				priority: 1,
 				price: 15.00,
 				benefits: 'Acceso a eventos regulares • Reserva con 7 días de anticipación • Descuento 5% en snacks',
 			},
@@ -36,7 +36,7 @@ async function main() {
 			create: {
 				name: 'Gold',
 				description: 'Membresía premium con todos los beneficios',
-				priority: 1,
+				priority: 3,
 				price: 40.00,
 				benefits: 'Acceso VIP a todos los eventos • Reserva con 21 días de anticipación • Bebida gratis por evento • Descuento 15% en snacks • Playlist colaborativa de Spotify • Asientos preferenciales',
 			},
