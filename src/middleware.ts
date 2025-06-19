@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
 
 	if (isProtected && !token) {
 		// Usuario no autenticado intentando acceder → redirigir a /auth/signin
-		const signInUrl = new URL('/', request.url)
+		const signInUrl = new URL('/auth/signin', request.url)
 		return NextResponse.redirect(signInUrl)
 	}
 
@@ -49,6 +49,5 @@ export const config = {
 		'/events/:path*/seats',
 		'/checkout/:path*',
 		'/wallet/:path*',
-		'/auth/signin',
 	],
-} 
+}
