@@ -43,7 +43,7 @@ export function SignInForm() {
 			const session = await getSession()
 			
 			if (session?.user?.isAdmin) {
-				router.push('/admin')
+				router.push('/')
 			} else {
 				router.push('/')
 			}

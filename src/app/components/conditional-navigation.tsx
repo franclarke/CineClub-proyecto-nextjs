@@ -2,7 +2,7 @@
 
 import { useAuth } from '../hooks/use-auth'
 import Navigation from '../(user)/components/Navigation'
-import AdminNavigation from '../admin/components/AdminNavigation'
+import AdminNavigation from '../(admin)/components/AdminNavigation'
 
 export default function ConditionalNavigation() {
 	const { user, isAuthenticated, isLoading } = useAuth()

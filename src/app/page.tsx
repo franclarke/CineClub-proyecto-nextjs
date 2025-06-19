@@ -6,6 +6,7 @@ import Navigation from './(user)/components/Navigation'
 import { DashboardHome } from './(user)/(home)/dashboard-home'
 import { HeroSection } from './components/home/hero-section'
 import { AuthForm } from './components/home/auth/auth-form'
+import { DashboardContent } from './(admin)/components/dashboard-content'
 
 async function getUserWithMembership(email: string) {
 	return await prisma.user.findUnique({
@@ -23,20 +24,22 @@ async function getUserWithMembership(email: string) {
 export default async function Home() {
 	const session = await getServerSession(authOptions)
 	
-	// Si el usuario está autenticado, mostramos el dashboard
+	// Si el usuario está autenticado, mostramos el dashboard correspondiente
 	if (session?.user?.email) {
 		const userWithMembership = await getUserWithMembership(session.user.email)
-		
+
 		if (userWithMembership) {
 			const userData = {
 				name: userWithMembership.name,
 				email: userWithMembership.email,
 				membershipName: userWithMembership.membership.name,
 			}
-			
-			return (
-					<DashboardHome user={userData} />
-			)
+
+			if (session.user.isAdmin) {
+				return <DashboardContent />
+			}
+
+			return <DashboardHome user={userData} />
 		}
 	}
 
