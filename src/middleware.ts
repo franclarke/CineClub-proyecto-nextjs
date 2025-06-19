@@ -7,6 +7,9 @@ const PROTECTED_PATHS = [
 	'/profile',
 	'/reservations',
 	'/cart',
+	'/events/[id]/seats',
+	'/checkout',
+	'/wallet',
 ]
 
 export async function middleware(request: NextRequest) {
@@ -34,12 +37,6 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.redirect(signInUrl)
 	}
 
-	// Si el usuario autenticado intenta acceder a /auth/signin, redirigirlo al dashboard
-	if (pathname.startsWith('/auth/signin') && token) {
-		const dashboardUrl = new URL('/dashboard', request.url)
-		return NextResponse.redirect(dashboardUrl)
-	}
-
 	return NextResponse.next()
 }
 
@@ -49,6 +46,8 @@ export const config = {
 		'/profile/:path*',
 		'/reservations/:path*',
 		'/cart/:path*',
-		'/auth/signin',
+		'/events/:path*/seats',
+		'/checkout/:path*',
+		'/wallet/:path*',
 	],
-} 
+}

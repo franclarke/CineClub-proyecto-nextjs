@@ -1,22 +1,46 @@
-import { DataAccess } from './components/data-access'
+import { Suspense } from 'react'
+import { Metadata } from 'next'
+import Navigation from '../components/Navigation'
+import { EventsSkeletonComponent } from './components/EventsSkeletonComponent'
+import { EventsDataAccess } from './components/EventsDataAccess'
 
-export default async function EventsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+interface EventsPageProps {
+	searchParams: Promise<{
+		category?: string
+		sort?: 'date' | 'popular' | 'name'
+		search?: string
+	}>
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+	return {
+		title: 'Eventos | Puff & Chill',
+		description: 'Descubre nuestras próximas experiencias de cine bajo las estrellas'
+	}
+}
+
+export default async function EventsPage({ searchParams }: EventsPageProps) {
 	const resolvedSearchParams = await searchParams
+	
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-deep-night to-black/90 py-8">
-			<div className="container mx-auto px-4">
-				<header className="text-center mb-8">
-					<h1 className="text-display text-4xl md:text-6xl text-soft-beige mb-2">
-						Próximos Eventos
-					</h1>
-					<p className="text-soft-beige/80 max-w-2xl mx-auto">
-						Descubre nuestras sesiones de cine bajo las estrellas y reserva tu lugar
-						antes de que se agoten.
-					</p>
-				</header>
+		<>
+			<Navigation />
+			<main className="min-h-screen bg-deep-night pt-20 pb-12">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="text-center mb-12">
+						<h1 className="text-display text-4xl md:text-6xl text-soft-beige mb-4">
+							Próximas Funciones
+						</h1>
+						<p className="text-xl text-soft-beige/80">
+							Descubre tu próxima experiencia cinematográfica bajo las estrellas
+						</p>
+					</div>
 
-				<DataAccess searchParams={resolvedSearchParams} />
-			</div>
-		</div>
+					<Suspense fallback={<EventsSkeletonComponent />}>
+						<EventsDataAccess searchParams={resolvedSearchParams} />
+					</Suspense>
+				</div>
+			</main>
+		</>
 	)
 } 

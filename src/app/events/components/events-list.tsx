@@ -2,8 +2,10 @@
 
 import { useAuth } from '../../hooks/use-auth'
 import { Button } from '../../components/ui/button'
+import { EventCard } from './event-card'
 
-export function EventsList() {
+
+export function EventsList({ events, onEventDeleted }: { events: any[], onEventDeleted: (id: string) => void }) {
 	const { user, signOut, isLoading } = useAuth()
 
 	if (isLoading) {
@@ -42,26 +44,16 @@ export function EventsList() {
 				</div>
 			</div>
 
-			{/* Lista de eventos (placeholder) */}
+			{/* Lista de eventos */}
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{[1, 2, 3].map((i) => (
-					<div
-						key={i}
-						className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6"
-					>
-						<div className="aspect-video bg-gray-700 rounded-lg mb-4" />
-						<h3 className="text-lg font-semibold text-white mb-2">
-							Evento {i}
-						</h3>
-						<p className="text-gray-300 text-sm mb-4">
-							Próximamente disponible...
-						</p>
-						<Button variant="outline" size="sm" className="w-full">
-							Ver Detalles
-						</Button>
-					</div>
+				{events.map(event => (
+					<EventCard
+						key={event.id}
+						event={event}
+						onDeleted={onEventDeleted}
+					/>
 				))}
 			</div>
 		</div>
 	)
-} 
+}

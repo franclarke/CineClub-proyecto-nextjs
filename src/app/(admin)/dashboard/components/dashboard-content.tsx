@@ -1,7 +1,9 @@
-'use client'
+"use client"
 
-import { useAuth } from '../../hooks/use-auth'
-import { Button } from '../../components/ui/button'
+import { Button } from "@/app/components/ui/button"
+import { useAuth } from "@/app/hooks/use-auth"
+import Link from "next/link"
+
 
 export function DashboardContent() {
 	const { user, signOut, isLoading } = useAuth()
@@ -19,24 +21,8 @@ export function DashboardContent() {
 			{/* Header del admin */}
 			<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 mb-8">
 				<div className="flex justify-between items-center">
-					<div>
-						<h2 className="text-xl font-semibold text-white mb-2">
-							Panel de Administrador
-						</h2>
-						<p className="text-gray-300">
-							Bienvenido, {user?.name || user?.email}
-						</p>
-						<p className="text-green-400 text-sm mt-1">
-							✓ Acceso de Administrador
-						</p>
-					</div>
-					<Button
-						onClick={signOut}
-						variant="outline"
-						size="sm"
-					>
-						Cerrar Sesión
-					</Button>
+
+
 				</div>
 			</div>
 
@@ -49,9 +35,11 @@ export function DashboardContent() {
 					<p className="text-gray-300 text-sm mb-4">
 						Crear, editar y eliminar eventos de cine
 					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Gestionar Eventos
-					</Button>
+					<Link href="/dashboard/events">
+						<Button variant="primary" size="sm" className="w-full">
+							Gestionar Eventos
+						</Button>
+					</Link>
 				</div>
 
 				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
@@ -61,9 +49,11 @@ export function DashboardContent() {
 					<p className="text-gray-300 text-sm mb-4">
 						Administrar usuarios y tipos de membresía
 					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Gestionar Usuarios
-					</Button>
+					<Link href="/dashboard/users">
+						<Button variant="primary" size="sm" className="w-full">
+							Gestionar Usuarios
+						</Button>
+					</Link>
 				</div>
 
 				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
@@ -114,6 +104,6 @@ export function DashboardContent() {
 					</Button>
 				</div>
 			</div>
-		</div>
+		</div >
 	)
 } 
