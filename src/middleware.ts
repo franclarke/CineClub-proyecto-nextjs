@@ -1,20 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-// Rutas que requieren autenticación
-const PROTECTED_PATHS = [
+// Rutas que requieren autenticación (usar paths exactos)
+const PROTECTED_ROUTES = [
 	'/profile',
-	'/reservations',
 	'/cart',
-	'/events/[id]/seats',
 	'/checkout',
 	'/wallet',
+	'/reservations'
 ]
 
 // Rutas que requieren rol de administrador
-const ADMIN_PATHS = [
-	'/admin',
-]
+const ADMIN_ROUTES = ['/admin']
+
+// Función para verificar si una ruta está protegida
+function isProtectedRoute(pathname: string): boolean {
+	return PROTECTED_ROUTES.some(route => {
+		// Verificación exacta para rutas base
+		if (pathname === route) return true
+		// Verificación para subrutas (ej: /profile/edit, /events/123/seats)
+		if (pathname.startsWith(route + '/')) return true
+		return false
+	})
+}
+
+// Función para verificar rutas de admin
+function isAdminRoute(pathname: string): boolean {
+	return ADMIN_ROUTES.some(route => pathname.startsWith(route))
+}
+
+// Función para verificar rutas específicas que requieren autenticación
+function requiresAuth(pathname: string): boolean {
+	// Verificar rutas protegidas generales
+	if (isProtectedRoute(pathname)) return true
+	
+	// Verificar patrón específico para seats: /events/[id]/seats
+	if (pathname.match(/^\/events\/[^\/]+\/seats/)) return true
+	
+	return false
+}
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
@@ -22,35 +46,37 @@ export async function middleware(request: NextRequest) {
 	// Ignorar peticiones internas de next y archivos estáticos
 	if (
 		pathname.startsWith('/_next') ||
+		pathname.startsWith('/api') ||
 		pathname.startsWith('/static') ||
-		pathname.endsWith('.ico') ||
+		pathname.includes('.') ||
 		pathname === '/favicon.ico'
 	) {
 		return NextResponse.next()
 	}
 
-	// Comprobar si la ruta está protegida
-	const isProtected = PROTECTED_PATHS.some(path => pathname.startsWith(path))
-	const isAdminPath = ADMIN_PATHS.some(path => pathname.startsWith(path))
-
 	// Obtener el token de sesión (JWT) de NextAuth
-	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+	const token = await getToken({ 
+		req: request, 
+		secret: process.env.NEXTAUTH_SECRET 
+	})
 
-	// Si la ruta está protegida y no hay token, redirigir a /auth/signin
-	if (isProtected && !token) {
-		const signInUrl = new URL('/', request.url)
-		return NextResponse.redirect(signInUrl)
+	// Verificar rutas que requieren autenticación
+	if (requiresAuth(pathname)) {
+		if (!token) {
+			const loginUrl = new URL('/', request.url)
+			loginUrl.searchParams.set('redirect', pathname)
+			return NextResponse.redirect(loginUrl)
+		}
 	}
 
-	// Si es una ruta de admin, verificar que el usuario sea administrador
-	if (isAdminPath) {
+	// Verificar rutas de admin
+	if (isAdminRoute(pathname)) {
 		if (!token) {
-			const signInUrl = new URL('/', request.url)
-			return NextResponse.redirect(signInUrl)
+			const loginUrl = new URL('/', request.url)
+			return NextResponse.redirect(loginUrl)
 		}
 		
 		if (!token.isAdmin) {
-			// Redirigir a página de acceso denegado o home
 			const accessDeniedUrl = new URL('/', request.url)
 			return NextResponse.redirect(accessDeniedUrl)
 		}
@@ -62,12 +88,11 @@ export async function middleware(request: NextRequest) {
 export const config = {
 	matcher: [
 		'/profile/:path*',
-		'/reservations/:path*',
-		'/cart/:path*',
-		'/events/:path*/seats',
+		'/cart/:path*', 
 		'/checkout/:path*',
 		'/wallet/:path*',
-		'/auth/signin',
+		'/reservations/:path*',
+		'/events/:path*/seats',
 		'/admin/:path*',
 	],
 }
