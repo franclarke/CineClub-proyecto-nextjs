@@ -354,7 +354,7 @@ async function main() {
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Drama Clásico',
 				imdbId: 'tt0034583', // Casablanca en IMDb
-				tmdbId: '289', // Casablanca en TMDB
+				tmdbId: '299534', // Avengers Endgame para prueba (tiene trailers disponibles)
 			},
 		}),
 		prisma.event.upsert({

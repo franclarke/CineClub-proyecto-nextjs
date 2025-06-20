@@ -143,6 +143,7 @@ export default function NewEventPage() {
             const result = await createEvent({
                 ...form,
                 title: selectedMovie.title,
+                tmdbId: selectedMovie.id.toString(),
             })
 
             if (!result.success) throw new Error(result.error || 'Error al crear el evento')

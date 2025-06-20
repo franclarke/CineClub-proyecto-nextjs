@@ -12,6 +12,7 @@ import {
 	TagIcon,
 	MusicIcon
 } from 'lucide-react'
+import { TrailerPlayer } from './TrailerPlayer'
 
 interface Seat {
 	id: string
@@ -63,7 +64,6 @@ interface IMDbData {
 export function EventDetailClientComponent({ event }: EventDetailClientComponentProps) {
 	const [imdbData, setImdbData] = useState<IMDbData | null>(null)
 	const [isLoadingImdb, setIsLoadingImdb] = useState(false)
-	const [showTrailer, setShowTrailer] = useState(false)
 
 	useEffect(() => {
 		if (event.imdbId) {
@@ -217,30 +217,10 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					</div>
 
 					{/* Trailer Section */}
-					{event.imdbId && (
-						<div className="space-y-4">
-							<h2 className="text-display text-2xl text-soft-beige">Trailer</h2>
-							{showTrailer ? (
-								<div className="aspect-video bg-deep-night rounded-xl flex items-center justify-center">
-									<p className="text-soft-beige/60">
-										Integración de trailer en desarrollo
-									</p>
-								</div>
-							) : (
-								<div 
-									className="aspect-video bg-gradient-to-br from-sunset-orange/20 to-warm-red/20 rounded-xl flex items-center justify-center cursor-pointer hover:from-sunset-orange/30 hover:to-warm-red/30 transition-all duration-300"
-									onClick={() => setShowTrailer(true)}
-								>
-									<div className="text-center">
-										<div className="w-20 h-20 bg-sunset-orange/80 rounded-full flex items-center justify-center mx-auto mb-4 hover:bg-sunset-orange transition-colors duration-200">
-											<PlayIcon className="w-10 h-10 text-deep-night ml-1" />
-										</div>
-										<p className="text-soft-beige font-medium">Ver Trailer</p>
-									</div>
-								</div>
-							)}
-						</div>
-					)}
+					<TrailerPlayer 
+						tmdbId={event.tmdbId} 
+						eventTitle={event.title} 
+					/>
 				</div>
 
 				{/* Sidebar */}
