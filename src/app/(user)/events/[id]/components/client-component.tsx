@@ -1,9 +1,9 @@
 'use client'
 
 import { Event } from '@prisma/client'
-import { Button } from '../../../components/ui/button'
 import Image from 'next/image'
 import { ImdbData } from '@/types/imdb'
+import { Button } from '@/app/components/ui/button'
 
 interface ClientProps {
   event: Event
