@@ -1,4 +1,3 @@
-import Navigation from '@/app/components/Navigation'
 import UsersTable from './usersTable'
 
 export default function UsersPage() {

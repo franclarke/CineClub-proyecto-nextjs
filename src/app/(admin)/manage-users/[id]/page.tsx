@@ -1,6 +1,6 @@
 
 import { getUserById } from '../data-access'
-import { UserIcon, ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { UserInfo } from './userInfo'
 

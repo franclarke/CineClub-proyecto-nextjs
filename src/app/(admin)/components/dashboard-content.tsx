@@ -18,14 +18,6 @@ export function DashboardContent() {
 
 	return (
 		<div className="max-w-6xl mx-auto pt-28">
-			{/* Header del admin */}
-			<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 mb-8">
-				<div className="flex justify-between items-center">
-
-
-				</div>
-			</div>
-
 			{/* Grid de funcionalidades */}
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
@@ -58,18 +50,6 @@ export function DashboardContent() {
 
 				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
 					<h3 className="text-lg font-semibold text-white mb-4">
-						Reportes y Estadísticas
-					</h3>
-					<p className="text-gray-300 text-sm mb-4">
-						Ver reportes de ventas y ocupación
-					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Ver Reportes
-					</Button>
-				</div>
-
-				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
-					<h3 className="text-lg font-semibold text-white mb-4">
 						Productos y Snacks
 					</h3>
 					<p className="text-gray-300 text-sm mb-4">
@@ -80,29 +60,6 @@ export function DashboardContent() {
 					</Button>
 				</div>
 
-				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
-					<h3 className="text-lg font-semibold text-white mb-4">
-						Códigos de Descuento
-					</h3>
-					<p className="text-gray-300 text-sm mb-4">
-						Crear y gestionar códigos promocionales
-					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Gestionar Descuentos
-					</Button>
-				</div>
-
-				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
-					<h3 className="text-lg font-semibold text-white mb-4">
-						Configuración
-					</h3>
-					<p className="text-gray-300 text-sm mb-4">
-						Configuraciones generales del sistema
-					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Configurar
-					</Button>
-				</div>
 			</div>
 		</div >
 	)
