@@ -11,6 +11,11 @@ const PROTECTED_PATHS = [
 	'/wallet',
 ]
 
+// Rutas que requieren rol de administrador
+const ADMIN_PATHS = [
+	'/admin',
+]
+
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
 
@@ -26,6 +31,7 @@ export async function middleware(request: NextRequest) {
 
 	// Comprobar si la ruta está protegida
 	const isProtected = PROTECTED_PATHS.some(path => pathname.startsWith(path))
+	const isAdminPath = ADMIN_PATHS.some(path => pathname.startsWith(path))
 
 	// Obtener el token de sesión (JWT) de NextAuth
 	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
@@ -34,6 +40,20 @@ export async function middleware(request: NextRequest) {
 	if (isProtected && !token) {
 		const signInUrl = new URL('/', request.url)
 		return NextResponse.redirect(signInUrl)
+	}
+
+	// Si es una ruta de admin, verificar que el usuario sea administrador
+	if (isAdminPath) {
+		if (!token) {
+			const signInUrl = new URL('/', request.url)
+			return NextResponse.redirect(signInUrl)
+		}
+		
+		if (!token.isAdmin) {
+			// Redirigir a página de acceso denegado o home
+			const accessDeniedUrl = new URL('/', request.url)
+			return NextResponse.redirect(accessDeniedUrl)
+		}
 	}
 
 	return NextResponse.next()
@@ -48,5 +68,6 @@ export const config = {
 		'/checkout/:path*',
 		'/wallet/:path*',
 		'/auth/signin',
+		'/admin/:path*',
 	],
 }
