@@ -1,7 +1,7 @@
 'use client'
 
-	import { useAuth } from '@/app/hooks/use-auth'
-	import { Button } from '@/app/components/ui/button'
+import { useAuth } from '@/app/hooks/use-auth'
+import { Button } from '@/app/components/ui/button'
 
 export function EventsList() {
 	const { user, signOut, isLoading } = useAuth()
@@ -23,7 +23,7 @@ export function EventsList() {
 						<h2 className="text-xl font-semibold text-white mb-2">
 							¡Bienvenido, {user?.name || user?.email}!
 						</h2>
-						<p className="text-gray-300">
+						<p classNames="text-gray-300">
 							Membresía: <span className="text-orange-400 font-medium">{user?.membershipName}</span>
 						</p>
 						{user?.isAdmin && (
