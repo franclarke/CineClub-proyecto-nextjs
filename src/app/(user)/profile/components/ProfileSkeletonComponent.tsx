@@ -1,5 +1,3 @@
-import { GlassCard } from '../../../components/ui/glass-card'
-
 export function ProfileSkeletonComponent() {
 	return (
 		<div className="space-y-6 animate-pulse">
