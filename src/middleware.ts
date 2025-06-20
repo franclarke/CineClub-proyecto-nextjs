@@ -1,52 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-// Rutas que requieren autenticación (usar paths exactos)
-const PROTECTED_ROUTES = [
+// Rutas que requieren autenticación (usuarios regulares)
+const PROTECTED_PATHS = [
 	'/profile',
 	'/cart',
+	'/events',
 	'/checkout',
 	'/wallet',
-	'/reservations'
+	'/memberships'
 ]
 
 // Rutas que requieren rol de administrador
-const ADMIN_ROUTES = ['/admin']
+const ADMIN_PATHS = [
+	'/manage-users',
+	'/manage-events',
+	'/manage-products'
+]
 
-// Función para verificar si una ruta está protegida
-function isProtectedRoute(pathname: string): boolean {
-	return PROTECTED_ROUTES.some(route => {
-		// Verificación exacta para rutas base
-		if (pathname === route) return true
-		// Verificación para subrutas (ej: /profile/edit, /events/123/seats)
-		if (pathname.startsWith(route + '/')) return true
-		return false
-	})
-}
-
-// Función para verificar rutas de admin
-function isAdminRoute(pathname: string): boolean {
-	return ADMIN_ROUTES.some(route => pathname.startsWith(route))
-}
-
-// Función para verificar rutas específicas que requieren autenticación
-function requiresAuth(pathname: string): boolean {
-	// Verificar rutas protegidas generales
-	if (isProtectedRoute(pathname)) return true
-	
-	// Verificar patrón específico para seats: /events/[id]/seats
-	if (pathname.match(/^\/events\/[^\/]+\/seats/)) return true
-	
-	return false
-}
+// Rutas públicas que no requieren autenticación
+const PUBLIC_PATHS = [
+	'/',
+	'/api/auth'
+]
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
 
-	// Ignorar peticiones internas de next y archivos estáticos
+	// Ignorar archivos estáticos y rutas internas de Next.js
 	if (
 		pathname.startsWith('/_next') ||
-		pathname.startsWith('/api') ||
 		pathname.startsWith('/static') ||
 		pathname.includes('.') ||
 		pathname === '/favicon.ico'
@@ -54,45 +37,67 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next()
 	}
 
-	// Obtener el token de sesión (JWT) de NextAuth
+	// Permitir rutas públicas sin verificación
+	const isPublicPath = PUBLIC_PATHS.some(path => 
+		path === pathname || pathname.startsWith(path)
+	)
+	
+	if (isPublicPath) {
+		return NextResponse.next()
+	}
+
+	// Obtener el token de sesión
 	const token = await getToken({ 
 		req: request, 
 		secret: process.env.NEXTAUTH_SECRET 
 	})
 
-	// Verificar rutas que requieren autenticación
-	if (requiresAuth(pathname)) {
+	// Verificar si es una ruta de administrador
+	const isAdminPath = ADMIN_PATHS.some(path => pathname.startsWith(path))
+	
+	if (isAdminPath) {
+		// Las rutas admin requieren autenticación Y rol de admin
 		if (!token) {
-			const loginUrl = new URL('/', request.url)
-			loginUrl.searchParams.set('redirect', pathname)
-			return NextResponse.redirect(loginUrl)
-		}
-	}
-
-	// Verificar rutas de admin
-	if (isAdminRoute(pathname)) {
-		if (!token) {
-			const loginUrl = new URL('/', request.url)
-			return NextResponse.redirect(loginUrl)
+			return NextResponse.redirect(new URL('/', request.url))
 		}
 		
 		if (!token.isAdmin) {
-			const accessDeniedUrl = new URL('/', request.url)
-			return NextResponse.redirect(accessDeniedUrl)
+			return NextResponse.redirect(new URL('/', request.url))
 		}
+		
+		return NextResponse.next()
 	}
 
+	// Verificar si es una ruta protegida (usuarios regulares)
+	const isProtectedPath = PROTECTED_PATHS.some(path => pathname.startsWith(path))
+	
+	if (isProtectedPath) {
+		// Las rutas protegidas solo requieren autenticación
+		if (!token) {
+			return NextResponse.redirect(new URL('/', request.url))
+		}
+		
+		return NextResponse.next()
+	}
+
+	// Para cualquier otra ruta, permitir acceso
 	return NextResponse.next()
 }
 
 export const config = {
 	matcher: [
+		// Rutas protegidas de usuarios
 		'/profile/:path*',
-		'/cart/:path*', 
+		'/cart/:path*',
+		'/events/:path*',
 		'/checkout/:path*',
 		'/wallet/:path*',
-		'/reservations/:path*',
-		'/events/:path*/seats',
-		'/admin/:path*',
-	],
+		'/memberships/:path*',
+		// Rutas de administrador
+		'/manage-users/:path*',
+		'/manage-events/:path*',
+		'/manage-products/:path*',
+		// Excluir archivos estáticos y API
+		'/((?!api|_next/static|_next/image|favicon.ico).*)'
+	]
 }
