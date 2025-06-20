@@ -70,7 +70,7 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 						<FilterIcon className="w-8 h-8 text-soft-gray" />
 					</div>
 					<p className="text-soft-beige/60 text-sm">
-						No hay transacciones que coincidan con "{searchQuery}"
+						No hay transacciones que coincidan con &quot;{searchQuery}&quot;
 					</p>
 				</div>
 			</div>

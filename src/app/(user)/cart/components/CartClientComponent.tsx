@@ -3,23 +3,17 @@
 import { useState } from 'react'
 import { User, Product, Order, OrderItem } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Button } from '../../../components/ui/button'
-import { GlassCard } from '../../../components/ui/glass-card'
-import { Separator } from '../../../components/ui/separator'
 import { 
 	Plus, 
 	Minus, 
 	Trash2, 
 	ShoppingCart, 
-	CreditCard, 
 	ShoppingBag, 
 	ArrowRight, 
 	Package,
-	Tag,
 	Coffee,
 	Sparkles,
-	CheckCircle,
-	AlertCircle
+	CheckCircle
 } from 'lucide-react'
 
 type UserWithMembership = User & {

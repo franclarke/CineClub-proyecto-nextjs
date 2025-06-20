@@ -1,8 +1,6 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { AppLogo } from './components/ui/app-logo'
-import Navigation from './(user)/components/Navigation'
 import { DashboardHome } from './(user)/(home)/dashboard-home'
 import { HeroSection } from './components/home/hero-section'
 import { AuthForm } from './components/home/auth/auth-form'

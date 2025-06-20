@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { EventCard } from './EventCard'
-import { SearchIcon, FilterIcon, CalendarIcon, TrendingUpIcon, AlphabeticalIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react'
+import { SearchIcon, CalendarIcon, TrendingUpIcon, ArrowUpAZ, SlidersHorizontalIcon, XIcon } from 'lucide-react'
 
 interface Event {
 	id: string
@@ -68,7 +68,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 	const sortOptions = [
 		{ value: 'date', label: 'Fecha', icon: CalendarIcon },
 		{ value: 'popular', label: 'Populares', icon: TrendingUpIcon },
-		{ value: 'name', label: 'A-Z', icon: AlphabeticalIcon },
+		{ value: 'name', label: 'A-Z', icon: ArrowUpAZ },
 	]
 
 	const hasActiveFilters = selectedCategory !== 'all' || searchTerm || sortBy !== 'date'
@@ -198,7 +198,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 					)}
 					{searchTerm && (
 						<span className="inline-flex items-center space-x-1 bg-soft-gold/20 text-soft-gold border border-soft-gold/30 px-3 py-1.5 rounded-full text-sm font-medium">
-							<span>"{searchTerm}"</span>
+							<span>&quot;{searchTerm}&quot;</span>
 							<button
 								onClick={() => {
 									setSearchTerm('')
@@ -245,7 +245,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 						</h3>
 						<p className="text-soft-beige/60 mb-6 text-sm leading-relaxed">
 							{currentFilters.search 
-								? `No encontramos eventos que coincidan con "${currentFilters.search}"`
+								? `No encontramos eventos que coincidan con &quot;${currentFilters.search}&quot;`
 								: 'No hay eventos disponibles con los filtros seleccionados'
 							}
 						</p>

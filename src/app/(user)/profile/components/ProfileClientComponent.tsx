@@ -3,10 +3,6 @@
 import { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Button } from '../../../components/ui/button'
-import { GlassCard } from '../../../components/ui/glass-card'
-import { FormField } from '../../../components/ui/form-field'
-import { Separator } from '../../../components/ui/separator'
 import { Star, User as UserIcon, CreditCard, History, Edit3Icon, CheckIcon, ArrowRightIcon, SparklesIcon } from 'lucide-react'
 
 type UserWithMembership = User & {
@@ -265,7 +261,7 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 
 				{user.reservations.length > 0 ? (
 					<div className="space-y-4">
-						{user.reservations.map((reservation, index) => (
+						{user.reservations.map((reservation) => (
 							<div
 								key={reservation.id}
 								className="flex items-center justify-between p-4 bg-soft-gray/10 border border-soft-gray/20 rounded-xl hover:bg-soft-gray/20 transition-all duration-300 group"

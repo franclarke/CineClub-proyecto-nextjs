@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, StarIcon, ArrowRightIcon, HeartIcon, BookmarkIcon } from 'lucide-react'
+import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, ArrowRightIcon, HeartIcon, BookmarkIcon } from 'lucide-react'
 import { useState } from 'react'
 
 interface Event {
@@ -50,7 +50,6 @@ export function EventCard({ event }: EventCardProps) {
 
 	const occupancyRate = ((event.totalSeats - event.availableSeats) / event.totalSeats) * 100
 	const isAlmostFull = event.availableSeats < event.totalSeats * 0.2
-	const isPremium = event.category === 'Premium'
 
 	// Get the cheapest tier available
 	const getLowestTier = () => {

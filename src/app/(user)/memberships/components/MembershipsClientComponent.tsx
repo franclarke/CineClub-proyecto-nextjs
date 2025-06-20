@@ -3,9 +3,7 @@
 import React, { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Button } from '../../../components/ui/button'
-import { GlassCard } from '../../../components/ui/glass-card'
-import { Star, Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon } from 'lucide-react'
+import { Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon } from 'lucide-react'
 
 type UserWithMembership = User & {
 	membership: {

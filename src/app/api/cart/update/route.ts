@@ -2,51 +2,40 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { z } from 'zod'
 
-const updateCartSchema = z.object({
-	productId: z.string(),
-	quantity: z.number().int().min(0)
-})
-
-export async function PATCH(request: NextRequest) {
+export async function POST(request: NextRequest) {
 	try {
 		const session = await getServerSession(authOptions)
 		
 		if (!session?.user?.email) {
-			return NextResponse.json(
-				{ error: 'No autorizado' }, 
-				{ status: 401 }
-			)
+			return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 		}
 
+		const { productId, quantity } = await request.json()
+
+		if (!productId || quantity === undefined || quantity < 0) {
+			return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+		}
+
+		// Obtener el usuario
 		const user = await prisma.user.findUnique({
 			where: { email: session.user.email }
 		})
 
 		if (!user) {
-			return NextResponse.json(
-				{ error: 'Usuario no encontrado' }, 
-				{ status: 404 }
-			)
+			return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
 		}
 
-		const body = await request.json()
-		const { productId, quantity } = updateCartSchema.parse(body)
-
-		// Buscar orden pendiente
+		// Buscar orden en estado 'cart'
 		const order = await prisma.order.findFirst({
 			where: {
 				userId: user.id,
-				status: 'PENDING'
+				status: 'cart'
 			}
 		})
 
 		if (!order) {
-			return NextResponse.json(
-				{ error: 'No hay carrito activo' }, 
-				{ status: 404 }
-			)
+			return NextResponse.json({ error: 'No hay carrito activo' }, { status: 404 })
 		}
 
 		// Buscar item en el carrito
@@ -58,10 +47,7 @@ export async function PATCH(request: NextRequest) {
 		})
 
 		if (!orderItem) {
-			return NextResponse.json(
-				{ error: 'Producto no encontrado en el carrito' }, 
-				{ status: 404 }
-			)
+			return NextResponse.json({ error: 'Producto no encontrado en el carrito' }, { status: 404 })
 		}
 
 		if (quantity === 0) {
@@ -76,32 +62,29 @@ export async function PATCH(request: NextRequest) {
 			})
 
 			if (!product || product.stock < quantity) {
-				return NextResponse.json(
-					{ error: 'Stock insuficiente' }, 
-					{ status: 400 }
-				)
+				return NextResponse.json({ error: 'Stock insuficiente' }, { status: 400 })
 			}
 
 			// Actualizar cantidad
 			await prisma.orderItem.update({
 				where: { id: orderItem.id },
-				data: { quantity }
+				data: { 
+					quantity: quantity,
+					price: product.price
+				}
 			})
 		}
 
 		// Recalcular total de la orden
 		const orderItems = await prisma.orderItem.findMany({
-			where: { orderId: order.id },
-			include: { product: true }
+			where: { orderId: order.id }
 		})
 
-		const total = orderItems.reduce((acc, item) => 
-			acc + (item.product.price * item.quantity), 0
-		)
+		const totalAmount = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
 		await prisma.order.update({
 			where: { id: order.id },
-			data: { total }
+			data: { totalAmount }
 		})
 
 		return NextResponse.json({ success: true })

@@ -2,50 +2,40 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { z } from 'zod'
 
-const removeFromCartSchema = z.object({
-	productId: z.string()
-})
-
-export async function DELETE(request: NextRequest) {
+export async function POST(request: NextRequest) {
 	try {
 		const session = await getServerSession(authOptions)
 		
 		if (!session?.user?.email) {
-			return NextResponse.json(
-				{ error: 'No autorizado' }, 
-				{ status: 401 }
-			)
+			return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 		}
 
+		const { productId } = await request.json()
+
+		if (!productId) {
+			return NextResponse.json({ error: 'ID de producto requerido' }, { status: 400 })
+		}
+
+		// Obtener el usuario
 		const user = await prisma.user.findUnique({
 			where: { email: session.user.email }
 		})
 
 		if (!user) {
-			return NextResponse.json(
-				{ error: 'Usuario no encontrado' }, 
-				{ status: 404 }
-			)
+			return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
 		}
 
-		const body = await request.json()
-		const { productId } = removeFromCartSchema.parse(body)
-
-		// Buscar orden pendiente
+		// Buscar orden en estado 'cart'
 		const order = await prisma.order.findFirst({
 			where: {
 				userId: user.id,
-				status: 'PENDING'
+				status: 'cart'
 			}
 		})
 
 		if (!order) {
-			return NextResponse.json(
-				{ error: 'No hay carrito activo' }, 
-				{ status: 404 }
-			)
+			return NextResponse.json({ error: 'No hay carrito activo' }, { status: 404 })
 		}
 
 		// Buscar y eliminar item del carrito
@@ -57,10 +47,7 @@ export async function DELETE(request: NextRequest) {
 		})
 
 		if (!orderItem) {
-			return NextResponse.json(
-				{ error: 'Producto no encontrado en el carrito' }, 
-				{ status: 404 }
-			)
+			return NextResponse.json({ error: 'Producto no encontrado en el carrito' }, { status: 404 })
 		}
 
 		await prisma.orderItem.delete({
@@ -69,17 +56,14 @@ export async function DELETE(request: NextRequest) {
 
 		// Recalcular total de la orden
 		const orderItems = await prisma.orderItem.findMany({
-			where: { orderId: order.id },
-			include: { product: true }
+			where: { orderId: order.id }
 		})
 
-		const total = orderItems.reduce((acc, item) => 
-			acc + (item.product.price * item.quantity), 0
-		)
+		const totalAmount = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
 		await prisma.order.update({
 			where: { id: order.id },
-			data: { total }
+			data: { totalAmount }
 		})
 
 		return NextResponse.json({ success: true })

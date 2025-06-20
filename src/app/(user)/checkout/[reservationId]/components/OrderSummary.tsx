@@ -1,14 +1,35 @@
 import { Separator } from '@/app/components/ui/separator'
-import { Users, Tag, Calculator, Sparkles } from 'lucide-react'
+import { Tag, Calculator, Sparkles } from 'lucide-react'
+
+interface ReservationData {
+	id: string
+	createdAt: Date
+	event: {
+		title: string
+		dateTime: Date
+	}
+	seat: {
+		seatNumber: string
+	}
+}
+
+interface CartItem {
+	id: string
+	price: number
+	quantity: number
+	product: {
+		name: string
+	}
+}
 
 interface OrderSummaryProps {
-	reservation: any
-	cartItems: any[]
+	reservation: ReservationData
+	cartItems: CartItem[]
 	membershipDiscount: number
 	total: number
 }
 
-export function OrderSummary({ reservation, cartItems, membershipDiscount, total }: OrderSummaryProps) {
+export function OrderSummary({ cartItems, membershipDiscount }: OrderSummaryProps) {
 	const ticketPrice = 25 // Precio base del ticket
 	const subtotal = ticketPrice + cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 	const discountAmount = subtotal * (membershipDiscount / 100)

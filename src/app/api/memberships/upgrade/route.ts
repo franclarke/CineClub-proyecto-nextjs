@@ -42,27 +42,24 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Crear preferencia de Mercado Pago
-		const preference = {
-			items: [{
-				title: `Upgrade a Membresía ${newTier.name}`,
-				quantity: 1,
-				unit_price: newTier.price,
-				currency_id: 'USD'
-			}],
-			payer: {
-				email: user.email
-			},
-			back_urls: {
-				success: `${process.env.NEXTAUTH_URL}/profile?upgrade=success`,
-				failure: `${process.env.NEXTAUTH_URL}/profile?upgrade=failure`,
-				pending: `${process.env.NEXTAUTH_URL}/profile?upgrade=pending`
-			},
-			auto_return: 'approved',
-			external_reference: `upgrade_${user.id}_${newTier.id}`
-		}
-
-		// En un entorno real, aquí usarías la SDK de Mercado Pago
-		// const response = await mercadopago.preferences.create(preference)
+		// const preference = {
+		// 	items: [{
+		// 		title: `Upgrade a Membresía ${newTier.name}`,
+		// 		quantity: 1,
+		// 		unit_price: newTier.price,
+		// 		currency_id: 'USD'
+		// 	}],
+		// 	payer: {
+		// 		email: user.email
+		// 	},
+		// 	back_urls: {
+		// 		success: `${process.env.NEXTAUTH_URL}/profile?upgrade=success`,
+		// 		failure: `${process.env.NEXTAUTH_URL}/profile?upgrade=failure`,
+		// 		pending: `${process.env.NEXTAUTH_URL}/profile?upgrade=pending`
+		// 	},
+		// 	auto_return: 'approved',
+		// 	external_reference: `upgrade_${user.id}_${newTier.id}`
+		// }
 		
 		// Por ahora, simulamos la respuesta
 		const mockPaymentUrl = `${process.env.NEXTAUTH_URL}/profile?upgrade=success&tier=${tierName}`

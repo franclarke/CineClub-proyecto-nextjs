@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarIcon, ShoppingBagIcon, WalletIcon, UserIcon, ArrowRightIcon, ActivityIcon, CogIcon } from 'lucide-react'
+import { CalendarIcon, ShoppingBagIcon, WalletIcon, UserIcon, ArrowRightIcon } from 'lucide-react'
 
 interface DashboardHomeProps {
 	user: {

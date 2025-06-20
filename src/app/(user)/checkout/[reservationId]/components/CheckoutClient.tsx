@@ -7,7 +7,6 @@ import { ProductCart } from './ProductCart'
 import { OrderSummary } from './OrderSummary'
 import { CountdownTimer } from './CountdownTimer'
 import { CheckoutData } from '@/types/api'
-import { Button } from '@/app/components/ui/button'
 import { Separator } from '@/app/components/ui/separator'
 import { 
 	AlertCircle, 
@@ -15,10 +14,7 @@ import {
 	CreditCard, 
 	ShieldCheck, 
 	Clock,
-	Ticket,
-	Package,
-	Calculator,
-	Lock
+	Calculator
 } from 'lucide-react'
 
 interface CheckoutClientProps {

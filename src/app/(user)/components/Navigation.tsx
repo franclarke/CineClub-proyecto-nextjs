@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '../../hooks/use-auth'
-import { ChevronDownIcon, ShoppingBagIcon, WalletIcon, UserIcon, CogIcon, LogOutIcon, MenuIcon, XIcon, StarIcon, CalendarIcon } from 'lucide-react'
+import { ChevronDownIcon, ShoppingBagIcon, WalletIcon, UserIcon, LogOutIcon, MenuIcon, XIcon, StarIcon, CalendarIcon } from 'lucide-react'
 
 export default function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)

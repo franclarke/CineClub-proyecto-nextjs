@@ -1,7 +1,6 @@
-import { Order, OrderItem, Product, Payment } from '@prisma/client'
-import { Button } from '@/app/components/ui/button'
 import Link from 'next/link'
-import { ShoppingBagIcon, CalendarIcon, QrCodeIcon, InfoIcon, CheckCircleIcon, FilterIcon } from 'lucide-react'
+import { Order, OrderItem, Product, Payment } from '@prisma/client'
+import { ShoppingBagIcon, CalendarIcon, CheckCircleIcon, QrCodeIcon, InfoIcon, FilterIcon } from 'lucide-react'
 
 type OrderWithExtras = Order & {
 	items: (OrderItem & {
@@ -66,7 +65,7 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 						<FilterIcon className="w-8 h-8 text-soft-gray" />
 					</div>
 					<p className="text-soft-beige/60 text-sm">
-						No hay productos que coincidan con "{searchQuery}"
+						No hay productos que coincidan con &quot;{searchQuery}&quot;
 					</p>
 				</div>
 			</div>
