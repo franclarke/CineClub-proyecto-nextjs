@@ -134,7 +134,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 								className={`
 									group flex items-center gap-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300
 									${isActive
-										? 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night shadow-lg scale-[1.02]'
+										? 'bg-gradient-sunset-gold text-deep-night shadow-lg scale-[1.02]'
 										: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20 hover:scale-[1.02]'
 									}
 								`}

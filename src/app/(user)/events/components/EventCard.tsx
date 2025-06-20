@@ -98,7 +98,7 @@ export function EventCard({ event }: EventCardProps) {
 							}}
 							className={`w-8 h-8 rounded-lg backdrop-blur-sm border border-soft-gray/20 flex items-center justify-center transition-all duration-200 ${
 								isFavorite 
-									? 'bg-warm-red/80 text-soft-beige' 
+									? 'bg-warm-red text-soft-beige' 
 									: 'bg-deep-night/60 text-soft-beige/60 hover:bg-deep-night/80 hover:text-soft-beige'
 							}`}
 						>
@@ -111,7 +111,7 @@ export function EventCard({ event }: EventCardProps) {
 							}}
 							className={`w-8 h-8 rounded-lg backdrop-blur-sm border border-soft-gray/20 flex items-center justify-center transition-all duration-200 ${
 								isBookmarked 
-									? 'bg-soft-gold/80 text-deep-night' 
+									? 'bg-soft-gold text-deep-night' 
 									: 'bg-deep-night/60 text-soft-beige/60 hover:bg-deep-night/80 hover:text-soft-beige'
 							}`}
 						>
@@ -228,7 +228,7 @@ export function EventCard({ event }: EventCardProps) {
 				{/* Action Button */}
 				<Link
 					href={`/events/${event.id}`}
-					className="group/button flex items-center justify-center gap-2 w-full bg-gradient-to-r from-sunset-orange/80 to-soft-gold/80 hover:from-sunset-orange hover:to-soft-gold text-deep-night px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-sunset-orange/25"
+					className="group/button flex items-center justify-center gap-2 w-full bg-gradient-sunset-gold hover:bg-gradient-sunset-red text-deep-night px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-sunset-orange/25"
 				>
 					<span>Ver Detalles</span>
 					<ArrowRightIcon className="w-4 h-4 group-hover/button:translate-x-0.5 transition-transform duration-300" />

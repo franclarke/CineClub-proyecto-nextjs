@@ -171,7 +171,7 @@ export function CartClientComponent({
 					</p>
 					<button
 						onClick={() => router.push('/events')}
-						className="inline-flex items-center gap-3 bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+						className="inline-flex items-center gap-3 bg-gradient-sunset-gold text-deep-night px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
 					>
 						<ShoppingBag className="w-5 h-5" />
 						<span>Explorar Eventos</span>
@@ -372,7 +372,7 @@ export function CartClientComponent({
 														<button
 															onClick={() => addToCart(product.id, 1)}
 															disabled={isLoading || isOutOfStock}
-															className="w-full bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+															className="w-full bg-gradient-sunset-gold text-deep-night py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
 														>
 															{isOutOfStock ? 'Agotado' : 'Agregar al Carrito'}
 														</button>
@@ -439,7 +439,7 @@ export function CartClientComponent({
 									<button
 										onClick={proceedToCheckout}
 										disabled={isLoading}
-										className="flex items-center justify-center gap-3 bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night px-8 py-3 rounded-xl font-bold transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+										className="flex items-center justify-center gap-3 bg-gradient-sunset-gold text-deep-night px-8 py-3 rounded-xl font-bold transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
 									>
 										{isLoading ? (
 											<div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />

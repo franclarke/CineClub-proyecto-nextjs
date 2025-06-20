@@ -60,18 +60,31 @@
 	/* Color utilities */
 	.text-sunset-orange { color: var(--sunset-orange); }
 	.bg-sunset-orange { background-color: var(--sunset-orange); }
+	.border-sunset-orange { border-color: var(--sunset-orange); }
+	
 	.text-warm-red { color: var(--warm-red); }
 	.bg-warm-red { background-color: var(--warm-red); }
+	.border-warm-red { border-color: var(--warm-red); }
+	
 	.text-deep-night { color: var(--deep-night); }
 	.bg-deep-night { background-color: var(--deep-night); }
+	.border-deep-night { border-color: var(--deep-night); }
+	
 	.text-soft-gray { color: var(--soft-gray); }
 	.bg-soft-gray { background-color: var(--soft-gray); }
+	.border-soft-gray { border-color: var(--soft-gray); }
+	
 	.text-soft-gold { color: var(--soft-gold); }
 	.bg-soft-gold { background-color: var(--soft-gold); }
+	.border-soft-gold { border-color: var(--soft-gold); }
+	
 	.text-dark-olive { color: var(--dark-olive); }
 	.bg-dark-olive { background-color: var(--dark-olive); }
+	.border-dark-olive { border-color: var(--dark-olive); }
+	
 	.text-soft-beige { color: var(--soft-beige); }
 	.bg-soft-beige { background-color: var(--soft-beige); }
+	.border-soft-beige { border-color: var(--soft-beige); }
 	
 	/* Gradient utilities */
 	.gradient-hero {
@@ -84,6 +97,15 @@
 	
 	.gradient-premium {
 		background: linear-gradient(135deg, var(--soft-gold) 0%, var(--sunset-orange) 100%);
+	}
+
+	/* Gradientes específicos para botones */
+	.bg-gradient-sunset-gold {
+		background: linear-gradient(135deg, var(--sunset-orange) 0%, var(--soft-gold) 100%);
+	}
+
+	.bg-gradient-sunset-red {
+		background: linear-gradient(135deg, var(--sunset-orange) 0%, var(--warm-red) 100%);
 	}
 	
 	/* Shadow utilities */
