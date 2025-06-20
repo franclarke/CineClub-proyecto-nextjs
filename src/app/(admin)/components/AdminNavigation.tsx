@@ -39,7 +39,7 @@ export default function AdminNavigation() {
 			<div className="max-w-7xl mx-auto px-6 lg:px-8">
 				<div className="flex items-center justify-between h-20">
 					{/* Logo */}
-					<Link href="/admin" className="flex items-center group">
+					<Link href="/" className="flex items-center group">
 						<div className="rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
 							<Image 
 								src="/logo.png" 

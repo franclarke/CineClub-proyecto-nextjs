@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getAllEvents } from './data-access'
-import { EventCard } from '@/app/events/components/event-card'
-
+import { EventCard } from '@/app/(user)/events/components/event-card'
 export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
     const [events, setEvents] = useState<any[]>([])
     const [loading, setLoading] = useState(true)

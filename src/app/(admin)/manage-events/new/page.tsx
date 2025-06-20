@@ -1,6 +1,5 @@
 'use client'
 
-import Navigation from '@/app/components/Navigation'
 import { useState } from 'react'
 import { createEvent } from '../data-access'
 import Link from 'next/link'
@@ -187,7 +186,7 @@ export default function NewEventPage() {
                             </svg>
                             <span className="text-lg">¡Evento creado correctamente!</span>
                             <Link
-                                href="/dashboard/events"
+                                href="/manage-events"
                                 className="hover:underline cursor-pointer text-white"
                             >
                                 Ver Eventos
@@ -206,7 +205,7 @@ export default function NewEventPage() {
                 {/* Botón para abrir el modal de búsqueda */}
                 <div>
                     <Link
-                        href="/dashboard/events"
+                        href="/manage-events"
                         className="absolute left-4 top-20 flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors"
                     >
                         <ArrowLeft className="w-8 h-8" />

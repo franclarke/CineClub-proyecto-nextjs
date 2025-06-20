@@ -82,7 +82,7 @@ export default function UsersTable() {
                                 >
                                     <td className="py-2 px-4 border-b border-gray-800">
                                         <Link
-                                            href={`/dashboard/users/${user.id}`}
+                                            href={`/manage-users/${user.id}`}
                                             className="hover:underline text-gray-200 font-medium"
                                         >
                                             {user.name || '-'}

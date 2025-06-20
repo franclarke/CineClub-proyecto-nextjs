@@ -35,7 +35,7 @@ export function DashboardContent() {
 					<p className="text-gray-300 text-sm mb-4">
 						Crear, editar y eliminar eventos de cine
 					</p>
-					<Link href="/dashboard/events">
+					<Link href="/manage-events">
 						<Button variant="primary" size="sm" className="w-full">
 							Gestionar Eventos
 						</Button>
@@ -49,7 +49,7 @@ export function DashboardContent() {
 					<p className="text-gray-300 text-sm mb-4">
 						Administrar usuarios y tipos de membresía
 					</p>
-					<Link href="/dashboard/users">
+					<Link href="/manage-users">
 						<Button variant="primary" size="sm" className="w-full">
 							Gestionar Usuarios
 						</Button>

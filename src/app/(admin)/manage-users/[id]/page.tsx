@@ -1,8 +1,8 @@
-import Navigation from '@/app/components/Navigation'
+
 import { getUserById } from '../data-access'
 import { UserIcon, ArrowLeft, Pencil } from 'lucide-react'
 import Link from 'next/link'
-import UserInfo from './userInfo'
+import { UserInfo } from './userInfo'
 
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,7 +16,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                 <div className="bg-gray-800/90 text-white p-8 rounded-2xl shadow-lg border border-gray-700 max-w-md w-full mt-20 relative">
                     {/* Botón volver */}
                     <Link
-                        href="/dashboard/users"
+                        href="/manage-users"
                         className="absolute left-4 top-4 flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />

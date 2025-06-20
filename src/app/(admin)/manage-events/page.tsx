@@ -1,5 +1,4 @@
 "use client"
-import Navigation from '../../../components/Navigation'
 import { Suspense, useState } from 'react'
 import EventsList from './EventsList'
 import Link from 'next/link'
@@ -21,7 +20,7 @@ export default function EventsPage() {
                                 <h1 className="text-xl sm:text-2xl font-bold text-white">Gestionar Eventos</h1>
                             </div>
                             <div className="flex gap-2 justify-end">
-                                <Link href="/dashboard/events/new">
+                                <Link href="/manage-events/new">
                                     <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-5 rounded transition shadow hidden xs:inline-block">
                                         Añadir Nuevo Evento
                                     </button>

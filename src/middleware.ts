@@ -3,7 +3,6 @@ import { getToken } from 'next-auth/jwt'
 
 // Rutas que requieren autenticación
 const PROTECTED_PATHS = [
-	'/dashboard',
 	'/profile',
 	'/reservations',
 	'/cart',
@@ -42,7 +41,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
 	matcher: [
-		'/dashboard/:path*',
 		'/profile/:path*',
 		'/reservations/:path*',
 		'/cart/:path*',
