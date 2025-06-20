@@ -10,7 +10,7 @@ type UserWithMembership = User & {
 		id: string
 		name: string
 		price: number
-		benefits: string[] | string
+		benefits: string | null
 		priority: number
 	}
 	reservations: Array<{
@@ -183,15 +183,15 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 								${user.membership.price}/mes
 							</p>
 							<div className="flex flex-wrap gap-2">
-								{(Array.isArray(user.membership.benefits) 
-									? user.membership.benefits 
-									: user.membership.benefits?.split(',') || []
+								{(user.membership.benefits 
+									? user.membership.benefits.split(',').map(b => b.trim()).filter(Boolean)
+									: []
 								).map((benefit, index) => (
 									<span
 										key={index}
 										className="bg-soft-gold/20 text-soft-gold px-3 py-1 rounded-full text-xs font-medium border border-soft-gold/30"
 									>
-										{benefit.trim()}
+										{benefit}
 									</span>
 								))}
 							</div>
