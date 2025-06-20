@@ -12,7 +12,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900">
-                <Navigation />
+
                 <div className="bg-gray-800/90 text-white p-8 rounded-2xl shadow-lg border border-gray-700 max-w-md w-full mt-20 relative">
                     {/* Botón volver */}
                     <Link
@@ -30,7 +30,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 pt-16">
-            <Navigation />
+
             <UserInfo userId={id} ></UserInfo>
 
         </div>

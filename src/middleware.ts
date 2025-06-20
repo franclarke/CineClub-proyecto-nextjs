@@ -31,21 +31,9 @@ export async function middleware(request: NextRequest) {
 	// Obtener el token de sesión (JWT) de NextAuth
 	const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
 
+	// Si la ruta está protegida y no hay token, redirigir a /auth/signin
 	if (isProtected && !token) {
-		// Usuario no autenticado intentando acceder → redirigir a /auth/signin
-		const signInUrl = new URL('/auth/signin', request.url)
-		return NextResponse.redirect(signInUrl)
-	}
-
-	// Si el usuario autenticado intenta acceder a /auth/signin, redirigirlo al dashboard
-	if (pathname.startsWith('/auth/signin') && token) {
-		const dashboardUrl = new URL('/dashboard', request.url)
-		return NextResponse.redirect(dashboardUrl)
-	}
-
-	// Si el path empieza con /dashboard y no está autenticado, redirigir a iniciar sesión
-	if (pathname.startsWith('/dashboard') && !token) {
-		const signInUrl = new URL('/auth/signin', request.url)
+		const signInUrl = new URL('/', request.url)
 		return NextResponse.redirect(signInUrl)
 	}
 
@@ -63,4 +51,4 @@ export const config = {
 		'/wallet/:path*',
 		'/auth/signin',
 	],
-} 
+}
