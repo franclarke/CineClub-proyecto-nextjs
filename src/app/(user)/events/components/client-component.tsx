@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { Event } from '@prisma/client'
 import { EventCard } from './event-card'
-import { Button } from '../../components/ui/button'
+import { Button } from '@/app/components/ui/button'
 import { ApiResponse, PaginationData } from '@/types/api'
 
 interface ClientComponentProps {
