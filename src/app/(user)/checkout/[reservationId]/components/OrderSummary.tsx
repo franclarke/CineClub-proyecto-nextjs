@@ -9,7 +9,7 @@ interface ReservationData {
 		dateTime: Date
 	}
 	seat: {
-		seatNumber: string
+		seatNumber: number
 	}
 }
 

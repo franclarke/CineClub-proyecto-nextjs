@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { CheckoutClient } from './CheckoutClient'
-import { EventWithCount, ReservationWithDetails } from '@/types/api'
+import { CheckoutData } from '@/types/api'
 
 interface DataAccessProps {
 	reservationId: string
@@ -16,86 +16,49 @@ export async function DataAccess({ reservationId }: DataAccessProps) {
 		notFound()
 	}
 
-	// Get order with reservations
-	const order = await prisma.order.findUnique({
+	// Get reservation with all related data
+	const reservation = await prisma.reservation.findUnique({
 		where: { 
 			id: reservationId,
-			userId: session.user.id 
-		},
-		include: {
-			user: {
-				include: {
-					membership: true
-				}
-			},
-			items: {
-				include: {
-					product: true
-				}
-			}
-		}
-	})
-
-	if (!order) {
-		notFound()
-	}
-
-	// Get associated reservations
-	const reservations = await prisma.reservation.findMany({
-		where: {
 			userId: session.user.id,
-			status: 'pending',
-			createdAt: {
-				gte: new Date(Date.now() - 15 * 60 * 1000) // Last 15 minutes
-			}
+			status: 'pending'
 		},
 		include: {
 			seat: true,
-			event: {
-				include: {
-					_count: {
-						select: {
-							reservations: true
-						}
-					}
-				}
-			},
+			event: true,
 			user: {
 				include: {
 					membership: true
 				}
 			}
-		},
-		orderBy: {
-			createdAt: 'desc'
-		},
-		take: 10 // Limit to prevent abuse
+		}
 	})
 
-	// Filter reservations that belong to current order session
-	const currentReservations = reservations.filter(reservation => 
-		reservation.createdAt > new Date(Date.now() - 12 * 60 * 1000) // Within last 12 minutes
-	)
-
-	if (currentReservations.length === 0) {
+	if (!reservation) {
 		notFound()
 	}
 
-	// Group reservations by event
-	const reservationsByEvent = currentReservations.reduce((acc, reservation) => {
-		const eventId = reservation.event.id
-		if (!acc[eventId]) {
-			acc[eventId] = {
-				event: reservation.event,
-				reservations: []
+	// Check if reservation is still valid (not expired)
+	const expiresAt = new Date(reservation.createdAt.getTime() + 15 * 60 * 1000) // 15 minutes from creation
+	if (new Date() > expiresAt) {
+		notFound()
+	}
+
+	// Get user's cart items (from order items or session)
+	const cartItems = await prisma.orderItem.findMany({
+		where: {
+			order: {
+				userId: session.user.id,
+				status: 'pending'
 			}
+		},
+		include: {
+			product: true
 		}
-		acc[eventId].reservations.push(reservation)
-		return acc
-	}, {} as Record<string, { event: EventWithCount, reservations: ReservationWithDetails[] }>)
+	})
 
 	// Get available products for cart
-	const products = await prisma.product.findMany({
+	const availableProducts = await prisma.product.findMany({
 		where: {
 			stock: {
 				gt: 0
@@ -106,14 +69,32 @@ export async function DataAccess({ reservationId }: DataAccessProps) {
 		}
 	})
 
+	// Calculate membership discount
+	const membershipDiscount = reservation.user.membership.name === 'Oro' ? 15 : 
+		reservation.user.membership.name === 'Plata' ? 10 : 
+		reservation.user.membership.name === 'Bronce' ? 5 : 0
+
+	// Calculate total
+	const ticketPrice = 25
+	const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+	const subtotal = ticketPrice + cartTotal
+	const discountAmount = subtotal * (membershipDiscount / 100)
+	const total = subtotal - discountAmount
+
+	const checkoutData: CheckoutData = {
+		reservation: {
+			...reservation,
+			expiresAt
+		},
+		event: reservation.event,
+		seat: reservation.seat,
+		cartItems,
+		availableProducts,
+		membershipDiscount,
+		total
+	}
+
 	return (
-		<CheckoutClient 
-			order={{
-				...order,
-				reservationsByEvent
-			}}
-			products={products}
-			expiresAt={new Date(Date.now() + 10 * 60 * 1000)} // 10 minutes from now
-		/>
+		<CheckoutClient data={checkoutData} />
 	)
 } 
