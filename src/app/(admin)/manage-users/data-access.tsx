@@ -121,3 +121,17 @@ export async function getAllMemberships() {
         orderBy: { name: 'asc' },
     })
 }
+
+export async function editUserById(id: string, data: Partial<{
+    name: string
+    email: string
+    password: string
+    membershipId?: string
+    isAdmin?: boolean
+}>) {
+    return prisma.user.update({
+        where: { id },
+        data,
+        include: { membership: true },
+    })
+}

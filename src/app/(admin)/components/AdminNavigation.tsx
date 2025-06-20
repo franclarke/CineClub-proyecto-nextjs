@@ -18,10 +18,10 @@ export default function AdminNavigation() {
 					<div className="flex items-center justify-between h-20">
 						<Link href="/admin" className="flex items-center">
 							<div className="rounded-2xl overflow-hidden shadow-lg">
-								<Image 
-									src="/logo.png" 
-									alt="Puff & Chill Logo" 
-									width={120} 
+								<Image
+									src="/logo.png"
+									alt="Puff & Chill Logo"
+									width={120}
 									height={120}
 									className="object-contain"
 								/>
@@ -41,10 +41,10 @@ export default function AdminNavigation() {
 					{/* Logo */}
 					<Link href="/" className="flex items-center group">
 						<div className="rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-							<Image 
-								src="/logo.png" 
-								alt="Puff & Chill Logo" 
-								width={120} 
+							<Image
+								src="/logo.png"
+								alt="Puff & Chill Logo"
+								width={120}
 								height={120}
 								className="object-contain group-hover:scale-105 transition-transform duration-300"
 							/>
@@ -53,22 +53,22 @@ export default function AdminNavigation() {
 
 					{/* Desktop Navigation */}
 					<div className="hidden lg:flex items-center space-x-2">
-						<Link 
-							href="/admin/eventos" 
+						<Link
+							href="/manage-events"
 							className="flex items-center space-x-2 px-6 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 						>
 							<CalendarIcon className="w-5 h-5" />
 							<span>Eventos</span>
 						</Link>
-						<Link 
-							href="/admin/usuarios" 
+						<Link
+							href="/manage-users"
 							className="flex items-center space-x-2 px-6 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 						>
 							<UsersIcon className="w-5 h-5" />
 							<span>Usuarios</span>
 						</Link>
-						<Link 
-							href="/admin/productos" 
+						<Link
+							href="/manage-products"
 							className="flex items-center space-x-2 px-6 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 						>
 							<PackageIcon className="w-5 h-5" />
@@ -83,7 +83,7 @@ export default function AdminNavigation() {
 								<button
 									onClick={() => setIsProfileOpen(!isProfileOpen)}
 									className="flex items-center space-x-4 px-4 py-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
-								>	
+								>
 									{/* User Info */}
 									<div className="text-left">
 										<div className="text-soft-beige font-semibold text-sm">
@@ -101,7 +101,7 @@ export default function AdminNavigation() {
 
 								{/* Profile Dropdown */}
 								{isProfileOpen && (
-									<div 
+									<div
 										className="absolute right-0 mt-3 w-64 rounded-2xl shadow-2xl overflow-hidden z-50"
 										style={{
 											backgroundColor: 'rgba(28, 28, 30, 0.95)',
@@ -151,31 +151,31 @@ export default function AdminNavigation() {
 				{isMenuOpen && (
 					<div className="lg:hidden border-t border-soft-gray/10 bg-deep-night/95 backdrop-blur-2xl z-40">
 						<div className="p-4 space-y-2">
-							<Link 
-								href="/admin/eventos" 
+							<Link
+								href="/manage-events"
 								className="flex items-center space-x-3 px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 								onClick={() => setIsMenuOpen(false)}
 							>
 								<CalendarIcon className="w-5 h-5" />
 								<span>Eventos</span>
 							</Link>
-							<Link 
-								href="/admin/usuarios" 
+							<Link
+								href="/manage-users"
 								className="flex items-center space-x-3 px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 								onClick={() => setIsMenuOpen(false)}
 							>
 								<UsersIcon className="w-5 h-5" />
 								<span>Usuarios</span>
 							</Link>
-							<Link 
-								href="/admin/productos" 
+							<Link
+								href="/manage-products"
 								className="flex items-center space-x-3 px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 								onClick={() => setIsMenuOpen(false)}
 							>
 								<PackageIcon className="w-5 h-5" />
 								<span>Productos</span>
 							</Link>
-							
+
 							<div className="pt-4 border-t border-soft-gray/10">
 								{isAuthenticated && (
 									<>
@@ -192,7 +192,7 @@ export default function AdminNavigation() {
 												</div>
 											</div>
 										</div>
-										<button 
+										<button
 											onClick={() => {
 												signOut()
 												setIsMenuOpen(false)

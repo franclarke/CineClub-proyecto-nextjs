@@ -14,14 +14,16 @@ export default function EventsPage() {
                 <div className="text-center mb-4">
                     <div className="max-w-6xl mx-auto">
                         {/* Header del admin */}
-                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg  sm:p-6 mt-8 sm:mt-12  flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <div className="bg-gray-800/50 backdrop-blur-md border border-gray-700 rounded-lg p-4 sm:p-6 mt-8 sm:mt-12 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div className="flex items-center gap-3 justify-center">
                                 <Home className="h-7 w-7 text-orange-500" />
-                                <h1 className="text-xl sm:text-2xl font-bold text-white">Gestionar Eventos</h1>
+                                <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-white text-center sm:text-left">
+                                    Gestionar Eventos
+                                </h1>
                             </div>
-                            <div className="flex gap-2 justify-end">
-                                <Link href="/manage-events/new">
-                                    <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-5 rounded transition shadow hidden xs:inline-block">
+                            <div className="flex gap-2 justify-end w-full sm:w-auto">
+                                <Link href="/manage-events/new" className="flex-1 sm:flex-initial">
+                                    <button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-5 rounded transition shadow hidden xs:inline-block">
                                         Añadir Nuevo Evento
                                     </button>
                                     <button className="bg-orange-600 hover:bg-orange-700 text-white rounded-full p-2 transition shadow xs:hidden flex items-center justify-center" title="Añadir Nuevo Evento">
