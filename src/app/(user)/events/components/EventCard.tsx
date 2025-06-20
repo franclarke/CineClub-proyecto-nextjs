@@ -12,7 +12,7 @@ interface Event {
 	location: string | null
 	category: string | null
 	imdbId: string | null
-	spotifyUri: string | null
+	tmdbId: string | null
 	reservationCount: number
 	totalSeats: number
 	availableSeats: number

@@ -14,7 +14,7 @@ export default function NewEventPage() {
         dateTime: '',
         location: '',
         imdbId: '',
-        spotifyUri: '',
+        tmdbId: '',
         category: '',
     })
     const [loading, setLoading] = useState(false)
@@ -161,7 +161,7 @@ export default function NewEventPage() {
                 dateTime: '',
                 location: '',
                 imdbId: '',
-                spotifyUri: '',
+                tmdbId: '',
                 category: '',
             })
             setSelectedMovie(null)

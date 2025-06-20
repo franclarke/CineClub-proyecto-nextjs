@@ -28,7 +28,7 @@ interface Event {
 	location: string
 	category: string | null
 	imdbId: string | null
-	spotifyUri: string | null
+	tmdbId: string | null
 	seatStats: {
 		total: number
 		available: number
@@ -239,27 +239,6 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 									</div>
 								</div>
 							)}
-						</div>
-					)}
-
-					{/* Spotify Playlist */}
-					{event.spotifyUri && (
-						<div className="space-y-4">
-							<h2 className="text-display text-2xl text-soft-beige flex items-center space-x-2">
-								<MusicIcon className="w-6 h-6" />
-								<span>Música Ambiental</span>
-							</h2>
-							<div className="bg-soft-gray/20 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6">
-								<p className="text-soft-beige/80 mb-4">
-									Disfruta de nuestra playlist seleccionada especialmente para esta función
-								</p>
-								<div className="text-center py-8">
-									<MusicIcon className="w-12 h-12 text-soft-gold mx-auto mb-4" />
-									<p className="text-soft-beige/60">
-										Integración de Spotify en desarrollo
-									</p>
-								</div>
-							</div>
 						</div>
 					)}
 				</div>

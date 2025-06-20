@@ -38,7 +38,7 @@ export async function createEvent(form: {
     dateTime: string
     location: string
     imdbId?: string
-    spotifyUri?: string
+    tmdbId?: string
     category?: string
 }) {
     try {
@@ -49,7 +49,7 @@ export async function createEvent(form: {
                 dateTime: new Date(form.dateTime),
                 location: form.location,
                 imdbId: form.imdbId || null,
-                spotifyUri: form.spotifyUri || null,
+                tmdbId: form.tmdbId || null,
                 category: form.category || null,
             },
         })

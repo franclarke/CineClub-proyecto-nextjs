@@ -75,7 +75,7 @@ export async function EventDetailDataAccess({ eventId }: EventDetailDataAccessPr
 		location: event.location,
 		category: event.category,
 		imdbId: event.imdbId,
-		spotifyUri: event.spotifyUri,
+		tmdbId: event.tmdbId,
 		seatStats,
 		seats: event.seats,
 		reservationCount: event._count.reservations,
