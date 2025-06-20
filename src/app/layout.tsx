@@ -3,6 +3,7 @@ import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./components/providers/session-provider";
 import { QueryProvider } from "./components/providers/query-provider";
+import ConditionalNavigation from "./components/conditional-navigation";
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -72,6 +73,7 @@ export default function RootLayout({
 			>
 				<AuthProvider>
 					<QueryProvider>
+						<ConditionalNavigation />
 						{children}
 					</QueryProvider>
 				</AuthProvider>

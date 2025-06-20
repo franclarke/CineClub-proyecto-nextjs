@@ -1,6 +1,7 @@
 'use client'
 
-import { AnimatedSection } from '../ui/animated-section'
+import { AnimatedSection } from "@/app/components/ui/animated-section"
+
 
 export function HeroSection() {
 	return (
