@@ -354,7 +354,7 @@ async function main() {
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Drama Clásico',
 				imdbId: 'tt0034583', // Casablanca en IMDb
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '289', // Casablanca en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -367,7 +367,7 @@ async function main() {
 				location: 'Terraza Norte - Puff & Chill',
 				category: 'Ciencia Ficción',
 				imdbId: 'tt1856101',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '335984', // Blade Runner 2049 en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -380,7 +380,7 @@ async function main() {
 				location: 'Jardín Sur - Puff & Chill',
 				category: 'Musical Romance',
 				imdbId: 'tt3783958',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '313369', // La La Land en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -393,7 +393,7 @@ async function main() {
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Thriller Psicológico',
 				imdbId: 'tt0947798',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '36685', // Black Swan en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -406,7 +406,7 @@ async function main() {
 				location: 'Jardín Central - Puff & Chill',
 				category: 'Animación Familiar',
 				imdbId: 'tt0245429',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '129', // Spirited Away en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -419,7 +419,7 @@ async function main() {
 				location: 'Terraza Norte - Puff & Chill',
 				category: 'Terror Clásico',
 				imdbId: 'tt0070047',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '9552', // The Exorcist en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -432,7 +432,7 @@ async function main() {
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Acción',
 				imdbId: 'tt1392190',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '76341', // Mad Max: Fury Road en TMDB
 			},
 		}),
 		prisma.event.upsert({
@@ -445,7 +445,7 @@ async function main() {
 				location: 'Jardín Sur - Puff & Chill',
 				category: 'Drama Bélico',
 				imdbId: 'tt8579674',
-				spotifyUri: 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd',
+				tmdbId: '530915', // 1917 en TMDB
 			},
 		}),
 	])

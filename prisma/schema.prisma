@@ -120,7 +120,7 @@ model Event {
   dateTime     DateTime
   location     String
   imdbId       String?   // store IMDb movie ID
-  spotifyUri   String?   // store Spotify playlist/track URI
+  tmdbId       String?   // store TMDB movie ID
   category     String?   // e.g. Drama, Comedy (fetched from IMDb API or custom)
   seats        Seat[]
   reservations Reservation[]
