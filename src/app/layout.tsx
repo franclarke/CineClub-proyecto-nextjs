@@ -7,6 +7,7 @@ import ConditionalNavigation from "./components/conditional-navigation";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { GlobalCartSidebar } from "./components/cart/GlobalCartSidebar";
 import { FloatingCartButton } from "./components/cart/FloatingCartButton";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -88,6 +89,29 @@ export default function RootLayout({
 								{children}
 							<GlobalCartSidebar />
 							<FloatingCartButton />
+							<Toaster 
+								position="top-right"
+								toastOptions={{
+									duration: 4000,
+									style: {
+										background: '#1C1C1E',
+										color: '#F0E3CA',
+										border: '1px solid rgba(240, 227, 202, 0.1)',
+									},
+									success: {
+										iconTheme: {
+											primary: '#10B981',
+											secondary: '#F0E3CA',
+										},
+									},
+									error: {
+										iconTheme: {
+											primary: '#EF4444',
+											secondary: '#F0E3CA',
+										},
+									},
+								}}
+							/>
 						</CartProvider>
 					</QueryProvider>
 				</AuthProvider>
