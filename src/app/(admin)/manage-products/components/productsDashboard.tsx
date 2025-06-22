@@ -44,7 +44,13 @@ export default function ProductsDashboard() {
         setLoading(true)
         try {
             const data = await getAllProducts()
-            setProducts(data)
+            setProducts(
+                data.map((prod: any) => ({
+                    ...prod,
+                    description: prod.description ?? undefined,
+                    imageUrl: prod.imageUrl ?? undefined,
+                }))
+            )
         } catch (e) {
             setError('Error al cargar productos')
         } finally {
@@ -75,7 +81,7 @@ export default function ProductsDashboard() {
                     description: form.description,
                     price: Number(form.price),
                     stock: Number(form.stock),
-                    imageUrl: form.imageUrl || undefined, // <-- Permite que sea vacío
+
                 })
             }
             setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
@@ -108,7 +114,7 @@ export default function ProductsDashboard() {
                     description: prod.description || '',
                     price: String(prod.price),
                     stock: String(prod.stock),
-                    imageUrl: prod.imageUrl || '',
+                    imageUrl: '',
                 })
                 setEditId(id)
                 setShowForm(true)
