@@ -281,7 +281,7 @@ export async function GET() {
 			})),
 			// Seats
 			...validReservations.map(reservation => {
-				const tierPrices = { 'Gold': 50, 'Silver': 35, 'Bronze': 25 }
+				const tierPrices = { 'Puff XXL Estelar': 50, 'Reposera Deluxe': 35, 'Banquito': 25 }
 				const seatPrice = tierPrices[reservation.seat.tier as keyof typeof tierPrices] || 25
 				const expiresAt = new Date(reservation.createdAt.getTime() + 15 * 60 * 1000)
 

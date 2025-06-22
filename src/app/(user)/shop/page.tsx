@@ -20,7 +20,7 @@ export default async function ShopPage() {
 							<div className="flex items-center space-x-3">
 								<div className="w-1 h-8 bg-gradient-to-b from-sunset-orange to-soft-gold rounded-full"></div>
 								<h1 className="text-4xl md:text-5xl font-bold text-soft-beige tracking-tight">
-									<span className="bg-gradient-to-r from-sunset-orange to-soft-gold bg-clip-text text-transparent">Tienda</span>
+									Tienda
 								</h1>
 							</div>
 							<p className="text-soft-beige/70 text-lg font-light ml-7">

@@ -1,6 +1,6 @@
 export function SkeletonComponent() {
 	return (
-		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
+		<div className="max-w-7xl pt-28 mx-auto px-4 sm:px-6 lg:px-8 animate-pulse">
 			{/* Back Button Skeleton */}
 			<div className="mb-8">
 				<div className="flex items-center space-x-2">

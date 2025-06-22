@@ -51,7 +51,7 @@ const AmphitheaterSeatMap = ({
 
 		seatsByTier.forEach(([tier, seats]) => {
 			// Calculate seats per row (aim for 8-12 seats per row)
-			const seatsPerRow = tier === 'Gold' ? 8 : tier === 'Silver' ? 10 : 12;
+			const seatsPerRow = tier === 'Puff XXL Estelar' ? 8 : tier === 'Reposera Deluxe' ? 10 : 12;
 			const numRows = Math.ceil(seats.length / seatsPerRow);
 
 			for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -77,8 +77,8 @@ const AmphitheaterSeatMap = ({
 		const isSelected = selectedSeats.includes(seat.id);
 		const isReserved = !!seat.reservation;
 		const canSelect = canUserSelectSeat(seat, currentUserMembership).allowed;
-		const isPremiumTier = tier === 'Gold';
-		const isVipTier = tier === 'Silver';
+					const isPremiumTier = tier === 'Puff XXL Estelar';
+			const isVipTier = tier === 'Reposera Deluxe';
 
 		const baseClasses = "transition-all duration-200 flex items-center justify-center text-xs font-semibold rounded-lg relative border";
 		
@@ -118,8 +118,8 @@ const AmphitheaterSeatMap = ({
 			{/* Amphitheater rows */}
 			<div className="space-y-4">
 				{amphitheaterRows.map((row, rowIndex) => {
-					const isPremiumTier = row.tier === 'Gold';
-					const isVipTier = row.tier === 'Silver';
+									const isPremiumTier = row.tier === 'Puff XXL Estelar';
+				const isVipTier = row.tier === 'Reposera Deluxe';
 					
 					// Calculate curve for amphitheater effect
 					const totalRows = amphitheaterRows.length;
@@ -235,8 +235,8 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 			return acc
 		}, {} as Record<string, SeatWithReservation[]>)
 
-		// Sort tiers by priority (Gold: 1, Silver: 2, Bronze: 3)
-		const tierOrder = { 'Gold': 1, 'Silver': 2, 'Bronze': 3 }
+		// Sort tiers by priority (Puff XXL Estelar: 1, Reposera Deluxe: 2, Banquito: 3)
+		const tierOrder = { 'Puff XXL Estelar': 1, 'Reposera Deluxe': 2, 'Banquito': 3 }
 		return Object.entries(grouped).sort(([a], [b]) => 
 			(tierOrder[a as keyof typeof tierOrder] || 999) - 
 			(tierOrder[b as keyof typeof tierOrder] || 999)
@@ -251,7 +251,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 		
 		const totalPrice = selectedSeatData.reduce((total, seat) => {
 			// Price based on tier - Premium tiers cost more
-			const tierPrices = { 'Gold': 50, 'Silver': 35, 'Bronze': 25 };
+			const tierPrices = { 'Puff XXL Estelar': 50, 'Reposera Deluxe': 35, 'Banquito': 25 };
 			return total + (tierPrices[seat.tier as keyof typeof tierPrices] || 25);
 		}, 0);
 		
@@ -357,21 +357,21 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 										<div className="w-10 h-10 mx-auto mb-3 bg-soft-gold/20 text-soft-gold border border-soft-gold/30 rounded-lg flex items-center justify-center text-sm font-bold">
 											G
 										</div>
-										<div className="text-sm font-medium text-soft-gold">Gold</div>
+										<div className="text-sm font-medium text-soft-gold">Puff XXL Estelar</div>
 										<div className="text-xs text-soft-gray">$50 por asiento</div>
 									</div>
 									<div className="text-center">
 										<div className="w-10 h-10 mx-auto mb-3 bg-gray-300/20 text-gray-300 border border-gray-300/30 rounded-lg flex items-center justify-center text-sm font-bold">
-											S
+											R
 										</div>
-										<div className="text-sm font-medium text-gray-300">Silver</div>
+										<div className="text-sm font-medium text-gray-300">Reposera Deluxe</div>
 										<div className="text-xs text-soft-gray">$35 por asiento</div>
 									</div>
 									<div className="text-center">
 										<div className="w-10 h-10 mx-auto mb-3 bg-orange-400/20 text-orange-300 border border-orange-400/30 rounded-lg flex items-center justify-center text-sm font-bold">
 											B
 										</div>
-										<div className="text-sm font-medium text-orange-300">Bronze</div>
+										<div className="text-sm font-medium text-orange-300">Banquito</div>
 										<div className="text-xs text-soft-gray">$25 por asiento</div>
 									</div>
 								</div>
@@ -482,15 +482,15 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 												<div key={tier} className="flex justify-between items-center px-3 py-2">
 													<div className="flex items-center gap-3">
 														<div className={`w-2.5 h-2.5 rounded-full ${
-															tier === 'Gold' ? 'bg-soft-gold' : 
-															tier === 'Silver' ? 'bg-gray-400' : 
+															tier === 'Puff XXL Estelar' ? 'bg-soft-gold' : 
+															tier === 'Reposera Deluxe' ? 'bg-gray-400' : 
 															'bg-orange-400'
 														}`}></div>
 														<span className="text-soft-gray text-sm">{tier}</span>
 													</div>
 													<div className="flex items-center gap-2">
 														<span className="text-soft-beige text-sm">{count} x ${
-															tier === 'Gold' ? '50' : tier === 'Silver' ? '35' : '25'
+															tier === 'Puff XXL Estelar' ? '50' : tier === 'Reposera Deluxe' ? '35' : '25'
 														}</span>
 													</div>
 												</div>
@@ -532,13 +532,13 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 						<GlassCard variant="subtle" className="p-6">
 							<div className="flex items-center gap-4">
 								<div className={`flex items-center justify-center w-12 h-12 rounded-xl ${
-									currentUser.membership.name === 'Gold' ? 'bg-soft-gold/20' :
-									currentUser.membership.name === 'Silver' ? 'bg-gray-400/20' :
+									currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20' :
+									currentUser.membership.name === 'Reposera Deluxe' ? 'bg-gray-400/20' :
 									'bg-orange-400/20'
 								}`}>
 									<Crown className={`h-6 w-6 ${
-										currentUser.membership.name === 'Gold' ? 'text-soft-gold' :
-										currentUser.membership.name === 'Silver' ? 'text-gray-400' :
+										currentUser.membership.name === 'Puff XXL Estelar' ? 'text-soft-gold' :
+										currentUser.membership.name === 'Reposera Deluxe' ? 'text-gray-400' :
 										'text-orange-400'
 									}`} />
 								</div>
@@ -548,8 +548,8 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 											Membresía {currentUser.membership.name}
 										</p>
 										<div className={`px-2 py-1 rounded-full text-xs font-medium ${
-											currentUser.membership.name === 'Gold' ? 'bg-soft-gold/20 text-soft-gold' :
-											currentUser.membership.name === 'Silver' ? 'bg-gray-400/20 text-gray-400' :
+											currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20 text-soft-gold' :
+											currentUser.membership.name === 'Reposera Deluxe' ? 'bg-gray-400/20 text-gray-400' :
 											'bg-orange-400/20 text-orange-400'
 										}`}>
 											Activa
@@ -580,12 +580,12 @@ function canUserSelectSeat(seat: SeatWithReservation, userMembership: Membership
 	// User can only select seats of their tier or lower priority tiers
 	// Lower priority number = higher tier (Gold=1, Silver=2, Bronze=3)
 	if (userTierPriority > seatTierPriority) {
-		const upgradeMessage = userMembership.name === 'Bronze' && seat.tier === 'Silver' 
-			? 'Actualiza a membresía Silver o Gold para acceder a estos asientos premium.'
-			: userMembership.name === 'Bronze' && seat.tier === 'Gold'
-			? 'Los asientos Gold son exclusivos para miembros Gold. Actualiza tu membresía para acceder.'
-			: userMembership.name === 'Silver' && seat.tier === 'Gold'
-			? 'Los asientos Gold son exclusivos para miembros Gold. Actualiza tu membresía para acceder.'
+		const upgradeMessage = userMembership.name === 'Banquito' && seat.tier === 'Reposera Deluxe' 
+			? 'Actualiza a membresía Reposera Deluxe o Puff XXL Estelar para acceder a estos asientos premium.'
+			: userMembership.name === 'Banquito' && seat.tier === 'Puff XXL Estelar'
+			? 'Los asientos Puff XXL Estelar son exclusivos para miembros Puff XXL Estelar. Actualiza tu membresía para acceder.'
+			: userMembership.name === 'Reposera Deluxe' && seat.tier === 'Puff XXL Estelar'
+			? 'Los asientos Puff XXL Estelar son exclusivos para miembros Puff XXL Estelar. Actualiza tu membresía para acceder.'
 			: `Este asiento está reservado para miembros ${seat.tier}. Actualiza tu membresía para acceder.`
 			
 		return {
@@ -598,16 +598,16 @@ function canUserSelectSeat(seat: SeatWithReservation, userMembership: Membership
 }
 
 function getTierPriority(tier: string): number {
-	const priorities = { 'Gold': 1, 'Silver': 2, 'Bronze': 3 }
+	const priorities = { 'Puff XXL Estelar': 1, 'Reposera Deluxe': 2, 'Banquito': 3 }
 	return priorities[tier as keyof typeof priorities] || 999
 }
 
 function getTierAccessText(membership: MembershipTier): string {
 	switch (membership.priority) {
-		case 1: return 'Todos los niveles (Gold, Silver y Bronze)'; // Gold puede acceder a todos
-		case 2: return 'Silver y Bronze'; // Silver puede acceder a Silver y Bronze
-		case 3: return 'Solo Bronze'; // Bronze solo puede acceder a Bronze
-		default: return 'Solo Bronze'; // Por defecto solo Bronze
+		case 1: return 'Todos los niveles (Puff XXL Estelar, Reposera Deluxe y Banquito)'; // Puff XXL Estelar puede acceder a todos
+		case 2: return 'Reposera Deluxe y Banquito'; // Reposera Deluxe puede acceder a Reposera Deluxe y Banquito
+		case 3: return 'Solo Banquito'; // Banquito solo puede acceder a Banquito
+		default: return 'Solo Banquito'; // Por defecto solo Banquito
 	}
 }
 

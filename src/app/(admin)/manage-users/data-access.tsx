@@ -14,13 +14,13 @@ export async function getAllUsers() {
 }
 
 /**
- * Lista todos los usuarios con membresía Bronce.
+ * Lista todos los usuarios con membresía Banquito.
  */
-export async function getBronzeUsers() {
+export async function getBanquitoUsers() {
     return prisma.user.findMany({
         where: {
             membership: {
-                name: 'Bronze',
+                name: 'Banquito',
             },
         },
         include: {
@@ -31,13 +31,13 @@ export async function getBronzeUsers() {
 }
 
 /**
- * Lista todos los usuarios con membresía Plata.
+ * Lista todos los usuarios con membresía Reposera Deluxe.
  */
-export async function getSilverUsers() {
+export async function getReposeraDeluxeUsers() {
     return prisma.user.findMany({
         where: {
             membership: {
-                name: 'Silver',
+                name: 'Reposera Deluxe',
             },
         },
         include: {
@@ -48,13 +48,13 @@ export async function getSilverUsers() {
 }
 
 /**
- * Lista todos los usuarios con membresía Oro.
+ * Lista todos los usuarios con membresía Puff XXL Estelar.
  */
-export async function getGoldUsers() {
+export async function getPuffXXLEstelarUsers() {
     return prisma.user.findMany({
         where: {
             membership: {
-                name: 'Gold',
+                name: 'Puff XXL Estelar',
             },
         },
         include: {

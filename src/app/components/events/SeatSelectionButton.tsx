@@ -72,21 +72,21 @@ export function SeatSelectionButton({
 		
 		if (isSelected) {
 			const tierColors = {
-				'Gold': 'bg-yellow-500 text-deep-night border-yellow-500 shadow-lg shadow-yellow-500/30',
-				'Silver': 'bg-gray-300 text-deep-night border-gray-300 shadow-lg shadow-gray-300/30',
-				'Bronze': 'bg-orange-400 text-deep-night border-orange-400 shadow-lg shadow-orange-400/30'
+							'Puff XXL Estelar': 'bg-yellow-500 text-deep-night border-yellow-500 shadow-lg shadow-yellow-500/30',
+			'Reposera Deluxe': 'bg-gray-300 text-deep-night border-gray-300 shadow-lg shadow-gray-300/30',
+			'Banquito': 'bg-orange-400 text-deep-night border-orange-400 shadow-lg shadow-orange-400/30'
 			}
-			return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Bronze} scale-105`
+			return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Banquito} scale-105`
 		}
 		
 		// Available state
 		const tierColors = {
-			'Gold': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500 hover:text-deep-night hover:border-yellow-500 hover:shadow-lg hover:shadow-yellow-500/30',
-			'Silver': 'bg-gray-300/20 text-gray-300 border-gray-300/30 hover:bg-gray-300 hover:text-deep-night hover:border-gray-300 hover:shadow-lg hover:shadow-gray-300/30',
-			'Bronze': 'bg-orange-400/20 text-orange-300 border-orange-400/30 hover:bg-orange-400 hover:text-deep-night hover:border-orange-400 hover:shadow-lg hover:shadow-orange-400/30'
+			'Puff XXL Estelar': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500 hover:text-deep-night hover:border-yellow-500 hover:shadow-lg hover:shadow-yellow-500/30',
+			'Reposera Deluxe': 'bg-gray-300/20 text-gray-300 border-gray-300/30 hover:bg-gray-300 hover:text-deep-night hover:border-gray-300 hover:shadow-lg hover:shadow-gray-300/30',
+			'Banquito': 'bg-orange-400/20 text-orange-300 border-orange-400/30 hover:bg-orange-400 hover:text-deep-night hover:border-orange-400 hover:shadow-lg hover:shadow-orange-400/30'
 		}
 		
-		return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Bronze} hover:scale-105 cursor-pointer`
+		return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Banquito} hover:scale-105 cursor-pointer`
 	}
 
 	return (
@@ -100,7 +100,7 @@ export function SeatSelectionButton({
 				{seat.seatNumber}
 				
 				{/* Premium seat indicator */}
-				{seat.tier === 'Gold' && !isReserved && (
+				{seat.tier === 'Puff XXL Estelar' && !isReserved && (
 					<motion.div 
 						className="absolute -top-1 -right-1 text-yellow-400"
 						animate={{ rotate: [0, 10, -10, 0] }}

@@ -145,36 +145,52 @@ function mapMPStatusToOurStatus(mpStatus: string): string {
 // Procesar items de la orden aprobada
 async function processOrderItems(order: OrderWithItems) {
 	try {
-		// Procesar productos - actualizar stock
-		for (const item of order.items) {
-			if (item.productId) {
-				await prisma.product.update({
-					where: { id: item.productId },
+		// Si es una orden de membresía, actualizar la membresía del usuario
+		if (order.type === 'membership' && order.metadata) {
+			const membershipId = order.metadata.membershipId as string
+			
+			if (membershipId) {
+				await prisma.user.update({
+					where: { id: order.userId },
 					data: {
-						stock: {
-							decrement: item.quantity
+						membershipId: membershipId
+					}
+				})
+				
+				console.log(`Membresía ${membershipId} activada para usuario ${order.userId}`)
+			}
+		} else {
+			// Procesar productos - actualizar stock
+			for (const item of order.items) {
+				if (item.productId) {
+					await prisma.product.update({
+						where: { id: item.productId },
+						data: {
+							stock: {
+								decrement: item.quantity
+							}
 						}
+					})
+				}
+			}
+
+			// Procesar reservas - confirmar asientos
+			for (const reservation of order.reservations) {
+				await prisma.reservation.update({
+					where: { id: reservation.id },
+					data: {
+						status: 'confirmed'
+					}
+				})
+
+				// Marcar el asiento como reservado
+				await prisma.seat.update({
+					where: { id: reservation.seatId },
+					data: {
+						isReserved: true
 					}
 				})
 			}
-		}
-
-		// Procesar reservas - confirmar asientos
-		for (const reservation of order.reservations) {
-			await prisma.reservation.update({
-				where: { id: reservation.id },
-				data: {
-					status: 'confirmed'
-				}
-			})
-
-			// Marcar el asiento como reservado
-			await prisma.seat.update({
-				where: { id: reservation.seatId },
-				data: {
-					isReserved: true
-				}
-			})
 		}
 
 		console.log(`Orden ${order.id} procesada exitosamente: ${order.items.length} productos, ${order.reservations.length} reservas`)

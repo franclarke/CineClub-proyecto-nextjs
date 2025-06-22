@@ -95,7 +95,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 			}
 
 			// Calcular precio basado en el tier del seat
-			const tierPrices = { 'Gold': 50, 'Silver': 35, 'Bronze': 25 }
+			const tierPrices = { 'Puff XXL Estelar': 50, 'Reposera Deluxe': 35, 'Banquito': 25 }
 			const seatPrice = tierPrices[seat.tier as keyof typeof tierPrices] || 25
 
 			const newItem: SeatCartItem = {

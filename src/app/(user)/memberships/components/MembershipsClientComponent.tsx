@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon, ShoppingCartIcon } from 'lucide-react'
+import { Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon, ShoppingCartIcon, CheckCircle } from 'lucide-react'
 import { useCart } from '@/lib/cart/cart-context'
 
 type UserWithMembership = User & {
@@ -24,25 +24,25 @@ interface MembershipsClientComponentProps {
 }
 
 const tierIcons = {
-	'Bronze': Shield,
-	'Silver': Award,
-	'Gold': Crown
+	'Banquito': Shield,
+	'Reposera Deluxe': Award,
+	'Puff XXL Estelar': Crown
 }
 
 const tierColors = {
-	'Bronze': {
+	'Banquito': {
 		bg: 'from-orange-600/20 to-amber-600/20',
 		border: 'border-orange-500/50',
 		accent: 'text-orange-400',
 		gradient: 'from-orange-500/20 to-orange-500/5'
 	},
-	'Silver': {
+	'Reposera Deluxe': {
 		bg: 'from-gray-400/20 to-gray-500/20',
 		border: 'border-gray-400/50',
 		accent: 'text-gray-300',
 		gradient: 'from-gray-400/20 to-gray-400/5'
 	},
-	'Gold': {
+	'Puff XXL Estelar': {
 		bg: 'from-yellow-500/20 to-amber-500/20',
 		border: 'border-yellow-400/50',
 		accent: 'text-yellow-400',
@@ -74,6 +74,7 @@ export function MembershipsClientComponent({
 					description: typeof tier.benefits === 'string' ? tier.benefits : `Actualiza tu membresía a ${tier.name}`,
 					price: tier.price,
 					stock: 999, // Siempre disponible
+					imageUrl: null, // Las membresías no tienen imagen
 					createdAt: new Date(),
 					updatedAt: new Date()
 				}
@@ -114,87 +115,101 @@ export function MembershipsClientComponent({
 								<p className="text-soft-beige/60 text-sm">{user.membership.name} • ${user.membership.price}/mes</p>
 							</div>
 						</div>
-						<div className="bg-soft-gold/20 text-soft-gold px-4 py-2 rounded-full text-sm font-bold border border-soft-gold/30">
-							ACTIVA
-						</div>
 					</div>
 				</div>
 			)}
 
 			{/* Membership Tiers Grid */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 				{membershipTiers.map((tier, index) => {
-					const Icon = tierIcons[tier.name as keyof typeof tierIcons] || Shield
-					const colors = tierColors[tier.name as keyof typeof tierColors] || tierColors.Bronze
-					const isPopular = tier.name === 'Silver'
+					const isPopular = tier.name === 'Reposera Deluxe' // Reposera Deluxe es la más popular
 					const isCurrent = isCurrentTier(tier.name)
 					const isUpgrade = canUpgrade(tier.priority)
 					const isSuggested = suggestedUpgrade === tier.name
 
-					return (
-						<div key={tier.id} className="relative animate-fade-in hover-lift" style={{ animationDelay: `${index * 0.1}s` }}>
-							{(isPopular || isSuggested) && (
-								<div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-									<span className="bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night px-4 py-1 rounded-full text-xs font-bold shadow-lg">
-										{isSuggested ? 'Recomendado' : 'Más Popular'}
-									</span>
-								</div>
-							)}
+					// Extraer beneficios del string separado por •
+					const benefits = typeof tier.benefits === 'string' 
+						? tier.benefits.split('•').map(b => b.trim()).filter(b => b.length > 0)
+						: Array.isArray(tier.benefits) 
+						? tier.benefits 
+						: []
 
-							<div className={`
-								glass-card rounded-2xl p-6 h-full relative transition-all duration-300
-								${isCurrent ? 'ring-2 ring-soft-gold/50 shadow-[0_20px_40px_-12px_rgba(255,199,87,0.2)]' : ''}
-								${isPopular || isSuggested ? 'scale-[1.02]' : ''}
-								group
-							`}>
-								{isCurrent && (
-									<div className="absolute top-4 right-4">
-										<div className="bg-soft-gold text-deep-night px-3 py-1 rounded-full text-xs font-bold">
-											ACTIVA
-										</div>
+					return (
+						<div key={tier.id} className="relative animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+							<div className="relative bg-[#1f140d] rounded-2xl shadow-lg overflow-hidden h-full transition-all duration-300 hover:shadow-xl group flex flex-col border border-amber-200/20 hover:border-amber-200/40">
+								
+								{/* Popular Badge */}
+								{isPopular && (
+									<div className="absolute top-2 left-2 z-20">
+										<span className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+											Más Popular
+										</span>
 									</div>
 								)}
+								
+								{/* Current Badge */}
+								{isCurrent && (
+									<div className="absolute top-2 right-2 z-20">
+										<span className="bg-yellow-400 text-black px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+											ACTIVA
+										</span>
+									</div>
+								)}
+								
 
-								<div className="space-y-6">
-									{/* Header */}
-									<div className="text-center">
-										<div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${colors.bg} border ${colors.border} mb-4 group-hover:scale-110 transition-transform duration-300`}>
-											<Icon className={`w-8 h-8 ${colors.accent}`} />
-										</div>
-										<h3 className="text-2xl font-bold text-soft-beige mb-2 group-hover:text-sunset-orange transition-colors duration-300">
-											{tier.name}
-										</h3>
-										<div className="flex items-baseline justify-center mb-4">
-											<span className="text-3xl font-bold text-soft-beige">
+								{/* Image Section with Square Aspect Ratio */}
+								<div className="relative aspect-square w-full">
+									<img 
+										src={tier.imageUrl} 
+										alt={`${tier.name} membership`}
+										className="absolute inset-0 w-full h-full object-cover"
+									/>
+									{/* Gradient overlay for better integration */}
+									<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1f140d]/90"></div>
+									
+									{/* Price overlay on image */}
+									<div className="absolute bottom-4 left-4 z-10">
+										<div className="flex items-baseline">
+											<span className="text-3xl font-bold text-white">
 												${tier.price}
 											</span>
-											<span className="text-soft-beige/60 ml-1 text-base">/mes</span>
+											<span className="text-white/80 ml-1 text-base">/mes</span>
 										</div>
 									</div>
+								</div>
 
-									{/* Benefits */}
-									<ul className="space-y-3">
-										{(Array.isArray(tier.benefits) 
-											? tier.benefits 
-											: tier.benefits?.split(',') || []
-										).map((benefit, index) => (
-											<li key={index} className="flex items-start gap-3">
-												<div className="w-5 h-5 bg-soft-gold/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-													<Check className="w-3 h-3 text-soft-gold" />
-												</div>
-												<span className="text-soft-beige/90 text-sm leading-relaxed">
-													{benefit.trim()}
+								{/* Content Section */}
+								<div className="p-4 md:p-6 space-y-4 flex-1 flex flex-col">
+									{/* Title */}
+									<div className="text-center">
+										<h3 className="text-xl font-semibold text-white mb-2 group-hover:text-amber-400 transition-colors duration-300">
+											{tier.name}
+										</h3>
+										{tier.description && (
+											<p className="text-sm text-gray-400 leading-snug">
+												{tier.description}
+											</p>
+										)}
+									</div>
+
+									{/* Benefits List */}
+									<ul className="space-y-1 flex-1">
+										{benefits.map((benefit, benefitIndex) => (
+											<li key={benefitIndex} className="flex items-start gap-2 leading-snug">
+												<CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+												<span className="text-sm text-gray-300">
+													{benefit}
 												</span>
 											</li>
 										))}
 									</ul>
 
-									{/* Action Button */}
-									<div className="pt-4">
+									{/* Action Button - At bottom */}
+									<div className="mt-auto pt-4">
 										{isCurrent ? (
-											<div className="bg-soft-gold/20 text-soft-gold px-4 py-3 rounded-xl text-center font-semibold text-sm">
+											<div className="bg-yellow-400/20 text-yellow-400 px-4 py-3 rounded-xl text-center font-semibold text-sm border border-yellow-400/30">
 												<div className="flex items-center justify-center space-x-2">
-													<Check className="w-4 h-4" />
+													<CheckCircle className="w-4 h-4" />
 													<span>Membresía Actual</span>
 												</div>
 											</div>
@@ -202,22 +217,14 @@ export function MembershipsClientComponent({
 											<button
 												onClick={() => handleMembershipAction(tier, 'signup')}
 												disabled={isLoading === tier.id}
-												className={`
-													w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg
-													${isPopular || isSuggested 
-														? 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night hover:shadow-xl' 
-														: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20'
-													}
-													flex items-center justify-center space-x-2 group hover:scale-[1.02]
-													disabled:opacity-50 disabled:cursor-not-allowed
-												`}
+												className="w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-600 hover:to-yellow-600 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 hover:scale-[1.02] transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
 											>
 												{isLoading === tier.id ? (
 													<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
 												) : (
 													<>
-														<span>Registrarse con {tier.name}</span>
-														<ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+														<span>Registrarse</span>
+														<ArrowRightIcon className="w-4 h-4" />
 													</>
 												)}
 											</button>
@@ -225,15 +232,7 @@ export function MembershipsClientComponent({
 											<button
 												onClick={() => handleMembershipAction(tier, 'upgrade')}
 												disabled={isLoading === tier.id}
-												className={`
-													w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg
-													${isPopular || isSuggested 
-														? 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night hover:shadow-xl' 
-														: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20'
-													}
-													flex items-center justify-center space-x-2 group hover:scale-[1.02]
-													disabled:opacity-50 disabled:cursor-not-allowed
-												`}
+												className="w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-600 hover:to-yellow-600 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 hover:scale-[1.02] transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
 											>
 												{isLoading === tier.id ? (
 													<>
@@ -248,7 +247,7 @@ export function MembershipsClientComponent({
 												)}
 											</button>
 										) : (
-											<div className="bg-soft-gray/20 text-soft-gray px-4 py-3 rounded-xl text-center font-semibold text-sm">
+											<div className="bg-gray-800/50 text-gray-500 px-4 py-3 rounded-xl text-center font-semibold text-sm border border-gray-700">
 												No disponible
 											</div>
 										)}

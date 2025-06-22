@@ -87,9 +87,9 @@ export async function POST(request: NextRequest) {
 			const invalidTierSeats = seats.filter((seat: SeatWithReservation) => {
 				const seatTierPriority = getTierPriority(seat.tier)
 				// User can access seat if their priority <= seat priority
-				// Gold (1) can access all seats: Gold (1), Silver (2), Bronze (3)
-				// Silver (2) can access: Silver (2), Bronze (3)
-				// Bronze (3) can only access: Bronze (3)
+						// Puff XXL Estelar (1) can access all seats: Puff XXL Estelar (1), Reposera Deluxe (2), Banquito (3)
+		// Reposera Deluxe (2) can access: Reposera Deluxe (2), Banquito (3)
+		// Banquito (3) can only access: Banquito (3)
 				return user.membership.priority > seatTierPriority
 			})
 
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 			// Create a temporary order for checkout
 			const totalAmount = seats.reduce((total: number, seat: SeatWithReservation) => {
 				// Price based on tier - Premium tiers cost more
-				const tierPrices = { 'Gold': 50, 'Silver': 35, 'Bronze': 25 };
+				const tierPrices = { 'Puff XXL Estelar': 50, 'Reposera Deluxe': 35, 'Banquito': 25 };
 				return total + (tierPrices[seat.tier as keyof typeof tierPrices] || 25);
 			}, 0)
 
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
 
 // Helper function for tier priority
 function getTierPriority(tier: string): number {
-	const priorities = { 'Gold': 1, 'Silver': 2, 'Bronze': 3 }
+			const priorities = { 'Puff XXL Estelar': 1, 'Reposera Deluxe': 2, 'Banquito': 3 }
 	return priorities[tier as keyof typeof priorities] || 999
 }
 

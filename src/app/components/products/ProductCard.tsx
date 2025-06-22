@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useCart } from '@/lib/cart/cart-context'
 import { Product } from '@prisma/client'
@@ -12,8 +13,7 @@ import {
 	Package, 
 	Check,
 	Star,
-	Coffee,
-	Cookie
+	Sparkles
 } from 'lucide-react'
 
 interface ProductCardProps {
@@ -24,6 +24,7 @@ interface ProductCardProps {
 export function ProductCard({ product, className = '' }: ProductCardProps) {
 	const { addProduct, getProductQuantity, updateProductQuantity } = useCart()
 	const [isAdding, setIsAdding] = useState(false)
+	const [imageError, setImageError] = useState(false)
 	const currentQuantity = getProductQuantity(product.id)
 	const isOutOfStock = product.stock === 0
 
@@ -50,19 +51,9 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 	}
 
 	const decrementQuantity = () => {
-		if (currentQuantity > 1) {
+		if (currentQuantity >= 1) {
 			updateProductQuantity(product.id, currentQuantity - 1)
 		}
-	}
-
-	const getCategoryIcon = () => {
-		const name = product.name.toLowerCase()
-		if (name.includes('bebida') || name.includes('drink') || name.includes('agua') || name.includes('refresco')) {
-			return <Coffee className="w-4 h-4" />
-		} else if (name.includes('snack') || name.includes('palomitas') || name.includes('chocolate') || name.includes('dulce')) {
-			return <Cookie className="w-4 h-4" />
-		}
-		return <Package className="w-4 h-4" />
 	}
 
 	const getStockBadgeColor = () => {
@@ -71,158 +62,179 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 		return 'bg-green-500/20 text-green-400 border-green-500/30'
 	}
 
-	const getStockText = () => {
-		if (product.stock === 0) return 'Agotado'
-		if (product.stock <= 5) return `Solo ${product.stock} disponibles`
-		return `${product.stock} disponibles`
+	// Obtener la imagen del producto con fallback
+	const getProductImage = () => {
+		if (product.imageUrl && !imageError) {
+			// Si la imagen no empieza con /, asumimos que está en /products/
+			const imagePath = product.imageUrl.startsWith('/') 
+				? product.imageUrl 
+				: `/products/${product.imageUrl}`
+			return imagePath
+		}
+		return '/placeholder-poster.jpg'
 	}
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			className={`bg-soft-gray/10 backdrop-blur-sm border border-soft-gray/20 rounded-2xl overflow-hidden hover:bg-soft-gray/20 transition-all duration-300 group flex flex-col h-full ${
-				isOutOfStock ? 'opacity-60' : ''
+			initial={{ opacity: 0, scale: 0.95 }}
+			animate={{ opacity: 1, scale: 1 }}
+			whileHover={{ scale: 1.01 }}
+			transition={{ duration: 0.3 }}
+			className={`relative bg-black border border-soft-gray/10 rounded-2xl overflow-hidden group ${
+				isOutOfStock ? 'opacity-75' : ''
 			} ${className}`}
 		>
-			{/* Product Header */}
-			<div className="p-6 pb-4 flex-1 flex flex-col">
-				<div className="flex items-start justify-between mb-4">
-					<div className="flex items-center gap-3 flex-1">
-						<div className="w-10 h-10 bg-gradient-to-r from-sunset-orange/20 to-soft-gold/20 rounded-xl flex items-center justify-center flex-shrink-0">
-							{getCategoryIcon()}
+			{/* Main container with horizontal layout */}
+			<div className="flex flex-col sm:flex-row h-auto sm:h-[220px] relative">
+				{/* Content Section - Left Side */}
+				<div className="flex-1 p-6 flex flex-col justify-between z-10 min-h-[200px] sm:min-h-0">
+					{/* Header with title */}
+					<div>
+						<h3 className="text-soft-beige font-semibold text-xl leading-tight group-hover:text-soft-gold transition-colors duration-300">
+							{product.name}
+						</h3>
+					</div>
+
+					{/* Price and Actions */}
+					<div className="space-y-3">
+						{/* Price */}
+						<div className="flex items-center">
+							<span className="text-3xl font-bold text-soft-gold">
+								${product.price.toFixed(2)}
+							</span>
 						</div>
-						<div className="flex-1 min-w-0">
-							<h3 className="text-soft-beige font-semibold text-lg leading-tight">
-								{product.name}
-							</h3>
-							{product.description && (
-								<p className="text-soft-beige/60 text-sm mt-1 line-clamp-2">
-									{product.description}
-								</p>
+
+						{/* Cart Actions - Fixed height container to prevent layout shifts */}
+						<div className="min-h-[42px] flex items-center">
+							{currentQuantity === 0 ? (
+								<motion.div
+									initial={{ opacity: 0, scale: 0.95 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.95 }}
+									transition={{ duration: 0.2 }}
+									className="w-full"
+								>
+									<Button
+										onClick={handleAddToCart}
+										disabled={isOutOfStock || isAdding}
+										className={`w-full py-2.5 font-medium transition-all duration-300 rounded-lg ${
+											isOutOfStock
+												? 'bg-soft-gray/20 text-soft-gray cursor-not-allowed'
+												: isAdding
+													? 'bg-soft-gold/80 text-deep-night'
+													: 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night hover:shadow-md hover:shadow-soft-gold/10'
+										}`}
+									>
+										{isAdding ? (
+											<motion.div
+												animate={{ rotate: 360 }}
+												transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+												className="flex items-center gap-2"
+											>
+												<ShoppingCart className="w-4 h-4" />
+												<span>Agregando...</span>
+											</motion.div>
+										) : isOutOfStock ? (
+											<>
+												<Package className="w-4 h-4 mr-2" />
+												Producto Agotado
+											</>
+										) : (
+											<>
+												<ShoppingCart className="w-4 h-4 mr-2" />
+												Agregar al Carrito
+											</>
+										)}
+									</Button>
+								</motion.div>
+							) : (
+								<motion.div
+									initial={{ opacity: 0, scale: 0.95 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.95 }}
+									transition={{ duration: 0.2 }}
+									className="w-full flex items-center justify-between gap-3"
+								>
+									<div className="flex items-center bg-soft-gray/10 rounded-lg overflow-hidden">
+										<Button
+											onClick={decrementQuantity}
+											className="w-8 h-8 p-0 bg-transparent hover:bg-soft-gray/20 text-soft-beige border-none rounded-none transition-colors duration-200"
+										>
+											<Minus className="w-3 h-3" />
+										</Button>
+										
+										<div className="px-3 min-w-[60px] text-center">
+											<motion.span 
+												key={currentQuantity}
+												initial={{ scale: 1.2 }}
+												animate={{ scale: 1 }}
+												className="text-soft-beige font-medium text-sm block"
+											>
+												{currentQuantity}
+											</motion.span>
+											<span className="text-soft-beige/40 text-xs">
+												en carrito
+											</span>
+										</div>
+										
+										<Button
+											onClick={incrementQuantity}
+											disabled={currentQuantity >= product.stock}
+											className="w-8 h-8 p-0 bg-transparent hover:bg-soft-gray/20 text-soft-beige border-none disabled:opacity-50 rounded-none transition-colors duration-200"
+										>
+											<Plus className="w-3 h-3" />
+										</Button>
+									</div>
+
+									{/* Subtotal */}
+									<div className="flex flex-col items-end text-right">
+										<span className="text-soft-beige/40 text-xs">Total:</span>
+										<motion.span 
+											key={product.price * currentQuantity}
+											initial={{ scale: 1.1 }}
+											animate={{ scale: 1 }}
+											className="text-soft-gold font-semibold text-sm"
+										>
+											${(product.price * currentQuantity).toFixed(2)}
+										</motion.span>
+									</div>
+								</motion.div>
 							)}
 						</div>
 					</div>
-					
-					{/* Stock badge */}
-					<div className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ml-2 ${getStockBadgeColor()}`}>
-						{getStockText()}
-					</div>
 				</div>
 
-				{/* Spacer to push price down */}
-				<div className="flex-1"></div>
-
-				{/* Price and rating */}
-				<div className="flex items-center justify-between mt-4">
-					<div className="flex items-center gap-2">
-						<span className="text-2xl font-bold text-soft-gold">
-							${product.price.toFixed(2)}
-						</span>
-					</div>
+				{/* Image Section - Right Side */}
+				<div className="relative w-full sm:w-[220px] h-[220px] sm:h-[220px] flex-shrink-0 order-first sm:order-last">
+					{/* Gradient overlay from left for smooth transition */}
+					<div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent z-10 w-3/4 hidden sm:block" />
+					<div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10 sm:hidden" />
 					
-					{/* Mock rating - puedes integrar ratings reales */}
-					<div className="flex items-center gap-1">
-						{[...Array(5)].map((_, i) => (
-							<Star 
-								key={i} 
-								className={`w-3 h-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-soft-gray'}`} 
-							/>
-						))}
-						<span className="text-soft-beige/60 text-xs ml-1">(4.0)</span>
+					{/* Product Image */}
+					<div className="relative w-full h-full">
+						<Image
+							src={getProductImage()}
+							alt={product.name}
+							fill
+							className="object-cover"
+							onError={() => setImageError(true)}
+							sizes="(max-width: 640px) 100vw, 220px"
+							priority={false}
+						/>
 					</div>
-				</div>
-			</div>
 
-			{/* Actions - Always at bottom */}
-			<div className="px-6 pb-6 mt-auto">
-				{currentQuantity === 0 ? (
-					<Button
-						onClick={handleAddToCart}
-						disabled={isOutOfStock || isAdding}
-						className={`w-full py-3 font-semibold transition-all duration-300 ${
-							isOutOfStock
-								? 'bg-soft-gray/20 text-soft-gray cursor-not-allowed'
-								: isAdding
-									? 'bg-soft-gold/80 text-deep-night'
-									: 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night hover:shadow-lg hover:scale-[1.02]'
-						}`}
-					>
-						{isAdding ? (
-							<motion.div
-								animate={{ rotate: 360 }}
-								transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-								className="flex items-center gap-2"
-							>
-								<ShoppingCart className="w-5 h-5" />
-								<span>Agregando...</span>
-							</motion.div>
-						) : isOutOfStock ? (
-							<>
-								<Package className="w-5 h-5 mr-2" />
-								Producto Agotado
-							</>
-						) : (
-							<>
-								<ShoppingCart className="w-5 h-5 mr-2" />
-								Agregar al Carrito
-							</>
-						)}
-					</Button>
-				) : (
-					<div className="space-y-3">
-						{/* Quantity controls */}
-						<div className="flex items-center justify-between bg-soft-gray/20 rounded-xl p-3">
-							<Button
-								onClick={decrementQuantity}
-								className="w-8 h-8 p-0 bg-soft-gray/30 hover:bg-soft-gray/40 text-soft-beige border-none"
-							>
-								<Minus className="w-4 h-4" />
-							</Button>
-							
-							<div className="flex items-center gap-2">
-								<span className="text-soft-beige font-semibold">
-									{currentQuantity}
-								</span>
-								<span className="text-soft-beige/60 text-sm">
-									en carrito
-								</span>
-							</div>
-							
-							<Button
-								onClick={incrementQuantity}
-								disabled={currentQuantity >= product.stock}
-								className="w-8 h-8 p-0 bg-soft-gray/30 hover:bg-soft-gray/40 text-soft-beige border-none disabled:opacity-50"
-							>
-								<Plus className="w-4 h-4" />
-							</Button>
-						</div>
-
-						{/* Total for this product */}
-						<div className="flex items-center justify-between text-sm">
-							<span className="text-soft-beige/80">
-								Subtotal:
-							</span>
-							<span className="text-soft-gold font-semibold">
-								${(product.price * currentQuantity).toFixed(2)}
-							</span>
-						</div>
-
-						{/* Added to cart confirmation */}
+					{/* Quick add indicator when item in cart */}
+					{currentQuantity > 0 && (
 						<motion.div
-							initial={{ opacity: 0, scale: 0.9 }}
-							animate={{ opacity: 1, scale: 1 }}
-							className="flex items-center justify-center gap-2 text-soft-gold text-sm"
+							initial={{ scale: 0 }}
+							animate={{ scale: 1 }}
+							className="absolute top-2 right-2 bg-soft-gold text-deep-night rounded-full p-1.5 shadow-md z-20"
 						>
-							<Check className="w-4 h-4" />
-							<span>Agregado al carrito</span>
+							<Check className="w-3 h-3" />
 						</motion.div>
-					</div>
-				)}
+					)}
+				</div>
 			</div>
-
-			{/* Hover effect overlay */}
-			<div className="absolute inset-0 bg-gradient-to-t from-soft-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
 		</motion.div>
 	)
 } 

@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { formatShortDate } from '@/lib/utils/date'
+import { useHydration } from '@/app/hooks/use-hydration'
 
 export function GlobalCartSidebar() {
 	const { state, toggleCart, getExpiredSeats } = useCart()
@@ -258,7 +259,8 @@ function CartItemsList() {
 // Componente para seat item
 function SeatCartItemComponent({ item }: { item: SeatCartItem }) {
 	const { removeItem } = useCart()
-	const isExpired = item.expiresAt && new Date() > item.expiresAt
+	const isHydrated = useHydration()
+	const isExpired = item.expiresAt && isHydrated ? new Date() > item.expiresAt : false
 
 	return (
 		<motion.div
@@ -290,10 +292,13 @@ function SeatCartItemComponent({ item }: { item: SeatCartItem }) {
 								<span>{item.event.location}</span>
 							</span>
 						</div>
-						{item.expiresAt && (
+						{item.expiresAt && isHydrated && (
 							<div className="flex items-center gap-2">
 								<Clock className="w-3 h-3" />
-								<span className={isExpired ? 'text-red-400' : 'text-yellow-400'}>
+								<span 
+									className={isExpired ? 'text-red-400' : 'text-yellow-400'}
+									suppressHydrationWarning
+								>
 									{isExpired 
 										? 'Expirado' 
 										: `Expira ${formatDistanceToNow(item.expiresAt, { locale: es, addSuffix: true })}`

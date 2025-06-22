@@ -14,6 +14,7 @@ import {
 import { TrailerPlayer } from './TrailerPlayer'
 import { formatFullDate, formatTime, formatMonthShort } from '@/lib/utils/date'
 import { parseISO } from 'date-fns'
+import { useCurrentDate } from '@/app/hooks/use-hydration'
 
 interface Seat {
 	id: string
@@ -66,6 +67,7 @@ interface IMDbData {
 export function EventDetailClientComponent({ event }: EventDetailClientComponentProps) {
 	const [imdbData, setImdbData] = useState<IMDbData | null>(null)
 	const [isLoadingImdb, setIsLoadingImdb] = useState(false)
+	const currentDate = useCurrentDate()
 
 	useEffect(() => {
 		if (event.imdbId) {
@@ -99,7 +101,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 	}
 
 	const dateInfo = formatDate(event.dateTime)
-	const isEventPast = new Date(event.dateTime) < new Date()
+	const isEventPast = currentDate ? new Date(event.dateTime) < currentDate : false
 	const isAlmostFull = event.seatStats.available < event.seatStats.total * 0.2
 
 	return (

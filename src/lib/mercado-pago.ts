@@ -196,8 +196,8 @@ export function calculateOrderTotals(
 }
 
 // Generar referencia externa única
-export function generateExternalReference(userId: string, timestamp: number = Date.now()): string {
-	return `PUFF-${userId}-${timestamp}`
+export function generateExternalReference(userId: string, type: string = 'cart', timestamp: number = Date.now()): string {
+	return `PUFF-${type.toUpperCase()}-${userId}-${timestamp}`
 }
 
 // Función para verificar el estado de un pago

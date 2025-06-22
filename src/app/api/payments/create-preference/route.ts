@@ -203,6 +203,7 @@ export async function POST(request: NextRequest) {
 				failure: failureUrl,
 				pending: pendingUrl
 			},
+			auto_return: 'approved',
 			notification_url: webhookUrl,
 			statement_descriptor: 'PUFF&CHILL',
 			external_reference: externalReference

@@ -69,9 +69,9 @@ export function CircularSeatMap({
 		
 		// Color by tier
 		const tierColors = {
-			'Gold': '#FFC857', // soft-gold
-			'Silver': '#F0E3CA', // soft-beige
-			'Bronze': '#4C4A3E'  // dark-olive
+			'Puff XXL Estelar': '#FFC857', // soft-gold
+			'Reposera Deluxe': '#F0E3CA', // soft-beige
+			'Banquito': '#4C4A3E'  // dark-olive
 		}
 		
 		return tierColors[seat.tier as keyof typeof tierColors] || '#3A3A3C'
@@ -94,9 +94,9 @@ export function CircularSeatMap({
 		const userTierPriority = currentUserMembership.priority
 		
 		// User can select seat if their priority is <= seat priority
-		// Gold (1) can select Gold (1), Silver (2), Bronze (3)
-		// Silver (2) can select Silver (2), Bronze (3)
-		// Bronze (3) can only select Bronze (3)
+		// Puff XXL Estelar (1) can select Puff XXL Estelar (1), Reposera Deluxe (2), Banquito (3)
+		// Reposera Deluxe (2) can select Reposera Deluxe (2), Banquito (3)
+		// Banquito (3) can only select Banquito (3)
 		return userTierPriority <= seatTierPriority
 	}
 
@@ -173,7 +173,7 @@ export function CircularSeatMap({
 								y={y + 4}
 								textAnchor="middle"
 								className={`text-xs font-medium pointer-events-none ${
-									seat.tier === 'Gold' ? 'fill-deep-night' : 'fill-soft-beige'
+									seat.tier === 'Puff XXL Estelar' ? 'fill-deep-night' : 'fill-soft-beige'
 								}`}
 								fontSize="12"
 							>
@@ -232,6 +232,6 @@ export function CircularSeatMap({
 }
 
 function getTierPriority(tier: string): number {
-	const priorities = { 'Gold': 1, 'Silver': 2, 'Bronze': 3 }
+	const priorities = { 'Puff XXL Estelar': 1, 'Reposera Deluxe': 2, 'Banquito': 3 }
 	return priorities[tier as keyof typeof priorities] || 999
 } 

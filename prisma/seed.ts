@@ -9,36 +9,39 @@ async function main() {
 	// Crear tipos de membresía
 	const memberships = await Promise.all([
 		prisma.membershipTier.upsert({
-			where: { name: 'Bronze' },
+			where: { name: 'Banquito' },
 			update: {},
 			create: {
-				name: 'Bronze',
+				name: 'Banquito',
 				description: 'Membresía básica para disfrutar del cine bajo las estrellas',
 				priority: 3,
-				price: 15.00,
+				price: 14999.00,
 				benefits: 'Acceso a eventos regulares • Reserva con 7 días de anticipación • Descuento 5% en snacks',
+				imageUrl: '/memberships/membresia-banquito.png',
 			},
 		}),
 		prisma.membershipTier.upsert({
-			where: { name: 'Silver' },
+			where: { name: 'Reposera Deluxe' },
 			update: {},
 			create: {
-				name: 'Silver',
+				name: 'Reposera Deluxe',
 				description: 'Membresía intermedia con beneficios adicionales',
 				priority: 2,
-				price: 25.00,
+				price: 24999.00,
 				benefits: 'Acceso prioritario a eventos • Reserva con 14 días de anticipación • Descuento 10% en snacks • Acceso a eventos especiales',
+				imageUrl: '/memberships/membresia-reposera-deluxe.png',
 			},
 		}),
 		prisma.membershipTier.upsert({
-			where: { name: 'Gold' },
+			where: { name: 'Puff XXL Estelar' },
 			update: {},
 			create: {
-				name: 'Gold',
+				name: 'Puff XXL Estelar',
 				description: 'Membresía premium con todos los beneficios',
 				priority: 1,
-				price: 40.00,
+				price: 39999.00,
 				benefits: 'Acceso VIP a todos los eventos • Reserva con 21 días de anticipación • Bebida gratis por evento • Descuento 15% en snacks • Playlist colaborativa de Spotify • Asientos preferenciales',
+				imageUrl: '/memberships/membresia-puff-xxl-estelar.png',
 			},
 		}),
 	])
@@ -54,7 +57,7 @@ async function main() {
 			email: 'admin@puffandchill.com',
 			password: adminPassword,
 			name: 'Administrador',
-			membershipId: memberships[2].id, // Gold
+			membershipId: memberships[2].id, // Puff XXL Estelar
 			isAdmin: true,
 		},
 	})
@@ -71,7 +74,7 @@ async function main() {
 				email: 'carlos@test.com',
 				password: userPassword,
 				name: 'Carlos García',
-				membershipId: memberships[0].id, // Bronze
+				membershipId: memberships[0].id, // Banquito
 			},
 		}),
 		prisma.user.upsert({
@@ -81,7 +84,7 @@ async function main() {
 				email: 'maria@test.com',
 				password: userPassword,
 				name: 'María López',
-				membershipId: memberships[1].id, // Silver
+				membershipId: memberships[1].id, // Reposera Deluxe
 			},
 		}),
 		prisma.user.upsert({
@@ -91,44 +94,47 @@ async function main() {
 				email: 'ana@test.com',
 				password: userPassword,
 				name: 'Ana Rodríguez',
-				membershipId: memberships[2].id, // Gold
+				membershipId: memberships[2].id, // Puff XXL Estelar
 			},
 		}),
 	])
 
 	console.log('✅ Usuarios de prueba creados:', users.map(u => u.email).join(', '))
 
-	// Crear productos para el kiosco - AMPLIADO
+	// Crear productos para el kiosco - MENÚ PUFF & CHILL
 	const products = await Promise.all([
-		// Snacks
+		// 🍽️ Snacks Salados
 		prisma.product.upsert({
-			where: { name: 'Palomitas Clásicas' },
+			where: { name: 'Rolls de jamón crudo con rúcula y crema de queso' },
 			update: {},
 			create: {
-				name: 'Palomitas Clásicas',
-				description: 'Palomitas recién hechas con mantequilla',
-				price: 8.50,
-				stock: 100,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Palomitas Caramelo' },
-			update: {},
-			create: {
-				name: 'Palomitas Caramelo',
-				description: 'Palomitas dulces con caramelo artesanal',
-				price: 10.00,
-				stock: 75,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Nachos con Queso' },
-			update: {},
-			create: {
-				name: 'Nachos con Queso',
-				description: 'Nachos crujientes con salsa de queso',
-				price: 12.00,
+				name: 'Rolls de jamón crudo con rúcula y crema de queso',
+				description: 'Delicados rollitos fríos rellenos de jamón crudo, rúcula fresca y una suave crema de queso.',
+				price: 3000,
 				stock: 50,
+				imageUrl: '/products/rolls-jamon-rucula.png',
+			},
+		}),
+		prisma.product.upsert({
+			where: { name: 'Queso brie tibio con panecitos' },
+			update: {},
+			create: {
+				name: 'Queso brie tibio con panecitos',
+				description: 'Brie fundido suavemente, acompañado con panecillos crujientes. Un toque gourmet ideal para compartir.',
+				price: 3500,
+				stock: 40,
+				imageUrl: '/products/queso-brie-panecitos.png',
+			},
+		}),
+		prisma.product.upsert({
+			where: { name: 'Papas rústicas con especias y dips caseros' },
+			update: {},
+			create: {
+				name: 'Papas rústicas con especias y dips caseros',
+				description: 'Papas doradas con condimentos especiales, acompañadas de dips caseros para sumergir.',
+				price: 2500,
+				stock: 60,
+				imageUrl: '/products/papas-rusticas-dips.png',
 			},
 		}),
 		prisma.product.upsert({
@@ -136,131 +142,148 @@ async function main() {
 			update: {},
 			create: {
 				name: 'Nachos con Guacamole',
-				description: 'Nachos crujientes con guacamole fresco',
-				price: 14.00,
-				stock: 40,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Mix de Frutos Secos' },
-			update: {},
-			create: {
-				name: 'Mix de Frutos Secos',
-				description: 'Mezcla premium de almendras, nueces y arándanos',
-				price: 9.50,
-				stock: 60,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Chocolate Artesanal' },
-			update: {},
-			create: {
-				name: 'Chocolate Artesanal',
-				description: 'Tableta de chocolate 70% cacao',
-				price: 7.00,
-				stock: 35,
-			},
-		}),
-		// Bebidas Frías
-		prisma.product.upsert({
-			where: { name: 'Refresco Cola' },
-			update: {},
-			create: {
-				name: 'Refresco Cola',
-				description: 'Bebida refrescante 500ml',
-				price: 5.00,
-				stock: 80,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Refresco Naranja' },
-			update: {},
-			create: {
-				name: 'Refresco Naranja',
-				description: 'Bebida refrescante sabor naranja 500ml',
-				price: 5.00,
+				description: 'Crujientes nachos de maíz servidos con guacamole fresco y sabroso.',
+				price: 2500,
 				stock: 70,
+				imageUrl: '/products/nachos-guacamole.png',
 			},
 		}),
 		prisma.product.upsert({
-			where: { name: 'Agua Mineral' },
+			where: { name: 'Mini empanadas gourmet' },
 			update: {},
 			create: {
-				name: 'Agua Mineral',
-				description: 'Agua mineral natural 500ml',
-				price: 3.00,
-				stock: 120,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Agua Saborizada Limón' },
-			update: {},
-			create: {
-				name: 'Agua Saborizada Limón',
-				description: 'Agua saborizada natural sabor limón 500ml',
-				price: 4.50,
-				stock: 85,
-			},
-		}),
-		prisma.product.upsert({
-			where: { name: 'Jugo Natural Naranja' },
-			update: {},
-			create: {
-				name: 'Jugo Natural Naranja',
-				description: 'Jugo de naranja recién exprimido 400ml',
-				price: 8.00,
+				name: 'Mini empanadas gourmet',
+				description: 'Empanaditas caseras rellenas con sabores únicos: carne braseada, verdura y más.',
+				price: 2800,
 				stock: 45,
+				imageUrl: '/products/mini-empanadas-gourmet.png',
 			},
 		}),
 		prisma.product.upsert({
-			where: { name: 'Smoothie de Frutas' },
+			where: { name: 'Palomitas clásicas' },
 			update: {},
 			create: {
-				name: 'Smoothie de Frutas',
-				description: 'Batido natural de frutas mixtas 350ml',
-				price: 12.50,
-				stock: 30,
+				name: 'Palomitas clásicas',
+				description: 'Las infaltables del cine: livianas, crocantes y recién hechas.',
+				price: 1200,
+				stock: 100,
+				imageUrl: '/products/palomitas-clasicas.png',
 			},
 		}),
-		// Bebidas Calientes
 		prisma.product.upsert({
-			where: { name: 'Café Americano' },
+			where: { name: 'Mix de frutos secos' },
 			update: {},
 			create: {
-				name: 'Café Americano',
-				description: 'Café americano recién molido',
-				price: 6.00,
-				stock: 90,
+				name: 'Mix de frutos secos',
+				description: 'Combinación natural de almendras, nueces, pasas y castañas. Energía y sabor en un solo puñado.',
+				price: 1800,
+				stock: 80,
+				imageUrl: '/products/mix-frutos-secos.png',
 			},
 		}),
+		
+		// 🍬 Dulces y Chocolates
+		prisma.product.upsert({
+			where: { name: 'Cookies gourmet' },
+			update: {},
+			create: {
+				name: 'Cookies gourmet',
+				description: 'Galletas artesanales con chips de chocolate, crocantes por fuera y suaves por dentro.',
+				price: 1800,
+				stock: 65,
+				imageUrl: '/products/cookies-gourmet.png',
+			},
+		}),
+		prisma.product.upsert({
+			where: { name: 'Brownie' },
+			update: {},
+			create: {
+				name: 'Brownie',
+				description: 'Porción de brownie casero, húmedo y con intenso sabor a chocolate.',
+				price: 1600,
+				stock: 55,
+				imageUrl: '/products/brownie.png',
+			},
+		}),
+		prisma.product.upsert({
+			where: { name: 'Barra de chocolate artesanal' },
+			update: {},
+			create: {
+				name: 'Barra de chocolate artesanal',
+				description: 'Chocolate de elaboración local, con cacao seleccionado y textura suave.',
+				price: 2200,
+				stock: 40,
+				imageUrl: '/products/chocolate-artesanal.png',
+			},
+		}),
+		
+		// ☕ Bebidas Calientes
 		prisma.product.upsert({
 			where: { name: 'Cappuccino' },
 			update: {},
 			create: {
 				name: 'Cappuccino',
-				description: 'Cappuccino con leche espumada',
-				price: 8.50,
-				stock: 65,
+				description: 'Café suave con leche espumosa y un toque de cacao. Reconfortante y elegante.',
+				price: 2000,
+				stock: 90,
+				imageUrl: '/products/cappuccino.png',
 			},
 		}),
 		prisma.product.upsert({
-			where: { name: 'Té Chai Latte' },
+			where: { name: 'Café Americano' },
 			update: {},
 			create: {
-				name: 'Té Chai Latte',
-				description: 'Té chai especiado con leche cremosa',
-				price: 9.00,
-				stock: 40,
+				name: 'Café Americano',
+				description: 'Clásico café filtrado, ideal para disfrutar sin apuros.',
+				price: 1800,
+				stock: 95,
+				imageUrl: '/products/cafe-americano.png',
 			},
 		}),
 		prisma.product.upsert({
-			where: { name: 'Chocolate Caliente' },
+			where: { name: 'Chocolate caliente' },
 			update: {},
 			create: {
-				name: 'Chocolate Caliente',
-				description: 'Chocolate caliente artesanal con marshmallows',
-				price: 10.00,
-				stock: 50,
+				name: 'Chocolate caliente',
+				description: 'Bebida cremosa de chocolate espeso, perfecta para noches frescas.',
+				price: 2200,
+				stock: 70,
+				imageUrl: '/products/chocolate-caliente.png',
+			},
+		}),
+		
+		// 🧊 Bebidas Frías
+		prisma.product.upsert({
+			where: { name: 'Limonada casera' },
+			update: {},
+			create: {
+				name: 'Limonada casera',
+				description: 'Refrescante limonada natural, endulzada suavemente con un toque de menta.',
+				price: 1800,
+				stock: 85,
+				imageUrl: '/products/limonada-casera.png',
+			},
+		}),
+		prisma.product.upsert({
+			where: { name: 'Jugo exprimido' },
+			update: {},
+			create: {
+				name: 'Jugo exprimido',
+				description: 'Jugo de frutas frescas exprimido al momento: naranja, manzana o combinados.',
+				price: 2000,
+				stock: 75,
+				imageUrl: '/products/jugos-prensados.png',
+			},
+		}),
+		prisma.product.upsert({
+			where: { name: 'Botellita de vino tinto con copa individual' },
+			update: {},
+			create: {
+				name: 'Botellita de vino tinto con copa individual',
+				description: 'Vino tinto suave en botella individual, con copa incluida para disfrutar con estilo.',
+				price: 3800,
+				stock: 30,
+				imageUrl: '/products/vino-copa-individual.png',
 			},
 		}),
 	])
@@ -281,25 +304,25 @@ async function main() {
 			},
 		}),
 		prisma.discount.upsert({
-			where: { code: 'GOLD20' },
+			where: { code: 'PUFFXXL20' },
 			update: {},
 			create: {
-				code: 'GOLD20',
-				description: 'Descuento exclusivo para miembros Gold',
+				code: 'PUFFXXL20',
+				description: 'Descuento exclusivo para miembros Puff XXL Estelar',
 				percentage: 20.0,
-				membershipTierId: memberships[2].id, // Solo para Gold
+				membershipTierId: memberships[2].id, // Solo para Puff XXL Estelar
 				validFrom: new Date(),
 				validUntil: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 días
 			},
 		}),
 		prisma.discount.upsert({
-			where: { code: 'SILVER15' },
+			where: { code: 'REPOSERA15' },
 			update: {},
 			create: {
-				code: 'SILVER15',
-				description: 'Descuento especial para miembros Silver',
+				code: 'REPOSERA15',
+				description: 'Descuento especial para miembros Reposera Deluxe',
 				percentage: 15.0,
-				membershipTierId: memberships[1].id, // Solo para Silver
+				membershipTierId: memberships[1].id, // Solo para Reposera Deluxe
 				validFrom: new Date(),
 				validUntil: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), // 45 días
 			},
@@ -316,13 +339,13 @@ async function main() {
 			},
 		}),
 		prisma.discount.upsert({
-			where: { code: 'BRONZE5' },
+			where: { code: 'BANQUITO5' },
 			update: {},
 			create: {
-				code: 'BRONZE5',
-				description: 'Descuento para miembros Bronze',
+				code: 'BANQUITO5',
+				description: 'Descuento para miembros Banquito',
 				percentage: 5.0,
-				membershipTierId: memberships[0].id, // Solo para Bronze
+				membershipTierId: memberships[0].id, // Solo para Banquito
 				validFrom: new Date(),
 				validUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 días
 			},
@@ -474,18 +497,41 @@ async function main() {
 
 	console.log('✅ Eventos creados:', events.length, 'eventos')
 
-	// Crear asientos para todos los eventos
+	// Crear asientos para todos los eventos con distribución de anfiteatro
 	let totalSeats = 0
 	for (const event of events) {
 		const seats = []
-		const tiers = ['Bronze', 'Silver', 'Gold']
+		let seatNumber = 1
 		
-		for (let i = 1; i <= 30; i++) {
-			const tier = tiers[Math.floor((i - 1) / 10)] // 10 asientos por tier
+		// Distribución anfiteatro:
+		// Puff XXL Estelar: 6 asientos (fila frontal - más cerca de la pantalla)
+		// Reposera Deluxe: 10 asientos (fila media)  
+		// Banquito: 14 asientos (fila trasera - más lejos de la pantalla)
+		
+		// Asientos Puff XXL Estelar (1-6) - Fila frontal VIP
+		for (let i = 1; i <= 6; i++) {
 			seats.push({
 				eventId: event.id,
-				seatNumber: i,
-				tier: tier,
+				seatNumber: seatNumber++,
+				tier: 'Puff XXL Estelar',
+			})
+		}
+		
+		// Asientos Reposera Deluxe (7-16) - Fila media
+		for (let i = 1; i <= 10; i++) {
+			seats.push({
+				eventId: event.id,
+				seatNumber: seatNumber++,
+				tier: 'Reposera Deluxe',
+			})
+		}
+		
+		// Asientos Banquito (17-30) - Fila trasera
+		for (let i = 1; i <= 14; i++) {
+			seats.push({
+				eventId: event.id,
+				seatNumber: seatNumber++,
+				tier: 'Banquito',
 			})
 		}
 
@@ -497,85 +543,111 @@ async function main() {
 	}
 
 	console.log('✅ Asientos creados:', totalSeats, 'asientos total')
+	console.log('🎭 Distribución anfiteatro: Puff XXL Estelar (6), Reposera Deluxe (10), Banquito (14) por evento')
 
 	// Crear algunas reservas de ejemplo
 	const inceptionEvent = events.find(e => e.title.includes('Inception'))
 	const bladeRunnerEvent = events.find(e => e.title.includes('Blade Runner'))
 	
 	if (inceptionEvent && bladeRunnerEvent) {
+		// Obtener asientos disponibles para cada evento
 		const inceptionSeats = await prisma.seat.findMany({
-			where: { eventId: inceptionEvent.id },
-			take: 5
+			where: { 
+				eventId: inceptionEvent.id,
+				isReserved: false
+			},
+			take: 3
 		})
 		
 		const bladeRunnerSeats = await prisma.seat.findMany({
-			where: { eventId: bladeRunnerEvent.id },
-			take: 3
-		})
-
-		// Reservas para Inception
-		const inceptionReservations = await Promise.all([
-			prisma.reservation.create({
-				data: {
-					userId: users[0].id, // Carlos
-					eventId: inceptionEvent.id,
-					seatId: inceptionSeats[0].id,
-					status: 'confirmed',
-				}
-			}),
-			prisma.reservation.create({
-				data: {
-					userId: users[1].id, // María
-					eventId: inceptionEvent.id,
-					seatId: inceptionSeats[1].id,
-					status: 'confirmed',
-				}
-			}),
-			prisma.reservation.create({
-				data: {
-					userId: users[2].id, // Ana
-					eventId: inceptionEvent.id,
-					seatId: inceptionSeats[2].id,
-					status: 'pending',
-				}
-			}),
-		])
-
-		// Reservas para Blade Runner
-		const bladeRunnerReservations = await Promise.all([
-			prisma.reservation.create({
-				data: {
-					userId: users[1].id, // María
-					eventId: bladeRunnerEvent.id,
-					seatId: bladeRunnerSeats[0].id,
-					status: 'confirmed',
-				}
-			}),
-			prisma.reservation.create({
-				data: {
-					userId: users[2].id, // Ana
-					eventId: bladeRunnerEvent.id,
-					seatId: bladeRunnerSeats[1].id,
-					status: 'pending',
-				}
-			}),
-		])
-
-		console.log('✅ Reservas creadas:', inceptionReservations.length + bladeRunnerReservations.length, 'reservas')
-
-		// Marcar asientos como reservados
-		await prisma.seat.updateMany({
-			where: {
-				id: {
-					in: [...inceptionSeats.slice(0, 3), ...bladeRunnerSeats.slice(0, 2)].map(s => s.id)
-				}
+			where: { 
+				eventId: bladeRunnerEvent.id,
+				isReserved: false
 			},
-			data: { isReserved: true }
+			take: 2
 		})
+
+		let reservationsCreated = 0
+
+		// Reservas para Inception (solo si hay asientos disponibles)
+		if (inceptionSeats.length >= 3) {
+			const inceptionReservations = await Promise.all([
+				prisma.reservation.create({
+					data: {
+						userId: users[0].id, // Carlos
+						eventId: inceptionEvent.id,
+						seatId: inceptionSeats[0].id,
+						status: 'confirmed',
+					}
+				}),
+				prisma.reservation.create({
+					data: {
+						userId: users[1].id, // María
+						eventId: inceptionEvent.id,
+						seatId: inceptionSeats[1].id,
+						status: 'confirmed',
+					}
+				}),
+				prisma.reservation.create({
+					data: {
+						userId: users[2].id, // Ana
+						eventId: inceptionEvent.id,
+						seatId: inceptionSeats[2].id,
+						status: 'pending',
+					}
+				}),
+			])
+			reservationsCreated += inceptionReservations.length
+
+			// Marcar asientos de Inception como reservados
+			await prisma.seat.updateMany({
+				where: {
+					id: {
+						in: inceptionSeats.slice(0, 3).map(s => s.id)
+					}
+				},
+				data: { isReserved: true }
+			})
+		}
+
+		// Reservas para Blade Runner (solo si hay asientos disponibles)
+		if (bladeRunnerSeats.length >= 2) {
+			const bladeRunnerReservations = await Promise.all([
+				prisma.reservation.create({
+					data: {
+						userId: users[1].id, // María
+						eventId: bladeRunnerEvent.id,
+						seatId: bladeRunnerSeats[0].id,
+						status: 'confirmed',
+					}
+				}),
+				prisma.reservation.create({
+					data: {
+						userId: users[2].id, // Ana
+						eventId: bladeRunnerEvent.id,
+						seatId: bladeRunnerSeats[1].id,
+						status: 'pending',
+					}
+				}),
+			])
+			reservationsCreated += bladeRunnerReservations.length
+
+			// Marcar asientos de Blade Runner como reservados
+			await prisma.seat.updateMany({
+				where: {
+					id: {
+						in: bladeRunnerSeats.slice(0, 2).map(s => s.id)
+					}
+				},
+				data: { isReserved: true }
+			})
+		}
+
+		console.log('✅ Reservas creadas:', reservationsCreated, 'reservas')
 	}
 
 	// Crear órdenes de ejemplo con items
-	const sampleProducts = products.slice(0, 16) // Tomar todos los productos para las órdenes
+	const sampleProducts = products // Tomar todos los productos para las órdenes
 
 	const orders = await Promise.all([
 		// Orden 1 - Carlos
@@ -583,18 +655,18 @@ async function main() {
 			data: {
 				userId: users[0].id,
 				status: 'paid',
-				totalAmount: 25.50,
+				totalAmount: 4200, // $1200 x 2 + $1800 x 1
 				items: {
 					create: [
 						{
-							productId: sampleProducts[0].id, // Palomitas Clásicas
+							productId: sampleProducts[5].id, // Palomitas clásicas
 							quantity: 2,
-							price: 8.50,
+							price: 1200,
 						},
 						{
-							productId: sampleProducts[6].id, // Refresco Cola
-							quantity: 2,
-							price: 5.00,
+							productId: sampleProducts[14].id, // Limonada casera
+							quantity: 1,
+							price: 1800,
 						},
 					]
 				}
@@ -605,23 +677,23 @@ async function main() {
 			data: {
 				userId: users[1].id,
 				status: 'paid',
-				totalAmount: 34.50,
+				totalAmount: 6300, // $2500 + $1800 + $2000
 				items: {
 					create: [
 						{
-							productId: sampleProducts[2].id, // Nachos con Queso
+							productId: sampleProducts[3].id, // Nachos con Guacamole
 							quantity: 1,
-							price: 12.00,
+							price: 2500,
 						},
 						{
-							productId: sampleProducts[10].id, // Jugo Natural Naranja
-							quantity: 2,
-							price: 8.00,
+							productId: sampleProducts[8].id, // Cookies gourmet
+							quantity: 1,
+							price: 1800,
 						},
 						{
-							productId: sampleProducts[5].id, // Chocolate Artesanal
+							productId: sampleProducts[15].id, // Jugo exprimido
 							quantity: 1,
-							price: 7.00,
+							price: 2000,
 						},
 					]
 				}
@@ -632,23 +704,23 @@ async function main() {
 			data: {
 				userId: users[2].id,
 				status: 'pending',
-				totalAmount: 42.00,
+				totalAmount: 8000, // $2800 + $2200 + $3000
 				items: {
 					create: [
 						{
-							productId: sampleProducts[1].id, // Palomitas Caramelo
+							productId: sampleProducts[4].id, // Mini empanadas gourmet
 							quantity: 1,
-							price: 10.00,
+							price: 2800,
 						},
 						{
-							productId: sampleProducts[11].id, // Smoothie de Frutas
-							quantity: 2,
-							price: 12.50,
+							productId: sampleProducts[10].id, // Barra de chocolate artesanal
+							quantity: 1,
+							price: 2200,
 						},
 						{
-							productId: sampleProducts[4].id, // Mix de Frutos Secos
+							productId: sampleProducts[0].id, // Rolls de jamón crudo
 							quantity: 1,
-							price: 9.50,
+							price: 3000,
 						},
 					]
 				}
@@ -659,23 +731,18 @@ async function main() {
 			data: {
 				userId: users[0].id,
 				status: 'paid',
-				totalAmount: 28.00,
+				totalAmount: 4000, // $2000 + $2000
 				items: {
 					create: [
 						{
-							productId: sampleProducts[3].id, // Nachos con Guacamole
+							productId: sampleProducts[11].id, // Cappuccino
 							quantity: 1,
-							price: 14.00,
+							price: 2000,
 						},
 						{
-							productId: sampleProducts[12].id, // Café Americano
+							productId: sampleProducts[15].id, // Jugo exprimido
 							quantity: 1,
-							price: 6.00,
-						},
-						{
-							productId: sampleProducts[8].id, // Agua Mineral
-							quantity: 2,
-							price: 3.00,
+							price: 2000,
 						},
 					]
 				}
@@ -706,23 +773,11 @@ async function main() {
 
 	// Actualizar stock de productos vendidos
 	await prisma.product.update({
-		where: { id: sampleProducts[0].id }, // Palomitas Clásicas
+		where: { id: sampleProducts[5].id }, // Palomitas clásicas
 		data: { stock: { decrement: 2 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[6].id }, // Refresco Cola
-		data: { stock: { decrement: 2 } }
-	})
-	await prisma.product.update({
-		where: { id: sampleProducts[2].id }, // Nachos con Queso
-		data: { stock: { decrement: 1 } }
-	})
-	await prisma.product.update({
-		where: { id: sampleProducts[10].id }, // Jugo Natural Naranja
-		data: { stock: { decrement: 2 } }
-	})
-	await prisma.product.update({
-		where: { id: sampleProducts[5].id }, // Chocolate Artesanal
+		where: { id: sampleProducts[14].id }, // Limonada casera
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
@@ -730,32 +785,57 @@ async function main() {
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[12].id }, // Café Americano
+		where: { id: sampleProducts[8].id }, // Cookies gourmet
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[8].id }, // Agua Mineral
-		data: { stock: { decrement: 2 } }
+		where: { id: sampleProducts[15].id }, // Jugo exprimido
+		data: { stock: { decrement: 1 } }
+	})
+	await prisma.product.update({
+		where: { id: sampleProducts[4].id }, // Mini empanadas gourmet
+		data: { stock: { decrement: 1 } }
+	})
+	await prisma.product.update({
+		where: { id: sampleProducts[10].id }, // Barra de chocolate artesanal
+		data: { stock: { decrement: 1 } }
+	})
+	await prisma.product.update({
+		where: { id: sampleProducts[0].id }, // Rolls de jamón crudo
+		data: { stock: { decrement: 1 } }
+	})
+	await prisma.product.update({
+		where: { id: sampleProducts[11].id }, // Cappuccino
+		data: { stock: { decrement: 1 } }
+	})
+	await prisma.product.update({
+		where: { id: sampleProducts[15].id }, // Jugo exprimido (segunda compra)
+		data: { stock: { decrement: 1 } }
 	})
 
 	console.log('✅ Stock de productos actualizado')
 
 	console.log('🎉 Seed completado exitosamente!')
 	console.log('\n📊 Resumen de datos creados:')
-	console.log(`💳 Pagos: ${payments.length}`);
+	console.log(`💳 Pagos: ${payments.length}`)
+	console.log(`🎭 Distribución de asientos por evento:`)
+	console.log(`   • Puff XXL Estelar: 6 asientos (fila frontal VIP)`)
+	console.log(`   • Reposera Deluxe: 10 asientos (fila media)`)
+	console.log(`   • Banquito: 14 asientos (fila trasera)`)
+	console.log(`   • Total: 30 asientos por evento`)
 
-	console.log('\n📋 Credenciales de prueba:');
-	console.log('👤 Admin: admin@puffandchill.com / admin123');
-	console.log('👤 Usuario Bronze: carlos@test.com / user123');
-	console.log('👤 Usuario Silver: maria@test.com / user123');
-	console.log('👤 Usuario Gold: ana@test.com / user123');
+	console.log('\n📋 Credenciales de prueba:')
+	console.log('👤 Admin: admin@puffandchill.com / admin123')
+	console.log('👤 Usuario Banquito: carlos@test.com / user123')
+	console.log('👤 Usuario Reposera Deluxe: maria@test.com / user123')
+	console.log('👤 Usuario Puff XXL Estelar: ana@test.com / user123')
 }
 
 main()
 	.catch((e) => {
-		console.error('❌ Error durante el seed:', e);
-		process.exit(1);
+		console.error('❌ Error durante el seed:', e)
+		process.exit(1)
 	})
 	.finally(async () => {
-		await prisma.$disconnect();
-	});
+		await prisma.$disconnect()
+	})

@@ -67,44 +67,7 @@ export function ShopClientComponent({ initialProducts, categorizedProducts }: Sh
 						/>
 					</div>
 
-					{/* Categories */}
-					<div className="flex flex-wrap gap-3">
-						{categories.map((category) => {
-							const Icon = category.icon
-							return (
-								<button
-									key={category.id}
-									onClick={() => setSelectedCategory(category.id)}
-									className={`
-										flex items-center space-x-2 px-5 py-2.5 rounded-full transition-all duration-300
-										${selectedCategory === category.id
-											? `bg-gradient-sunset-gold text-deep-night shadow-lg transform scale-105`
-											: 'bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20'
-										}
-									`}
-								>
-									<Icon className="w-4 h-4" />
-									<span className="font-medium">{category.name}</span>
-								</button>
-							)
-						})}
-					</div>
 
-					{/* Sort Options */}
-					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-2 text-soft-beige/70">
-							<Filter className="w-4 h-4" />
-							<span className="text-sm">{filteredProducts.length} productos</span>
-						</div>
-						<select
-							value={sortBy}
-							onChange={(e) => setSortBy(e.target.value as 'name' | 'price')}
-							className="px-4 py-2 bg-deep-night/50 border border-soft-gray/20 rounded-xl text-soft-beige text-sm focus:outline-none focus:border-sunset-orange/50 transition-colors duration-300"
-						>
-							<option value="name">Ordenar por nombre</option>
-							<option value="price">Ordenar por precio</option>
-						</select>
-					</div>
 				</div>
 			</div>
 
@@ -116,7 +79,7 @@ export function ShopClientComponent({ initialProducts, categorizedProducts }: Sh
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 				>
 					{filteredProducts.map((product) => (
 						<ProductCard key={product.id} product={product} />
