@@ -14,6 +14,7 @@ interface Event {
 	category: string | null
 	imdbId: string | null
 	tmdbId: string | null
+	imageUrl: string | null
 	reservationCount: number
 	totalSeats: number
 	availableSeats: number
