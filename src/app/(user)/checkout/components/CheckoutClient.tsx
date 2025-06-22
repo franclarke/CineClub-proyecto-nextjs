@@ -475,7 +475,7 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 					<button
 						onClick={proceedToPayment}
 						disabled={isLoading || allItems.length === 0}
-						className="w-full bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night py-5 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3 group"
+						className="group/button flex items-center justify-center gap-2 w-full bg-gradient-sunset-gold hover:bg-gradient-sunset-red text-deep-night px-4 py-6 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-sunset-orange/25"
 					>
 						{isLoading ? (
 							<>

@@ -116,12 +116,12 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 								</div>
 								<div className={`
 									px-4 py-2 rounded-xl text-sm font-bold border
-									${order.status === 'paid' 
+									${order.status === 'completed' 
 										? 'bg-soft-gold/20 text-soft-gold border-soft-gold/30' 
 										: 'bg-soft-gray/20 text-soft-gray border-soft-gray/30'
 									}
 								`}>
-									{order.status === 'paid' ? 'PAGADO' : order.status.toUpperCase()}
+									{order.status === 'completed' ? 'PAGADO' : order.status.toUpperCase()}
 								</div>
 							</div>
 						</div>

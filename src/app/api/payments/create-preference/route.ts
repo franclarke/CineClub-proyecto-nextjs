@@ -106,10 +106,27 @@ export async function POST(request: NextRequest) {
 
 		// Separar productos y asientos
 		const productItems = items.filter(item => item.type === 'product')
+		const seatItems = items.filter(item => item.type === 'seat')
 		
 		if (items.length === 0) {
 			return NextResponse.json({ error: 'No hay items en el carrito' }, { status: 400 })
 		}
+
+		// Verificar disponibilidad de asientos antes de crear la orden
+		const { isSeatAvailable } = await import('@/lib/utils/reservations')
+		
+		for (const seatItem of seatItems) {
+			const isAvailable = await isSeatAvailable(seatItem.seat.id)
+			
+			if (!isAvailable) {
+				return NextResponse.json({ 
+					error: `Asiento ${seatItem.seatNumber} no está disponible. Puede estar reservado o temporalmente ocupado.` 
+				}, { status: 400 })
+			}
+		}
+
+		// Generar referencia externa antes de crear la orden
+		const externalReference = generateExternalReference(user.id)
 
 		// Crear orden en la base de datos
 		const order = await prisma.order.create({
@@ -117,6 +134,7 @@ export async function POST(request: NextRequest) {
 				userId: user.id,
 				status: 'pending',
 				totalAmount: totals.total,
+				externalReference: externalReference,
 				items: {
 					create: productItems.map(item => ({
 						product: {
@@ -136,13 +154,41 @@ export async function POST(request: NextRequest) {
 			}
 		})
 
-		// TODO: Crear reservaciones para los asientos cuando se implemente
+		// Crear reservaciones temporales para los asientos
+		for (const seatItem of seatItems) {
+			await prisma.reservation.create({
+				data: {
+					userId: user.id,
+					eventId: seatItem.event.id,
+					seatId: seatItem.seat.id,
+					orderId: order.id,
+					status: 'pending'
+				}
+			})
+		}
 
 		// Convertir TODOS los items a formato MercadoPago
 		const mpItems = convertCartItemsToMPItems(items)
 
 		// Determine base URL for callbacks
 		const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
+		
+		// Ensure baseUrl doesn't have trailing slash
+		const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+		
+		// Validate that URLs are properly formatted
+		const successUrl = `${cleanBaseUrl}/checkout/success?order_id=${order.id}`
+		const failureUrl = `${cleanBaseUrl}/checkout/failure?order_id=${order.id}`
+		const pendingUrl = `${cleanBaseUrl}/checkout/pending?order_id=${order.id}`
+		const webhookUrl = `${cleanBaseUrl}/api/payments/webhook`
+		
+		console.log('MercadoPago URLs:', {
+			baseUrl: cleanBaseUrl,
+			success: successUrl,
+			failure: failureUrl,
+			pending: pendingUrl,
+			webhook: webhookUrl
+		})
 
 		// Crear preferencia de MercadoPago
 		const preferenceData: MPPreferenceData = {
@@ -153,17 +199,13 @@ export async function POST(request: NextRequest) {
 				email: user.email,
 			},
 			back_urls: {
-				success: `${baseUrl}/checkout/success?order_id=${order.id}`,
-				failure: `${baseUrl}/checkout/failure?order_id=${order.id}`,
-				pending: `${baseUrl}/checkout/pending?order_id=${order.id}`
+				success: successUrl,
+				failure: failureUrl,
+				pending: pendingUrl
 			},
-			auto_return: 'approved',
-			notification_url: `${baseUrl}/api/payments/webhook`,
+			notification_url: webhookUrl,
 			statement_descriptor: 'PUFF&CHILL',
-			external_reference: generateExternalReference(user.id),
-			expires: true,
-			expiration_date_from: new Date().toISOString(),
-			expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+			external_reference: externalReference
 		}
 
 		const preference = await createPaymentPreference(preferenceData)

@@ -15,6 +15,10 @@ interface DataAccessProps {
  * filtering/pagination via TanStack React Query.
  */
 export async function DataAccess({ searchParams }: DataAccessProps) {
+  // Limpiar reservas pendientes expiradas automáticamente
+  const { cleanupExpiredReservations } = await import('@/lib/utils/reservations')
+  await cleanupExpiredReservations()
+
   const category = typeof searchParams.category === 'string' ? searchParams.category : undefined
   const sort = typeof searchParams.sort === 'string' ? searchParams.sort : 'date'
   const pageParam = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1

@@ -40,11 +40,11 @@ export async function DataAccess() {
 		}
 	})
 
-	// Get user's paid orders with order items and products
+	// Get user's completed orders with order items and products
 	const orders = await prisma.order.findMany({
 		where: {
 			userId: session.user.id,
-			status: 'paid'
+			status: 'completed'
 		},
 		include: {
 			items: {

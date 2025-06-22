@@ -15,6 +15,10 @@ export async function DataAccess({ eventId }: DataAccessProps) {
 		notFound()
 	}
 
+	// Limpiar reservas pendientes expiradas para este evento
+	const { cleanupExpiredReservations } = await import('@/lib/utils/reservations')
+	await cleanupExpiredReservations(eventId)
+
 	// Get event with seats
 	const event = await prisma.event.findUnique({
 		where: { id: eventId },

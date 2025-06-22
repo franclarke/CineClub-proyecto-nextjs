@@ -97,6 +97,16 @@ export async function POST(request: NextRequest) {
 					where: { id: order.id },
 					data: { status: 'cancelled' }
 				})
+
+				// Eliminar reservas pendientes cuando el pago falla
+				const deletedReservations = await prisma.reservation.deleteMany({
+					where: { 
+						orderId: order.id,
+						status: 'pending'
+					}
+				})
+
+				console.log(`Pago fallido: eliminadas ${deletedReservations.count} reservas pendientes para la orden ${order.id}`)
 			}
 
 			return NextResponse.json({ received: true })
@@ -166,7 +176,12 @@ async function processOrderItems(order: OrderWithItems) {
 				}
 			})
 		}
+
+		console.log(`Orden ${order.id} procesada exitosamente: ${order.items.length} productos, ${order.reservations.length} reservas`)
 	} catch (error) {
 		console.error('Error procesando items de la orden:', error)
+		throw error
 	}
-} 
+}
+
+ 

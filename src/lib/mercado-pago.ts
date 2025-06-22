@@ -2,8 +2,12 @@ import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { CartItem, ProductCartItem, SeatCartItem } from '@/types/cart'
 
 // Configurar MercadoPago
+if (!process.env.MP_ACCESS_TOKEN) {
+	throw new Error('MP_ACCESS_TOKEN no está configurado en las variables de entorno')
+}
+
 const client = new MercadoPagoConfig({
-	accessToken: process.env.MP_ACCESS_TOKEN!,
+	accessToken: process.env.MP_ACCESS_TOKEN,
 })
 
 const preference = new Preference(client)
@@ -88,25 +92,41 @@ export function convertCartItemsToMPItems(items: CartItem[]): MPItem[] {
 // Crear preferencia de pago
 export async function createPaymentPreference(data: MPPreferenceData) {
 	try {
+		console.log('Creating MercadoPago preference with data:', {
+			items: data.items,
+			back_urls: data.back_urls,
+			auto_return: data.auto_return,
+			notification_url: data.notification_url
+		})
+		
 		const response = await preference.create({
 			body: {
 				items: data.items,
 				payer: data.payer,
 				back_urls: data.back_urls,
-				auto_return: data.auto_return,
+				...(data.auto_return && { auto_return: data.auto_return }),
 				payment_methods: data.payment_methods,
 				notification_url: data.notification_url,
 				statement_descriptor: data.statement_descriptor,
 				external_reference: data.external_reference,
-				expires: data.expires,
-				expiration_date_from: data.expiration_date_from,
-				expiration_date_to: data.expiration_date_to
+				...(data.expires && {
+					expires: data.expires,
+					expiration_date_from: data.expiration_date_from,
+					expiration_date_to: data.expiration_date_to
+				})
 			}
 		})
 		
+		console.log('MercadoPago preference created successfully:', response.id)
 		return response
 	} catch (error) {
 		console.error('Error creating MercadoPago preference:', error)
+		
+		// Proporcionar información más específica del error
+		if (error && typeof error === 'object' && 'message' in error) {
+			throw new Error(`Error de MercadoPago: ${error.message}`)
+		}
+		
 		throw new Error('Error al crear la preferencia de pago')
 	}
 }
