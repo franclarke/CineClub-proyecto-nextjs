@@ -3,20 +3,21 @@ import { notFound } from 'next/navigation'
 import { DataAccess } from './components/DataAccess'
 
 interface SeatMapPageProps {
-	params: {
+	params: Promise<{
 		id: string
-	}
+	}>
 }
 
 export async function generateMetadata({ params }: SeatMapPageProps): Promise<Metadata> {
+	const { id } = await params
 	return {
-		title: `Asientos para evento ${params.id} | Puff & Chill`,
+		title: `Asientos para evento ${id} | Puff & Chill`,
 		description: 'Elige tu asiento perfecto para esta experiencia de cine bajo las estrellas'
 	}
 }
 
-export default function SeatMapPage({ params }: SeatMapPageProps) {
-	const { id } = params
+export default async function SeatMapPage({ params }: SeatMapPageProps) {
+	const { id } = await params
 	
 	if (!id) {
 		notFound()
