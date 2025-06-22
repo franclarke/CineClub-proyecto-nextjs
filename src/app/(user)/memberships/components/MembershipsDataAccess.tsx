@@ -39,11 +39,7 @@ async function getMembershipTiers() {
 	})
 }
 
-interface MembershipsDataAccessProps {
-	upgrade?: string
-}
-
-export async function MembershipsDataAccess({ upgrade }: MembershipsDataAccessProps) {
+export async function MembershipsDataAccess() {
 	const session = await getServerSession(authOptions)
 	
 	const [user, membershipTiers] = await Promise.all([
@@ -55,7 +51,6 @@ export async function MembershipsDataAccess({ upgrade }: MembershipsDataAccessPr
 		<MembershipsClientComponent 
 			user={user} 
 			membershipTiers={membershipTiers}
-			suggestedUpgrade={upgrade}
 			isAuthenticated={!!session}
 		/>
 	)

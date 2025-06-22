@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { createMercadoPagoPreference } from '@/lib/mercado-pago'
+import { createPaymentPreference } from '@/lib/mercado-pago'
 
 export async function POST(request: NextRequest) {
 	try {
@@ -73,12 +73,12 @@ export async function POST(request: NextRequest) {
 				failure: `${process.env.NEXTAUTH_URL}/memberships/payment/failure`,
 				pending: `${process.env.NEXTAUTH_URL}/memberships/payment/pending`
 			},
-			auto_return: 'approved',
+			auto_return: 'approved' as const,
 			external_reference: order.id,
 			notification_url: `${process.env.NEXTAUTH_URL}/api/payments/webhook`
 		}
 
-		const preference = await createMercadoPagoPreference(preferenceData)
+		const preference = await createPaymentPreference(preferenceData)
 
 		// Actualizar orden con referencia externa
 		await prisma.order.update({

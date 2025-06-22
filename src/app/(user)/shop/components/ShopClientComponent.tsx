@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Product } from '@prisma/client'
-import { Search, Filter, Package2, Coffee, Cookie, Sparkles } from 'lucide-react'
+import { Search, Package2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProductCard } from '@/app/components/products/ProductCard'
 
@@ -16,18 +16,10 @@ interface ShopClientComponentProps {
 	}
 }
 
-const categories = [
-	{ id: 'all', name: 'Todos', icon: Package2, color: 'from-sunset-orange to-soft-gold' },
-	{ id: 'snacks', name: 'Snacks', icon: Cookie, color: 'from-warm-red to-sunset-orange' },
-	{ id: 'beverages', name: 'Bebidas', icon: Coffee, color: 'from-deep-blue to-soft-blue' },
-	{ id: 'combos', name: 'Combos', icon: Sparkles, color: 'from-soft-gold to-warm-yellow' },
-	{ id: 'special', name: 'Especiales', icon: Sparkles, color: 'from-deep-purple to-soft-purple' }
-]
-
 export function ShopClientComponent({ initialProducts, categorizedProducts }: ShopClientComponentProps) {
-	const [selectedCategory, setSelectedCategory] = useState('all')
+	const [selectedCategory] = useState('all')
 	const [searchQuery, setSearchQuery] = useState('')
-	const [sortBy, setSortBy] = useState<'name' | 'price'>('name')
+	const [sortBy] = useState<'name' | 'price'>('name')
 
 	// Filtrar y ordenar productos
 	const filteredProducts = useMemo(() => {

@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest) {
 		}
 
 		// Preparar objeto de actualización solo con campos definidos
-		const updateData: any = {}
+		const updateData: { name?: string; phone?: string; birthDate?: string; location?: string } = {}
 		if (name !== undefined) updateData.name = name
 		if (phone !== undefined) updateData.phone = phone
 		if (birthDate !== undefined) updateData.birthDate = birthDate

@@ -8,14 +8,7 @@ export const metadata: Metadata = {
 	description: 'Elige tu membresía premium y accede a beneficios exclusivos'
 }
 
-interface MembershipsPageProps {
-	searchParams: Promise<{
-		upgrade?: string
-	}>
-}
-
-export default async function MembershipsPage({ searchParams }: MembershipsPageProps) {
-	const resolvedSearchParams = await searchParams
+export default async function MembershipsPage() {
 	
 	return (
 		<main className="min-h-screen bg-deep-night/98 backdrop-blur-3xl">
@@ -51,7 +44,7 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
 			<section className="px-4 sm:px-6 lg:px-8 pb-20">
 				<div className="max-w-6xl mx-auto">
 					<Suspense fallback={<MembershipsSkeletonComponent />}>
-						<MembershipsDataAccess upgrade={resolvedSearchParams.upgrade} />
+						<MembershipsDataAccess />
 					</Suspense>
 				</div>
 			</section>

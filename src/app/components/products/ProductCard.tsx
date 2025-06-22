@@ -11,9 +11,7 @@ import {
 	Minus, 
 	ShoppingCart, 
 	Package, 
-	Check,
-	Star,
-	Sparkles
+	Check
 } from 'lucide-react'
 
 interface ProductCardProps {
@@ -54,12 +52,6 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 		if (currentQuantity >= 1) {
 			updateProductQuantity(product.id, currentQuantity - 1)
 		}
-	}
-
-	const getStockBadgeColor = () => {
-		if (product.stock === 0) return 'bg-red-500/20 text-red-400 border-red-500/30'
-		if (product.stock <= 5) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-		return 'bg-green-500/20 text-green-400 border-green-500/30'
 	}
 
 	// Obtener la imagen del producto con fallback

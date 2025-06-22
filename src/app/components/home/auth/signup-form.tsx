@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
@@ -23,7 +22,6 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 	const [selectedMembership, setSelectedMembership] = useState<string>('')
 	const [membershipError, setMembershipError] = useState<string>('')
 	const [currentStep, setCurrentStep] = useState(1)
-	const router = useRouter()
 
 	const {
 		register,

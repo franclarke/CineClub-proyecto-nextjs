@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon, ShoppingCartIcon, CheckCircle } from 'lucide-react'
+import Image from 'next/image'
+import { Check, ArrowRightIcon, SparklesIcon, ShoppingCartIcon, CheckCircle } from 'lucide-react'
 import { useCart } from '@/lib/cart/cart-context'
 
 type UserWithMembership = User & {
@@ -19,41 +20,14 @@ type UserWithMembership = User & {
 interface MembershipsClientComponentProps {
 	user: UserWithMembership | null
 	membershipTiers: MembershipTier[]
-	suggestedUpgrade?: string
 	isAuthenticated: boolean
 }
 
-const tierIcons = {
-	'Banquito': Shield,
-	'Reposera Deluxe': Award,
-	'Puff XXL Estelar': Crown
-}
 
-const tierColors = {
-	'Banquito': {
-		bg: 'from-orange-600/20 to-amber-600/20',
-		border: 'border-orange-500/50',
-		accent: 'text-orange-400',
-		gradient: 'from-orange-500/20 to-orange-500/5'
-	},
-	'Reposera Deluxe': {
-		bg: 'from-gray-400/20 to-gray-500/20',
-		border: 'border-gray-400/50',
-		accent: 'text-gray-300',
-		gradient: 'from-gray-400/20 to-gray-400/5'
-	},
-	'Puff XXL Estelar': {
-		bg: 'from-yellow-500/20 to-amber-500/20',
-		border: 'border-yellow-400/50',
-		accent: 'text-yellow-400',
-		gradient: 'from-yellow-500/20 to-yellow-500/5'
-	}
-}
 
 export function MembershipsClientComponent({ 
 	user, 
 	membershipTiers, 
-	suggestedUpgrade,
 	isAuthenticated 
 }: MembershipsClientComponentProps) {
 	const router = useRouter()
@@ -125,7 +99,6 @@ export function MembershipsClientComponent({
 					const isPopular = tier.name === 'Reposera Deluxe' // Reposera Deluxe es la más popular
 					const isCurrent = isCurrentTier(tier.name)
 					const isUpgrade = canUpgrade(tier.priority)
-					const isSuggested = suggestedUpgrade === tier.name
 
 					// Extraer beneficios del string separado por •
 					const benefits = typeof tier.benefits === 'string' 
@@ -159,10 +132,11 @@ export function MembershipsClientComponent({
 
 								{/* Image Section with Square Aspect Ratio */}
 								<div className="relative aspect-square w-full">
-									<img 
+									<Image
 										src={tier.imageUrl} 
 										alt={`${tier.name} membership`}
-										className="absolute inset-0 w-full h-full object-cover"
+										fill
+										className="object-cover"
 									/>
 									{/* Gradient overlay for better integration */}
 									<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1f140d]/90"></div>

@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Star, User as UserIcon, CreditCard, History, Edit3Icon, CheckIcon, ArrowRightIcon, SparklesIcon, ShoppingCartIcon, Phone, Calendar, MapPin, Save, X, Plus } from 'lucide-react'
-import { useCart } from '@/lib/cart/cart-context'
+import { User as UserIcon, Edit3Icon, SparklesIcon, Phone, Calendar, MapPin, Save, X, CreditCard, Star, Plus, ArrowRight as ArrowRightIcon, History, Check as CheckIcon } from 'lucide-react'
 
 type UserWithMembership = User & {
 	membership: {
@@ -32,7 +31,6 @@ interface ProfileClientComponentProps {
 
 export function ProfileClientComponent({ user, membershipTiers }: ProfileClientComponentProps) {
 	const router = useRouter()
-	const { addProduct, toggleCart } = useCart()
 	const [editingField, setEditingField] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [addingToCart, setAddingToCart] = useState<string | null>(null)
@@ -109,7 +107,7 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 		label: string
 		field: string
 		value: string
-		icon: any
+		icon: React.ComponentType<{ className?: string }>
 		type?: string
 		editable?: boolean
 		placeholder?: string

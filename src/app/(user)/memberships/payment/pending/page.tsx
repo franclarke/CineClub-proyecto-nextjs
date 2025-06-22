@@ -1,4 +1,4 @@
-import { Clock, ArrowRightIcon, RefreshCw } from 'lucide-react'
+import { Clock, ArrowRightIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default function MembershipPaymentPending() {

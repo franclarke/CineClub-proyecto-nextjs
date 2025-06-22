@@ -146,8 +146,9 @@ function mapMPStatusToOurStatus(mpStatus: string): string {
 async function processOrderItems(order: OrderWithItems) {
 	try {
 		// Si es una orden de membresía, actualizar la membresía del usuario
-		if (order.type === 'membership' && order.metadata) {
-			const membershipId = order.metadata.membershipId as string
+		if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
+			const metadata = order.metadata as { membershipTierId?: string }
+			const membershipId = metadata.membershipTierId
 			
 			if (membershipId) {
 				await prisma.user.update({

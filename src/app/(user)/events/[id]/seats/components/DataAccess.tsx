@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
+import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { SeatMapClient } from './SeatMapClient'
@@ -70,19 +71,19 @@ export async function DataAccess({ eventId }: DataAccessProps) {
 					Por favor, cierra sesión e inicia sesión nuevamente.
 				</p>
 				<div className="space-y-4">
-					<a 
+					<Link
 						href="/api/auth/signout" 
 						className="btn-primary inline-block"
 					>
 						Cerrar Sesión
-					</a>
+					</Link>
 					<div>
-						<a 
+						<Link
 							href="/" 
 							className="text-soft-beige/70 hover:text-soft-beige transition-colors"
 						>
 							Volver al inicio
-						</a>
+						</Link>
 					</div>
 				</div>
 			</div>
@@ -102,12 +103,12 @@ export async function DataAccess({ eventId }: DataAccessProps) {
 				<p className="text-soft-beige/70 mb-8">
 					Este evento ya ha finalizado y no es posible reservar asientos.
 				</p>
-				<a 
+				<Link
 					href="/events" 
 					className="btn-primary inline-block"
 				>
 					Ver eventos disponibles
-				</a>
+				</Link>
 			</div>
 		)
 	}

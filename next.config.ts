@@ -27,11 +27,20 @@ const nextConfig: NextConfig = {
     ],
   },
   webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Disable minification completely to avoid the WebpackError constructor issue
+    // Disable minification completely
+    if (!dev) {
       config.optimization.minimize = false;
       config.optimization.minimizer = [];
     }
+    
+    // Additional webpack configuration to handle potential issues
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
+    
     return config;
   },
 };

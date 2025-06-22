@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { CheckCircle, SparklesIcon, ArrowRightIcon } from 'lucide-react'
 import Link from 'next/link'
 
