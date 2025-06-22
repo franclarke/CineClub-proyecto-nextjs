@@ -45,6 +45,7 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 	const router = useRouter()
 	const { state: cartState, clearCart, removeItem, updateProductQuantity } = useCart()
 	const [isLoading, setIsLoading] = useState(false)
+	const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set())
 	const [error, setError] = useState<string | null>(null)
 	const [discountCode, setDiscountCode] = useState('')
 	const [appliedDiscount, setAppliedDiscount] = useState(0)
@@ -70,11 +71,37 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 
 	const updateQuantity = async (productId: string, newQuantity: number) => {
 		if (newQuantity < 1) return
-		updateProductQuantity(productId, newQuantity)
+		
+		setLoadingItems(prev => new Set(prev).add(productId))
+		try {
+			updateProductQuantity(productId, newQuantity)
+		} finally {
+			setLoadingItems(prev => {
+				const newSet = new Set(prev)
+				newSet.delete(productId)
+				return newSet
+			})
+		}
 	}
 
 	const removeItemFromCart = async (itemId: string) => {
-		removeItem(itemId)
+		// Para removeItem necesitamos el productId si es un producto
+		const item = allItems.find(i => i.id === itemId)
+		if (item && item.type === 'product') {
+			setLoadingItems(prev => new Set(prev).add((item as ProductCartItem).product.id))
+		}
+		
+		try {
+			removeItem(itemId)
+		} finally {
+			if (item && item.type === 'product') {
+				setLoadingItems(prev => {
+					const newSet = new Set(prev)
+					newSet.delete((item as ProductCartItem).product.id)
+					return newSet
+				})
+			}
+		}
 	}
 
 	const applyDiscountCode = async () => {

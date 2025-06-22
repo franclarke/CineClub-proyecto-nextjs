@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getPaymentInfo, validateMPWebhook } from '@/lib/mercado-pago'
-import { Order, OrderItem, User } from '@prisma/client'
+import { Order, OrderItem, Reservation, User } from '@prisma/client'
 
 type OrderWithItems = Order & {
 	items: OrderItem[]
+	reservations: Reservation[]
 	user: User
 }
 
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
 				},
 				include: {
 					items: true,
+					reservations: true,
 					user: true
 				}
 			})
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
 			const paymentData = {
 				orderId: order.id,
 				amount: paymentInfo.transaction_amount || 0,
-				status: mapMPStatusToOurStatus(paymentInfo.status),
+				status: mapMPStatusToOurStatus(paymentInfo.status || 'pending'),
 				providerPaymentId: paymentId,
 				providerResponse: JSON.stringify(paymentInfo),
 				currency: paymentInfo.currency_id || 'ARS',
@@ -81,7 +83,8 @@ export async function POST(request: NextRequest) {
 			}
 
 			// Actualizar el estado de la orden según el estado del pago
-			if (paymentInfo.status === 'approved') {
+			const paymentStatus = paymentInfo.status || 'pending'
+			if (paymentStatus === 'approved') {
 				await prisma.order.update({
 					where: { id: order.id },
 					data: { status: 'completed' }
@@ -89,7 +92,7 @@ export async function POST(request: NextRequest) {
 
 				// Procesar items del pedido (crear reservas, actualizar stock, etc.)
 				await processOrderItems(order)
-			} else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+			} else if (paymentStatus === 'rejected' || paymentStatus === 'cancelled') {
 				await prisma.order.update({
 					where: { id: order.id },
 					data: { status: 'cancelled' }
@@ -132,35 +135,36 @@ function mapMPStatusToOurStatus(mpStatus: string): string {
 // Procesar items de la orden aprobada
 async function processOrderItems(order: OrderWithItems) {
 	try {
+		// Procesar productos - actualizar stock
 		for (const item of order.items) {
-			if (item.metadata) {
-				// Es un seat
-				const metadata = JSON.parse(item.metadata)
-				if (metadata.type === 'seat') {
-					// Crear reserva definitiva
-					await prisma.reservation.create({
-						data: {
-							userId: order.userId,
-							eventId: metadata.eventId,
-							seatId: metadata.seatId,
-							status: 'confirmed',
-							orderId: order.id
+			if (item.productId) {
+				await prisma.product.update({
+					where: { id: item.productId },
+					data: {
+						stock: {
+							decrement: item.quantity
 						}
-					})
-				}
-			} else {
-				// Es un producto - actualizar stock
-				if (item.productId) {
-					await prisma.product.update({
-						where: { id: item.productId },
-						data: {
-							stock: {
-								decrement: item.quantity
-							}
-						}
-					})
-				}
+					}
+				})
 			}
+		}
+
+		// Procesar reservas - confirmar asientos
+		for (const reservation of order.reservations) {
+			await prisma.reservation.update({
+				where: { id: reservation.id },
+				data: {
+					status: 'confirmed'
+				}
+			})
+
+			// Marcar el asiento como reservado
+			await prisma.seat.update({
+				where: { id: reservation.seatId },
+				data: {
+					isReserved: true
+				}
+			})
 		}
 	} catch (error) {
 		console.error('Error procesando items de la orden:', error)

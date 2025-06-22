@@ -6,6 +6,7 @@ import { useCart } from '@/lib/cart/cart-context'
 import { Event, Seat } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
 import { ShoppingCart, Ticket, Clock, CheckCircle } from 'lucide-react'
+import { SeatCartItem } from '@/types/cart'
 
 interface SeatSelectionButtonProps {
 	event: Event
@@ -160,8 +161,8 @@ export function useSeatSelection(event: Event) {
 
 	// Obtener seats que están en el carrito para este evento
 	const seatsInCart = state.items
-		.filter(item => item.type === 'seat' && item.eventId === event.id)
-		.map(item => item.seatId)
+		.filter((item): item is SeatCartItem => item.type === 'seat' && item.eventId === event.id)
+		.map(item => item.seat.id)
 
 	const handleSeatClick = (seatId: string) => {
 		if (hasSeat(event.id, seatId)) {

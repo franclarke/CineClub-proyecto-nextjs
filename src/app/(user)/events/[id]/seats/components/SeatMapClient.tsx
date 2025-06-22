@@ -215,6 +215,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 								eventId: event.id,
 								seatId: seat.id,
 								status: 'pending',
+								orderId: null,
 								createdAt: new Date(),
 								updatedAt: new Date(),
 								user: currentUser

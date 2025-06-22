@@ -123,10 +123,38 @@ export async function getPaymentInfo(paymentId: string) {
 	}
 }
 
+// Tipos para el webhook de MercadoPago
+interface MPWebhookBody {
+	type: string
+	data: {
+		id: string
+	}
+	[key: string]: unknown
+}
+
 // Validar webhook de MercadoPago
-export function validateMPWebhook(): boolean {
+export function validateMPWebhook(body: MPWebhookBody, headers: Headers): boolean {
 	// Aquí puedes agregar validación adicional de seguridad
 	// Por ejemplo, verificar el x-signature header
+	
+	// Verificar que el webhook tenga la estructura esperada
+	if (!body || typeof body !== 'object') {
+		return false
+	}
+
+	// Verificar que tenga los campos requeridos
+	if (!body.type || !body.data) {
+		return false
+	}
+
+	// Opcional: Verificar la firma del webhook (x-signature)
+	const signature = headers.get('x-signature')
+	if (signature) {
+		// TODO: Validar firma usando el secreto de webhook de MercadoPago
+		// return validateSignature(body, signature)
+		console.log('Webhook signature received:', signature)
+	}
+
 	return true
 }
 
