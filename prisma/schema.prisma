@@ -74,6 +74,7 @@ model Order {
   items       OrderItem[]
   status      String   @default("cart") // 'cart', 'pending', 'paid', 'cancelled'
   totalAmount Float
+  externalReference String? @unique // Reference for payment provider (e.g. MercadoPago)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   payment     Payment?
