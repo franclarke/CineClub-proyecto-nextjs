@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
 
 		// Separar productos y asientos
 		const productItems = items.filter(item => item.type === 'product')
-		const seatItems = items.filter(item => item.type === 'seat')
 		
 		if (items.length === 0) {
 			return NextResponse.json({ error: 'No hay items en el carrito' }, { status: 400 })

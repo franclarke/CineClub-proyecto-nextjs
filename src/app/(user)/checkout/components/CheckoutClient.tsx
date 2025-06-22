@@ -46,7 +46,6 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 	const { state: cartState, clearCart, removeItem, updateProductQuantity } = useCart()
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set())
 	const [discountCode, setDiscountCode] = useState('')
 	const [appliedDiscount, setAppliedDiscount] = useState(0)
 

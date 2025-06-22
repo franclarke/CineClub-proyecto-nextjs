@@ -1,12 +1,7 @@
-import { Suspense } from 'react'
 import { Metadata } from 'next'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { CheckCircle, Ticket, Package, Calendar, MapPin, ArrowRight, Download, Mail, Sparkles, ShoppingBag, Home, Loader2 } from 'lucide-react'
+import { CheckCircle, Download, Mail, Sparkles, ShoppingBag, Home, ArrowRight } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 export const metadata: Metadata = {
 	title: 'Pago Exitoso | Puff & Chill',

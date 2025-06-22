@@ -12,7 +12,6 @@ import {
 	ArrowRight, 
 	Package,
 	Coffee,
-	Sparkles,
 	CheckCircle
 } from 'lucide-react'
 

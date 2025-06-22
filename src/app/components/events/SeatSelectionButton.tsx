@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { useCart } from '@/lib/cart/cart-context'
 import { Event, Seat } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
-import { ShoppingCart, Ticket, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { ShoppingCart, Ticket, Clock, CheckCircle } from 'lucide-react'
 
 interface SeatSelectionButtonProps {
 	event: Event
@@ -26,7 +26,7 @@ export function SeatSelectionButton({
 	onSeatClick,
 	className = ''
 }: SeatSelectionButtonProps) {
-	const { addSeat, hasSeat, state } = useCart()
+	const { addSeat, hasSeat } = useCart()
 	const [isAddingToCart, setIsAddingToCart] = useState(false)
 	const isInCart = hasSeat(event.id, seat.id)
 

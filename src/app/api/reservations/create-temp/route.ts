@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Seat, Reservation } from '@prisma/client'
+
+type SeatWithReservation = Seat & {
+	reservation: Reservation | null
+}
 
 export async function POST(request: NextRequest) {
 	try {
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Start transaction for atomic operation
-		const result = await prisma.$transaction(async (tx: { event: { findUnique: (arg0: { where: { id: any } }) => any }; user: { findUnique: (arg0: { where: { id: string }; include: { membership: { select: { name: boolean; priority: boolean } } } }) => any }; seat: { findMany: (arg0: { where: { id: { in: any[] }; eventId: any }; include: { reservation: boolean } }) => any }; reservation: { create: (arg0: { data: { userId: string; eventId: any; seatId: any; status: string }; include: { seat: boolean; event: boolean } }) => any }; order: { create: (arg0: { data: { userId: string; totalAmount: any; status: string; items: { create: never[] } }; include: { items: boolean } }) => any } }) => {
+		const result = await prisma.$transaction(async (tx) => {
 			// Verify event exists and is not in the past
 			const event = await tx.event.findUnique({
 				where: { id: eventId }
@@ -73,13 +78,13 @@ export async function POST(request: NextRequest) {
 			}
 
 			// Check if any seats are already reserved
-			const reservedSeats = seats.filter((seat: { reservation: any }) => seat.reservation)
+			const reservedSeats = seats.filter((seat: SeatWithReservation) => seat.reservation)
 			if (reservedSeats.length > 0) {
-				throw new Error(`Seats ${reservedSeats.map((s: { seatNumber: any }) => s.seatNumber).join(', ')} are already reserved`)
+				throw new Error(`Seats ${reservedSeats.map((s: SeatWithReservation) => s.seatNumber).join(', ')} are already reserved`)
 			}
 
 			// Check membership tier restrictions
-			const invalidTierSeats = seats.filter((seat: { tier: string }) => {
+			const invalidTierSeats = seats.filter((seat: SeatWithReservation) => {
 				const seatTierPriority = getTierPriority(seat.tier)
 				// User can access seat if their priority <= seat priority
 				// Gold (1) can access all seats: Gold (1), Silver (2), Bronze (3)
@@ -89,12 +94,12 @@ export async function POST(request: NextRequest) {
 			})
 
 			if (invalidTierSeats.length > 0) {
-				throw new Error(`Your ${user.membership.name} membership doesn't allow access to these seats: ${invalidTierSeats.map((s: { seatNumber: any }) => s.seatNumber).join(', ')}`)
+				throw new Error(`Your ${user.membership.name} membership doesn't allow access to these seats: ${invalidTierSeats.map((s: SeatWithReservation) => s.seatNumber).join(', ')}`)
 			}
 
 			// Create reservations with temporary status
 			const reservations = await Promise.all(
-				seats.map((seat: { id: any }) => 
+				seats.map((seat: SeatWithReservation) => 
 					tx.reservation.create({
 						data: {
 							userId: session.user.id,
@@ -111,7 +116,7 @@ export async function POST(request: NextRequest) {
 			)
 
 			// Create a temporary order for checkout
-			const totalAmount = seats.reduce((total: number, seat: { tier: string }) => {
+			const totalAmount = seats.reduce((total: number, seat: SeatWithReservation) => {
 				// Price based on tier - Premium tiers cost more
 				const tierPrices = { 'Gold': 50, 'Silver': 35, 'Bronze': 25 };
 				return total + (tierPrices[seat.tier as keyof typeof tierPrices] || 25);

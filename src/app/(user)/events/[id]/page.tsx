@@ -1,9 +1,8 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Navigation from '../../components/Navigation'
-import { EventDetailSkeletonComponent } from './components/EventDetailSkeletonComponent'
 import { EventDetailDataAccess } from './components/EventDetailDataAccess'
+import { EventDetailSkeletonComponent } from './components/EventDetailSkeletonComponent'
 
 interface EventDetailPageProps {
 	params: Promise<{

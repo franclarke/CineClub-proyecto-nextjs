@@ -4,6 +4,15 @@ import { fetchUsersByMembership } from './actions'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 
+type UserWithMembership = {
+    id: string
+    name: string | null
+    email: string
+    membership: {
+        name: string
+    } | null
+}
+
 const MEMBERSHIP_OPTIONS = [
     { label: 'Todos', value: 'all' },
     { label: 'Bronze', value: 'bronze' },
@@ -12,7 +21,7 @@ const MEMBERSHIP_OPTIONS = [
 ]
 
 export default function UsersTable() {
-    const [users, setUsers] = useState<any[]>([])
+    const [users, setUsers] = useState<UserWithMembership[]>([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
     const [search, setSearch] = useState('')

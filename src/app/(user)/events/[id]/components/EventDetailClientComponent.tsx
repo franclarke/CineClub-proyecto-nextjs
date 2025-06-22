@@ -9,8 +9,7 @@ import {
 	ClockIcon, 
 	PlayIcon,
 	ChevronLeftIcon,
-	TagIcon,
-	MusicIcon
+	TagIcon
 } from 'lucide-react'
 import { TrailerPlayer } from './TrailerPlayer'
 import { formatFullDate, formatTime, formatMonthShort } from '@/lib/utils/date'
@@ -218,7 +217,6 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					{/* Trailer Section */}
 					<TrailerPlayer 
 						tmdbId={event.tmdbId} 
-						eventTitle={event.title} 
 					/>
 				</div>
 

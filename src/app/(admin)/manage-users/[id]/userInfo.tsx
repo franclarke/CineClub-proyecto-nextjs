@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 
 interface UserWithMembership extends User {
@@ -21,11 +21,7 @@ export function UserInfo({ userId }: UserInfoProps) {
     membershipTierId: ''
   })
 
-  useEffect(() => {
-    fetchUser()
-  }, [userId])
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/admin/users/${userId}`)
@@ -43,7 +39,11 @@ export function UserInfo({ userId }: UserInfoProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    fetchUser()
+  }, [fetchUser])
 
   const handleSave = async () => {
     try {

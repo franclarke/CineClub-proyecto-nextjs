@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ReservationsByEvent } from '@/types/api'
 import { CalendarIcon, TicketIcon, QrCodeIcon, DownloadIcon, EyeIcon, EyeOffIcon, MapPinIcon, FilterIcon } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { formatFullDate, formatTime, isPastDate } from '@/lib/utils/date'
 
 interface TicketsSectionProps {
@@ -18,8 +17,6 @@ type FilterType = 'all' | 'upcoming' | 'past'
 export function TicketsSection({ reservationsByEvent, searchQuery = '' }: TicketsSectionProps) {
 	const [filter, setFilter] = useState<FilterType>('all')
 	const [selectedTicket, setSelectedTicket] = useState<string | null>(null)
-
-	const now = new Date()
 	
 	// Filter by search query and date filter
 	const filteredEvents = Object.entries(reservationsByEvent).filter(([, { event }]) => {

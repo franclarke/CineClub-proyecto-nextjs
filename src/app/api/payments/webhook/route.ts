@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getPaymentInfo, validateMPWebhook } from '@/lib/mercado-pago'
+import { Order, OrderItem, User } from '@prisma/client'
+
+type OrderWithItems = Order & {
+	items: OrderItem[]
+	user: User
+}
 
 export async function POST(request: NextRequest) {
 	try {
@@ -124,7 +130,7 @@ function mapMPStatusToOurStatus(mpStatus: string): string {
 }
 
 // Procesar items de la orden aprobada
-async function processOrderItems(order: any) {
+async function processOrderItems(order: OrderWithItems) {
 	try {
 		for (const item of order.items) {
 			if (item.metadata) {

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import DeleteAlert from './deleteAlert'
-import { useRouter } from 'next/navigation'
+
 
 interface EventCardProps {
   event: Event & { _count?: { reservations?: number } }
@@ -22,8 +22,6 @@ export function EventCard({ event, deleteMode, onDeleted }: EventCardProps) {
   const slug = id // using id as slug for now
 
   const [showDelete, setShowDelete] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const router = useRouter()
 
   return (
     <div className="relative">

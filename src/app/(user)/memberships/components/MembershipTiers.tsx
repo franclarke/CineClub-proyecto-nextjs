@@ -44,9 +44,6 @@ export default function MembershipTiers() {
 			const data = await res.json()
 			const arr: MembershipTier[] = Array.isArray(data) ? data : data.memberships
 
-			// Encontrar el menor valor de priority (mayor prioridad) - Gold = 1 es la más alta
-			const minPriority = Math.min(...arr.map((m: MembershipTier) => m.priority ?? Infinity))
-
 			const mapped = arr.map((m: MembershipTier) => {
 				const style = membershipStyles[m.name] || {
 					color: 'from-gray-500 to-gray-600',

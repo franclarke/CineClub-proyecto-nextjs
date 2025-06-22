@@ -10,7 +10,7 @@ const preference = new Preference(client)
 
 // Tipos para MercadoPago
 export interface MPItem {
-	id?: string
+	id: string
 	title: string
 	description?: string
 	picture_url?: string
@@ -35,7 +35,7 @@ export interface MPPreferenceData {
 		}
 		address?: {
 			street_name?: string
-			street_number?: number
+			street_number?: string
 			zip_code?: string
 		}
 	}
@@ -124,7 +124,7 @@ export async function getPaymentInfo(paymentId: string) {
 }
 
 // Validar webhook de MercadoPago
-export function validateMPWebhook(body: any, headers: any): boolean {
+export function validateMPWebhook(): boolean {
 	// Aquí puedes agregar validación adicional de seguridad
 	// Por ejemplo, verificar el x-signature header
 	return true
@@ -152,10 +152,8 @@ export function generateExternalReference(userId: string, timestamp: number = Da
 	return `PUFF-${userId}-${timestamp}`
 }
 
-
-
 // Función para verificar el estado de un pago
-export async function getPaymentStatus(paymentId: string) {
+export async function getPaymentStatus() {
 	try {
 		// Aquí usarías la API de payments de MercadoPago
 		// const payment = new Payment(client)

@@ -8,16 +8,7 @@ export const metadata: Metadata = {
 	description: 'Tu pago está siendo procesado'
 }
 
-interface SearchParams {
-	order_id?: string
-	payment_id?: string
-}
-
-export default function CheckoutPendingPage({
-	searchParams
-}: {
-	searchParams: Promise<SearchParams>
-}) {
+export default async function CheckoutPendingPage() {
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-deep-night via-deep-night/95 to-deep-night/90 flex items-center justify-center">
 			<div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

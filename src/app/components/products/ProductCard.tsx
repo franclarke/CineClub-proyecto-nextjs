@@ -22,7 +22,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, className = '' }: ProductCardProps) {
-	const { addProduct, getProductQuantity, updateProductQuantity, state } = useCart()
+	const { addProduct, getProductQuantity, updateProductQuantity } = useCart()
 	const [isAdding, setIsAdding] = useState(false)
 	const currentQuantity = getProductQuantity(product.id)
 	const isOutOfStock = product.stock === 0

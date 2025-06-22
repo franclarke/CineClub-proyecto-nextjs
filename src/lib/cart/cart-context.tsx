@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { CartState, CartAction, CartContextType, CartItem, ProductCartItem, SeatCartItem, CartConfig } from '@/types/cart'
-import { Product, Event, Seat, MembershipTier } from '@prisma/client'
+import { Product, Event, Seat } from '@prisma/client'
 
 // Configuración por defecto del carrito
 const defaultConfig: CartConfig = {

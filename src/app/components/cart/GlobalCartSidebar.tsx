@@ -6,7 +6,6 @@ import { useCart } from '@/lib/cart/cart-context'
 import { ProductCartItem, SeatCartItem } from '@/types/cart'
 import { 
 	X, 
-	ShoppingCart, 
 	Trash2, 
 	Plus, 
 	Minus, 
@@ -28,7 +27,7 @@ import { es } from 'date-fns/locale'
 import { formatShortDate } from '@/lib/utils/date'
 
 export function GlobalCartSidebar() {
-	const { state, toggleCart, removeItem, updateProductQuantity, getExpiredSeats } = useCart()
+	const { state, toggleCart, getExpiredSeats } = useCart()
 	const router = useRouter()
 	const expiredSeats = getExpiredSeats()
 

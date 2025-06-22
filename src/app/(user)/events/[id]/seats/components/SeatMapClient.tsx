@@ -1,15 +1,11 @@
 'use client'
 
 import { useState, useOptimistic, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/cart-context'
 import { Event, Seat, Reservation, User, MembershipTier } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
-import { Separator } from '@/app/components/ui/separator'
 import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle } from 'lucide-react'
-import { toast } from 'react-hot-toast'
-import { LoadingOverlay } from './LoadingOverlay'
 import { formatFullDate, formatTime } from '@/lib/utils/date'
 
 type SeatWithReservation = Seat & {
@@ -201,13 +197,12 @@ const AmphitheaterSeatMap = ({
 };
 
 export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
-	const router = useRouter()
 	const { addSeat, toggleCart } = useCart()
 	const [selectedSeats, setSelectedSeats] = useState<string[]>([])
 	const [isProcessing, setIsProcessing] = useState(false)
 
 	// Optimistic state for seat reservations
-	const [optimisticSeats, addOptimisticReservation] = useOptimistic(
+	const [optimisticSeats] = useOptimistic(
 		event.seats,
 		(state, seatId: string) =>
 			state.map(seat =>
