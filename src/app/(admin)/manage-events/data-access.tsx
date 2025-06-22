@@ -1,5 +1,6 @@
 'use server'
-import { prisma } from '@/lib/prisma'
+
+import { prisma } from "@/lib/prisma"
 
 /**
  * Obtiene todos los eventos desde la base de datos.

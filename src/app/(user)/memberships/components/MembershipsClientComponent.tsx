@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon } from 'lucide-react'
+import { Check, Crown, Shield, Award, ArrowRightIcon, SparklesIcon, ShoppingCartIcon } from 'lucide-react'
+import { useCart } from '@/lib/cart/cart-context'
 
 type UserWithMembership = User & {
 	membership: {
@@ -56,36 +57,47 @@ export function MembershipsClientComponent({
 	isAuthenticated 
 }: MembershipsClientComponentProps) {
 	const router = useRouter()
+	const { addProduct, toggleCart } = useCart()
 	const [isLoading, setIsLoading] = useState<string | null>(null)
 
-	const handleMembershipAction = async (tierName: string, action: 'signup' | 'upgrade') => {
-		setIsLoading(tierName)
+	const handleMembershipAction = async (tier: MembershipTier, action: 'signup' | 'upgrade') => {
+		setIsLoading(tier.id)
 		
 		try {
 			if (action === 'signup') {
-				router.push(`/?tier=${tierName}`)
+				router.push(`/?tier=${tier.name}`)
 			} else {
-				const response = await fetch('/api/memberships/upgrade', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ tierName })
-				})
-
-				if (response.ok) {
-					const { paymentUrl } = await response.json()
-					window.location.href = paymentUrl
+				// Crear un producto virtual para la membresía
+				const membershipProduct = {
+					id: `membership-${tier.id}`,
+					name: `Upgrade a Membresía ${tier.name}`,
+					description: typeof tier.benefits === 'string' ? tier.benefits : `Actualiza tu membresía a ${tier.name}`,
+					price: tier.price,
+					stock: 999, // Siempre disponible
+					createdAt: new Date(),
+					updatedAt: new Date()
 				}
+				
+				// Agregar al carrito
+				addProduct(membershipProduct, 1)
+				
+				// Mostrar el carrito
+				setTimeout(() => {
+					toggleCart()
+				}, 500)
 			}
 		} catch (error) {
 			console.error('Error processing membership action:', error)
 		} finally {
-			setIsLoading(null)
+			setTimeout(() => {
+				setIsLoading(null)
+			}, 1000)
 		}
 	}
 
 	const isCurrentTier = (tierName: string) => user?.membership.name === tierName
 	const canUpgrade = (tierPriority: number) => 
-		user?.membership ? tierPriority > user.membership.priority : true
+		user?.membership ? tierPriority < user.membership.priority : true
 
 	return (
 		<div className="space-y-8">
@@ -188,8 +200,8 @@ export function MembershipsClientComponent({
 											</div>
 										) : !isAuthenticated ? (
 											<button
-												onClick={() => handleMembershipAction(tier.name, 'signup')}
-												disabled={isLoading === tier.name}
+												onClick={() => handleMembershipAction(tier, 'signup')}
+												disabled={isLoading === tier.id}
 												className={`
 													w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg
 													${isPopular || isSuggested 
@@ -197,9 +209,10 @@ export function MembershipsClientComponent({
 														: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20'
 													}
 													flex items-center justify-center space-x-2 group hover:scale-[1.02]
+													disabled:opacity-50 disabled:cursor-not-allowed
 												`}
 											>
-												{isLoading === tier.name ? (
+												{isLoading === tier.id ? (
 													<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
 												) : (
 													<>
@@ -210,8 +223,8 @@ export function MembershipsClientComponent({
 											</button>
 										) : isUpgrade ? (
 											<button
-												onClick={() => handleMembershipAction(tier.name, 'upgrade')}
-												disabled={isLoading === tier.name}
+												onClick={() => handleMembershipAction(tier, 'upgrade')}
+												disabled={isLoading === tier.id}
 												className={`
 													w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg
 													${isPopular || isSuggested 
@@ -219,14 +232,18 @@ export function MembershipsClientComponent({
 														: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20'
 													}
 													flex items-center justify-center space-x-2 group hover:scale-[1.02]
+													disabled:opacity-50 disabled:cursor-not-allowed
 												`}
 											>
-												{isLoading === tier.name ? (
-													<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+												{isLoading === tier.id ? (
+													<>
+														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+														<span>Agregando...</span>
+													</>
 												) : (
 													<>
-														<span>Upgrade a {tier.name}</span>
-														<ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+														<ShoppingCartIcon className="w-4 h-4" />
+														<span>Agregar al Carrito</span>
 													</>
 												)}
 											</button>

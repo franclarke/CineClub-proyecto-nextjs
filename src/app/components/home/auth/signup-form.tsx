@@ -7,11 +7,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
 import { MembershipTier } from '@prisma/client'
 
-import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth'
-import { signUpAction } from '@/lib/actions/auth'
 import { FormField } from '../../ui/form-field'
 import { Button } from '../../ui/button'
 import { MembershipSelector } from './membership-selector'
+import { type SignUpFormData, signUpSchema } from '@/lib/validations/auth'
+import { signUpAction } from '@/lib/actions/auth'
 
 interface SignUpFormProps {
 	memberships: MembershipTier[]

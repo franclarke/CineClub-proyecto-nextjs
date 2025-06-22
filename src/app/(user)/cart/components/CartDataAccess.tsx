@@ -4,11 +4,11 @@ import { prisma } from '@/lib/prisma'
 import { CartClientComponent } from './CartClientComponent'
 
 async function getCartData(userId: string) {
-	// Obtener órdenes pendientes del usuario
-	const pendingOrders = await prisma.order.findMany({
+	// Obtener órdenes del carrito del usuario
+	const cartOrders = await prisma.order.findMany({
 		where: {
 			userId,
-			status: 'PENDING'
+			status: 'cart'
 		},
 		include: {
 			items: {
@@ -19,7 +19,7 @@ async function getCartData(userId: string) {
 		}
 	})
 
-	return pendingOrders
+	return cartOrders
 }
 
 async function getAvailableProducts() {

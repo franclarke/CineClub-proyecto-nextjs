@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { useRouter } from 'next/navigation'
-import { Star, User as UserIcon, CreditCard, History, Edit3Icon, CheckIcon, ArrowRightIcon, SparklesIcon } from 'lucide-react'
+import { Star, User as UserIcon, CreditCard, History, Edit3Icon, CheckIcon, ArrowRightIcon, SparklesIcon, ShoppingCartIcon } from 'lucide-react'
+import { useCart } from '@/lib/cart/cart-context'
 
 type UserWithMembership = User & {
 	membership: {
@@ -31,8 +32,10 @@ interface ProfileClientComponentProps {
 
 export function ProfileClientComponent({ user, membershipTiers }: ProfileClientComponentProps) {
 	const router = useRouter()
+	const { addProduct, toggleCart } = useCart()
 	const [isEditing, setIsEditing] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
+	const [addingToCart, setAddingToCart] = useState<string | null>(null)
 	const [formData, setFormData] = useState({
 		name: user.name || '',
 		email: user.email
@@ -58,8 +61,35 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 		}
 	}
 
-	const handleMembershipChange = (tierName: string) => {
-		router.push(`/memberships?upgrade=${tierName}`)
+	const handleMembershipChange = async (tier: MembershipTier) => {
+		setAddingToCart(tier.id)
+		try {
+			// Crear un producto virtual para la membresía
+			const membershipProduct = {
+				id: `membership-${tier.id}`,
+				name: `Upgrade a Membresía ${tier.name}`,
+				description: tier.benefits || `Actualiza tu membresía a ${tier.name}`,
+				price: tier.price,
+				stock: 999, // Siempre disponible
+				createdAt: new Date(),
+				updatedAt: new Date()
+			}
+			
+			// Agregar al carrito
+			addProduct(membershipProduct, 1)
+			
+			// Mostrar el carrito
+			setTimeout(() => {
+				toggleCart()
+			}, 500)
+			
+		} catch (error) {
+			console.error('Error agregando membresía al carrito:', error)
+		} finally {
+			setTimeout(() => {
+				setAddingToCart(null)
+			}, 1000)
+		}
 	}
 
 	return (
@@ -198,7 +228,8 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 						</div>
 						<div className="text-right space-y-3">
 							<div className="flex items-center gap-1">
-								{[...Array(user.membership.priority)].map((_, i) => (
+								{/* Show stars based on tier level - Gold (3 stars), Silver (2 stars), Bronze (1 star) */}
+								{[...Array(4 - user.membership.priority)].map((_, i) => (
 									<Star key={i} className="w-4 h-4 text-soft-gold fill-current" />
 								))}
 							</div>
@@ -214,14 +245,14 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 				</div>
 
 				{/* Available Upgrades */}
-				{membershipTiers.filter(tier => tier.priority > user.membership.priority).length > 0 && (
+				{membershipTiers.filter(tier => tier.priority < user.membership.priority).length > 0 && (
 					<div className="space-y-4">
 						<h4 className="text-lg font-semibold text-soft-beige">
 							Upgrades Disponibles
 						</h4>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							{membershipTiers
-								.filter(tier => tier.priority > user.membership.priority)
+								.filter(tier => tier.priority < user.membership.priority)
 								.map((tier) => (
 									<div
 										key={tier.id}
@@ -233,11 +264,21 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 												<p className="text-soft-beige/80">${tier.price}/mes</p>
 											</div>
 											<button
-												onClick={() => handleMembershipChange(tier.name)}
-												className="flex items-center space-x-2 bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night px-3 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-[1.02] group text-sm"
+												onClick={() => handleMembershipChange(tier)}
+												disabled={addingToCart === tier.id}
+												className="flex items-center space-x-2 bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night px-3 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group text-sm"
 											>
-												<span>Upgrade</span>
-												<ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
+												{addingToCart === tier.id ? (
+													<>
+														<div className="w-3 h-3 border-2 border-deep-night/30 border-t-deep-night rounded-full animate-spin" />
+														<span>Agregando...</span>
+													</>
+												) : (
+													<>
+														<ShoppingCartIcon className="w-3 h-3" />
+														<span>Agregar</span>
+													</>
+												)}
 											</button>
 										</div>
 									</div>

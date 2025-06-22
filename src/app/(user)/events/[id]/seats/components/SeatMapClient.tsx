@@ -2,11 +2,15 @@
 
 import { useState, useOptimistic, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useCart } from '@/lib/cart/cart-context'
 import { Event, Seat, Reservation, User, MembershipTier } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { Separator } from '@/app/components/ui/separator'
 import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import { LoadingOverlay } from './LoadingOverlay'
+import { formatFullDate, formatTime } from '@/lib/utils/date'
 
 type SeatWithReservation = Seat & {
 	reservation: (Reservation & {
@@ -106,10 +110,10 @@ const AmphitheaterSeatMap = ({
 	};
 
 	return (
-		<div className="relative w-full max-w-4xl mx-auto">
+		<div className="relative w-full max-w-5xl mx-auto px-6">
 			{/* Screen/Stage area */}
-			<div className="mb-12 text-center">
-				<div className="w-full h-3 bg-gradient-to-r from-transparent via-soft-gold/60 to-transparent rounded-full mb-2" />
+			<div className="mb-16 text-center">
+				<div className="w-full h-4 bg-gradient-to-r from-transparent via-soft-gold/60 to-transparent rounded-full mb-3" />
 				<div className="text-soft-gray text-sm uppercase tracking-wide font-medium">
 					🎬 Pantalla
 				</div>
@@ -128,13 +132,13 @@ const AmphitheaterSeatMap = ({
 					return (
 						<div key={`${row.tier}-${row.rowNumber}`} className="relative">
 							{/* Row label */}
-							<div className="absolute -left-16 top-1/2 transform -translate-y-1/2">
-								<div className={`text-xs font-medium px-2 py-1 rounded ${
-									isPremiumTier ? 'bg-soft-gold/20 text-soft-gold' : 
-									isVipTier ? 'bg-gray-400/20 text-gray-400' : 
-									'bg-orange-400/20 text-orange-400'
+							<div className="absolute -left-20 top-1/2 transform -translate-y-1/2">
+								<div className={`text-xs font-medium px-2 py-1 rounded-md ${
+									isPremiumTier ? 'bg-soft-gold/20 text-soft-gold border border-soft-gold/30' : 
+									isVipTier ? 'bg-gray-400/20 text-gray-400 border border-gray-400/30' : 
+									'bg-orange-400/20 text-orange-400 border border-orange-400/30'
 								}`}>
-									{row.tier[0]}{row.rowNumber}
+									{row.tier} {row.rowNumber}
 								</div>
 							</div>
 							
@@ -179,10 +183,17 @@ const AmphitheaterSeatMap = ({
 			</div>
 
 			{/* Distance indicators */}
-			<div className="mt-8 flex justify-center">
-				<div className="text-xs text-soft-gray space-x-6">
-					<span>← Más cerca de la pantalla</span>
-					<span>Más lejos de la pantalla →</span>
+			<div className="mt-8 space-y-2">
+				<div className="flex justify-center">
+					<div className="text-xs text-soft-gray space-x-6">
+						<span>← Más cerca de la pantalla</span>
+						<span>Más lejos de la pantalla →</span>
+					</div>
+				</div>
+				<div className="text-center">
+					<p className="text-xs text-soft-gray/60">
+						Los números en los asientos son únicos (1-30). Las etiquetas de fila indican el nivel y la fila dentro de ese nivel.
+					</p>
 				</div>
 			</div>
 		</div>
@@ -191,6 +202,7 @@ const AmphitheaterSeatMap = ({
 
 export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 	const router = useRouter()
+	const { addSeat, toggleCart } = useCart()
 	const [selectedSeats, setSelectedSeats] = useState<string[]>([])
 	const [isProcessing, setIsProcessing] = useState(false)
 
@@ -284,32 +296,25 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 		setIsProcessing(true)
 		
 		try {
-			// Optimistically update seats
+			// Agregar asientos al carrito global
 			selectedSeats.forEach(seatId => {
-				addOptimisticReservation(seatId)
+				const seat = optimisticSeats.find(s => s.id === seatId)
+				if (seat) {
+					const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutos
+					addSeat(event, seat, expiresAt)
+				}
 			})
 
-			// Create temporary reservations
-			const response = await fetch('/api/reservations/create-temp', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					eventId: event.id,
-					seatIds: selectedSeats
-				})
-			})
+			// Limpiar selección local
+			setSelectedSeats([])
 
-			if (!response.ok) {
-				throw new Error('Error creating reservations')
-			}
-
-			const { reservationId } = await response.json()
+			// Abrir carrito para checkout
+			toggleCart()
 			
-			// Redirect to checkout
-			router.push(`/checkout/${reservationId}`)
+			setIsProcessing(false)
 		} catch (error) {
 			console.error('Error:', error)
-			alert('Error al reservar asientos. Por favor intenta de nuevo.')
+			alert('Error al agregar asientos al carrito. Por favor intenta de nuevo.')
 			setIsProcessing(false)
 		}
 	}
@@ -330,7 +335,12 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 				<div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
 					{/* Seat Map */}
 					<div className="xl:col-span-3">
-						<GlassCard variant="default" className="p-8">
+						<GlassCard variant="default" className="p-8 min-h-[600px]">
+							{/* Title */}
+							<h2 className="text-2xl font-semibold text-soft-beige text-center mb-8">
+								Mapa de Asientos - Vista Anfiteatro
+							</h2>
+							
 							{/* Amphitheater Seat Map */}
 							<AmphitheaterSeatMap
 								seatsByTier={seatsByTier}
@@ -390,14 +400,19 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 								{/* Membership Access Info */}
 								<div className="bg-gradient-to-r from-sunset-orange/10 to-transparent p-4 rounded-lg border-l-2 border-sunset-orange">
 									<div className="flex items-start gap-3">
-										<AlertCircle size={16} className="text-sunset-orange mt-0.5" />
-										<div>
-											<p className="text-sm text-soft-beige font-medium mb-1">
-												Acceso con Membresía {currentUser.membership.name}
+										<AlertCircle size={16} className="text-sunset-orange mt-0.5 flex-shrink-0" />
+										<div className="space-y-2">
+											<p className="text-sm text-soft-beige font-medium">
+												Tu Membresía {currentUser.membership.name}
 											</p>
 											<p className="text-xs text-soft-gray">
-												Puedes reservar asientos de nivel: {getTierAccessText(currentUser.membership)}
+												Puedes reservar: {getTierAccessText(currentUser.membership)}
 											</p>
+											{currentUser.membership.priority > 1 && (
+												<p className="text-xs text-sunset-orange/80">
+													💡 Tip: Actualiza tu membresía para acceder a mejores asientos
+												</p>
+											)}
 										</div>
 									</div>
 								</div>
@@ -413,7 +428,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 								<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 								<div className="absolute inset-0 p-6 flex flex-col justify-end">
 									<h2 className="text-2xl font-bold text-soft-beige mb-1">{event.title}</h2>
-									<p className="text-sm text-soft-gray">{formatDate(event.dateTime)}</p>
+									<p className="text-sm text-soft-gray">{formatFullDate(event.dateTime)}</p>
 								</div>
 								<div className="absolute top-4 right-4 text-4xl opacity-60">🎬</div>
 							</div>
@@ -422,7 +437,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 								<div className="flex items-center gap-3">
 									<Calendar size={18} className="text-sunset-orange" />
 									<div>
-										<p className="text-sm font-medium text-soft-beige">{formatDate(event.dateTime)}</p>
+										<p className="text-sm font-medium text-soft-beige">{formatFullDate(event.dateTime)}</p>
 										<p className="text-xs text-soft-gray">{formatTime(event.dateTime)}</p>
 									</div>
 								</div>
@@ -447,61 +462,74 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 						</GlassCard>
 
 						{/* Selection Summary */}
-						<GlassCard variant={selectionInfo.count > 0 ? "premium" : "default"} className="p-6">
-							<h3 className="text-xl font-semibold text-soft-beige mb-6">Resumen de Selección</h3>
+						<GlassCard variant="subtle" className="overflow-hidden">
+							{/* Header with gradient background */}
+							<div className="relative h-16 bg-gradient-to-br from-sunset-orange/20 to-warm-red/20">
+								<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+								<div className="absolute inset-0 p-4 flex items-center">
+									<h3 className="text-xl font-semibold text-soft-beige">Resumen de Selección</h3>
+								</div>
+							</div>
 							
-							{selectionInfo.count > 0 ? (
-								<div className="space-y-6">
-									<div className="flex justify-between items-center p-4 bg-deep-night/40 rounded-lg">
-										<span className="text-soft-gray">Asientos seleccionados</span>
-										<span className="text-soft-beige font-semibold text-lg">{selectionInfo.count}</span>
-									</div>
-									
-									<div className="space-y-3">
-										{Object.entries(selectionInfo.tierBreakdown).map(([tier, count]) => (
-											<div key={tier} className="flex justify-between items-center p-3 bg-deep-night/20 rounded-lg">
-												<div className="flex items-center gap-3">
-													<div className={`w-3 h-3 rounded-full ${
-														tier === 'Gold' ? 'bg-soft-gold' : 
-														tier === 'Silver' ? 'bg-gray-400' : 
-														'bg-orange-400'
-													}`}></div>
-													<span className="text-soft-gray font-medium">{tier}</span>
+							<div className="p-6">
+								{selectionInfo.count > 0 ? (
+									<div className="space-y-4">
+										{/* Selected seats count */}
+										<div className="flex justify-between items-center p-3 bg-deep-night/20 rounded-lg">
+											<span className="text-soft-gray text-sm">Asientos seleccionados</span>
+											<span className="text-soft-beige font-semibold text-lg">{selectionInfo.count}</span>
+										</div>
+										
+										{/* Tier breakdown */}
+										<div className="space-y-2">
+											{Object.entries(selectionInfo.tierBreakdown).map(([tier, count]) => (
+												<div key={tier} className="flex justify-between items-center px-3 py-2">
+													<div className="flex items-center gap-3">
+														<div className={`w-2.5 h-2.5 rounded-full ${
+															tier === 'Gold' ? 'bg-soft-gold' : 
+															tier === 'Silver' ? 'bg-gray-400' : 
+															'bg-orange-400'
+														}`}></div>
+														<span className="text-soft-gray text-sm">{tier}</span>
+													</div>
+													<div className="flex items-center gap-2">
+														<span className="text-soft-beige text-sm">{count} x ${
+															tier === 'Gold' ? '50' : tier === 'Silver' ? '35' : '25'
+														}</span>
+													</div>
 												</div>
-												<span className="text-soft-beige font-semibold">{count}</span>
-											</div>
-										))}
-									</div>
-									
-									<Separator className="my-6 bg-white/10" />
-									
-									<div className="flex justify-between items-center p-4 bg-gradient-to-r from-soft-gold/10 to-transparent rounded-lg">
-										<span className="text-soft-beige font-semibold text-lg">Total</span>
-										<span className="text-soft-gold font-bold text-xl">${selectionInfo.totalPrice.toFixed(2)}</span>
-									</div>
-									
-									<div className="pt-2">
+											))}
+										</div>
+										
+										<div className="h-px bg-white/10" />
+										
+										{/* Total */}
+										<div className="flex justify-between items-center p-3 bg-gradient-to-r from-soft-gold/10 to-transparent rounded-lg">
+											<span className="text-soft-beige font-semibold">Total</span>
+											<span className="text-soft-gold font-bold text-xl">${selectionInfo.totalPrice.toFixed(2)}</span>
+										</div>
+										
+										{/* Action button */}
 										<Button 
 											onClick={handleProceedToCheckout}
 											disabled={isProcessing}
-											variant="premium"
-											className="w-full py-4 text-lg font-semibold"
+											className="w-full bg-gradient-to-r from-sunset-orange to-warm-red hover:from-sunset-orange/90 hover:to-warm-red/90 text-white font-semibold py-3 rounded-xl transition-all transform hover:scale-[1.02]"
 										>
-											{isProcessing ? 'Procesando...' : 'Proceder al Pago'}
+											{isProcessing ? 'Agregando...' : 'Agregar al Carrito'}
 										</Button>
 									</div>
-								</div>
-							) : (
-								<div className="text-center py-8">
-									<div className="w-16 h-16 mx-auto mb-4 bg-soft-gray/10 rounded-full flex items-center justify-center">
-										<svg className="w-8 h-8 text-soft-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 102 0v-6M21 19a2 2 0 11-4 0 2 2 0 014 0z" />
-										</svg>
+								) : (
+									<div className="text-center py-6">
+										<div className="w-14 h-14 mx-auto mb-3 bg-soft-gray/10 rounded-full flex items-center justify-center">
+											<svg className="w-7 h-7 text-soft-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 102 0v-6M21 19a2 2 0 11-4 0 2 2 0 014 0z" />
+											</svg>
+										</div>
+										<p className="text-soft-gray font-medium text-sm mb-1">No has seleccionado ningún asiento</p>
+										<p className="text-xs text-soft-gray/70">Selecciona los asientos que deseas reservar</p>
 									</div>
-									<p className="text-soft-gray mb-2 font-medium">No has seleccionado ningún asiento</p>
-									<p className="text-xs text-soft-gray">Selecciona los asientos que deseas reservar</p>
-								</div>
-							)}
+								)}
+							</div>
 						</GlassCard>
 
 						{/* Membership Info */}
@@ -556,9 +584,17 @@ function canUserSelectSeat(seat: SeatWithReservation, userMembership: Membership
 	// User can only select seats of their tier or lower priority tiers
 	// Lower priority number = higher tier (Gold=1, Silver=2, Bronze=3)
 	if (userTierPriority > seatTierPriority) {
+		const upgradeMessage = userMembership.name === 'Bronze' && seat.tier === 'Silver' 
+			? 'Actualiza a membresía Silver o Gold para acceder a estos asientos premium.'
+			: userMembership.name === 'Bronze' && seat.tier === 'Gold'
+			? 'Los asientos Gold son exclusivos para miembros Gold. Actualiza tu membresía para acceder.'
+			: userMembership.name === 'Silver' && seat.tier === 'Gold'
+			? 'Los asientos Gold son exclusivos para miembros Gold. Actualiza tu membresía para acceder.'
+			: `Este asiento está reservado para miembros ${seat.tier}. Actualiza tu membresía para acceder.`
+			
 		return {
 			allowed: false,
-			reason: `Este asiento está reservado para miembros ${seat.tier}. Actualiza tu membresía para acceder.`
+			reason: upgradeMessage
 		}
 	}
 
@@ -572,27 +608,11 @@ function getTierPriority(tier: string): number {
 
 function getTierAccessText(membership: MembershipTier): string {
 	switch (membership.priority) {
-		case 1: return 'Gold, Silver y Bronze'; // Gold puede acceder a todos
+		case 1: return 'Todos los niveles (Gold, Silver y Bronze)'; // Gold puede acceder a todos
 		case 2: return 'Silver y Bronze'; // Silver puede acceder a Silver y Bronze
-		case 3: return 'Bronze únicamente'; // Bronze solo puede acceder a Bronze
-		default: return 'Bronze únicamente'; // Por defecto solo Bronze
+		case 3: return 'Solo Bronze'; // Bronze solo puede acceder a Bronze
+		default: return 'Solo Bronze'; // Por defecto solo Bronze
 	}
-}
-
-function formatDate(date: Date): string {
-	return new Date(date).toLocaleDateString('es-ES', {
-		weekday: 'long',
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric'
-	});
-}
-
-function formatTime(date: Date): string {
-	return new Date(date).toLocaleTimeString('es-ES', {
-		hour: '2-digit',
-		minute: '2-digit'
-	});
 }
 
 function getAvailableSeatsCount(seats: SeatWithReservation[]): number {

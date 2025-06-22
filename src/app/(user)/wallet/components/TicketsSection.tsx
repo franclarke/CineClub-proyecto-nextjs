@@ -5,6 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ReservationsByEvent } from '@/types/api'
 import { CalendarIcon, TicketIcon, QrCodeIcon, DownloadIcon, EyeIcon, EyeOffIcon, MapPinIcon, FilterIcon } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { formatFullDate, formatTime, isPastDate } from '@/lib/utils/date'
 
 interface TicketsSectionProps {
 	reservationsByEvent: ReservationsByEvent
@@ -29,21 +31,29 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 		if (!matchesSearch) return false
 		
 		// Date filter
-		const eventDate = new Date(event.dateTime)
+		const eventPast = isPastDate(event.dateTime)
 		switch (filter) {
 			case 'upcoming':
-				return eventDate > now
+				return !eventPast
 			case 'past':
-				return eventDate <= now
+				return eventPast
 			default:
 				return true
 		}
 	})
 
 	const generateTicketQR = (reservationId: string) => {
-		// In a real app, this would generate a proper QR code
-		// For now, we'll return a placeholder URL
-		return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(reservationId)}`
+		// Generar QR con información del ticket
+		const ticketData = {
+			id: reservationId,
+			event: reservationsByEvent[Object.keys(reservationsByEvent).find(key => 
+				reservationsByEvent[key].reservations.some(r => r.id === reservationId)
+			) || '']?.event.title || '',
+			timestamp: new Date().toISOString()
+		}
+		
+		const qrData = encodeURIComponent(JSON.stringify(ticketData))
+		return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrData}&bgcolor=FFFFFF&color=000000&margin=10`
 	}
 
 	const filters = [
@@ -51,12 +61,12 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 		{ 
 			id: 'upcoming' as FilterType, 
 			label: 'Próximos', 
-			count: Object.values(reservationsByEvent).filter(({ event }) => new Date(event.dateTime) > now).length 
+			count: Object.values(reservationsByEvent).filter(({ event }) => !isPastDate(event.dateTime)).length 
 		},
 		{ 
 			id: 'past' as FilterType, 
 			label: 'Pasados', 
-			count: Object.values(reservationsByEvent).filter(({ event }) => new Date(event.dateTime) <= now).length 
+			count: Object.values(reservationsByEvent).filter(({ event }) => isPastDate(event.dateTime)).length 
 		}
 	]
 
@@ -97,7 +107,7 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 							className={`
 								flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 group
 								${filter === filterOption.id
-									? 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night shadow-lg scale-[1.02]'
+									? 'bg-gradient-sunset-gold text-deep-night shadow-lg scale-[1.02]'
 									: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20 hover:scale-[1.02]'
 								}
 							`}
@@ -130,8 +140,7 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 			{/* Tickets Grid */}
 			<div className="space-y-6">
 				{filteredEvents.map(([eventId, { event, reservations }], index) => {
-					const eventDate = new Date(event.dateTime)
-					const isUpcoming = eventDate > now
+					const isUpcoming = !isPastDate(event.dateTime)
 
 					return (
 						<div
@@ -155,15 +164,7 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 													<div className="flex items-center gap-2 text-soft-beige/80">
 														<CalendarIcon className="w-4 h-4" />
 														<span>
-															{eventDate.toLocaleDateString('es-ES', {
-																weekday: 'long',
-																year: 'numeric',
-																month: 'long',
-																day: 'numeric'
-															})} • {eventDate.toLocaleTimeString('es-ES', {
-																hour: '2-digit',
-																minute: '2-digit'
-															})}
+															{formatFullDate(event.dateTime)} • {formatTime(event.dateTime)}
 														</span>
 													</div>
 													<div className="flex items-center gap-2 text-soft-beige/60">
@@ -246,8 +247,8 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 											<Image
 												src={generateTicketQR(reservations[0]?.id || '')}
 												alt="Código QR del ticket"
-												width={200}
-												height={200}
+												width={300}
+												height={300}
 												className="rounded-xl"
 											/>
 										</div>

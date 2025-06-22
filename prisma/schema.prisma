@@ -72,7 +72,7 @@ model Order {
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   items       OrderItem[]
-  status      String   @default("pending") // 'pending', 'paid', 'cancelled'
+  status      String   @default("cart") // 'cart', 'pending', 'paid', 'cancelled'
   totalAmount Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -121,6 +121,7 @@ model Event {
   location     String
   imdbId       String?   // store IMDb movie ID
   tmdbId       String?   // store TMDB movie ID
+  imageUrl     String?   // URL de la imagen almacenada en Supabase Storage
   category     String?   // e.g. Drama, Comedy (fetched from IMDb API or custom)
   seats        Seat[]
   reservations Reservation[]

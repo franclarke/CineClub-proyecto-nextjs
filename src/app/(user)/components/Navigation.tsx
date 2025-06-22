@@ -4,12 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '../../hooks/use-auth'
-import { ChevronDownIcon, ShoppingBagIcon, WalletIcon, UserIcon, LogOutIcon, MenuIcon, XIcon, StarIcon, CalendarIcon } from 'lucide-react'
+import { ChevronDownIcon, ShoppingBagIcon, WalletIcon, UserIcon, LogOutIcon, MenuIcon, XIcon, StarIcon, CalendarIcon, ShoppingCartIcon } from 'lucide-react'
+import { useCart } from '@/lib/cart/cart-context'
 
 export default function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const [isProfileOpen, setIsProfileOpen] = useState(false)
 	const { user, isAuthenticated, signOut, isLoading } = useAuth()
+	const { state: cartState, toggleCart } = useCart()
 
 	if (isLoading) {
 		return (
@@ -61,7 +63,7 @@ export default function Navigation() {
 							<span>Eventos</span>
 						</Link>
 						<Link 
-							href="/cart" 
+							href="/shop" 
 							className="flex items-center space-x-2 px-6 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 						>
 							<ShoppingBagIcon className="w-5 h-5" />
@@ -81,43 +83,44 @@ export default function Navigation() {
 					{/* Desktop Auth/Profile */}
 					<div className="hidden lg:flex items-center space-x-4">
 						{isAuthenticated ? (
-							<div className="relative">
-								<button
-									onClick={() => setIsProfileOpen(!isProfileOpen)}
-									className="flex items-center space-x-4 px-4 py-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
-								>
-										{/* User Info */}
-										<div className="text-left">
-											<div className="text-soft-beige font-semibold text-sm">
-												{user?.name || user?.email}
+							<>
+								<div className="relative">
+									<button
+										onClick={() => setIsProfileOpen(!isProfileOpen)}
+										className="flex items-center space-x-4 px-4 py-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
+									>
+											{/* User Info */}
+											<div className="text-left">
+												<div className="text-soft-beige font-semibold text-sm">
+													{user?.name || user?.email}
+												</div>
+												<div className="flex items-center space-x-1">
+													{user?.membershipName?.toLowerCase() === 'bronze' ? (
+														<>
+															<StarIcon className="w-3 h-3 text-bronze" />
+															<span className="text-bronze text-xs font-medium">
+																{user.membershipName}
+															</span>
+														</>
+													) : user?.membershipName?.toLowerCase() === 'silver' ? (
+														<>
+															<StarIcon className="w-3 h-3 text-silver" />
+															<span className="text-silver text-xs font-medium">
+																{user.membershipName}
+															</span>
+														</>
+													) : (
+														<>
+															<StarIcon className="w-3 h-3 text-soft-gold" />
+															<span className="text-soft-gold text-xs font-medium">
+																{user?.membershipName}
+															</span>
+														</>
+													)}
+												</div>
 											</div>
-											<div className="flex items-center space-x-1">
-												{user?.membershipName?.toLowerCase() === 'bronze' ? (
-													<>
-														<StarIcon className="w-3 h-3 text-bronze" />
-														<span className="text-bronze text-xs font-medium">
-															{user.membershipName}
-														</span>
-													</>
-												) : user?.membershipName?.toLowerCase() === 'silver' ? (
-													<>
-														<StarIcon className="w-3 h-3 text-silver" />
-														<span className="text-silver text-xs font-medium">
-															{user.membershipName}
-														</span>
-													</>
-												) : (
-													<>
-														<StarIcon className="w-3 h-3 text-soft-gold" />
-														<span className="text-soft-gold text-xs font-medium">
-															{user?.membershipName}
-														</span>
-													</>
-												)}
-											</div>
-										</div>
-										<ChevronDownIcon className="w-5 h-5 text-soft-beige/60 group-hover:text-soft-beige transition-colors duration-300" />
-								</button>
+											<ChevronDownIcon className="w-5 h-5 text-soft-beige/60 group-hover:text-soft-beige transition-colors duration-300" />
+									</button>
 
 								{/* Profile Dropdown */}
 								{isProfileOpen && (
@@ -176,21 +179,52 @@ export default function Navigation() {
 									</div>
 								)}
 							</div>
+							
+							{/* Cart Button */}
+							<button
+								onClick={toggleCart}
+								className="relative p-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
+								aria-label="Carrito de compras"
+							>
+								<ShoppingCartIcon className="w-5 h-5 text-soft-beige group-hover:text-sunset-orange transition-colors duration-300" />
+								{cartState.totalItems > 0 && (
+									<div className="absolute -top-1 -right-1 w-5 h-5 bg-sunset-orange text-deep-night text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+										{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
+									</div>
+								)}
+							</button>
+							</>
 						) : (
-							<div className="flex items-center space-x-3">
-								<Link 
-									href="/auth/signin" 
-									className="px-6 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
+							<>
+								<div className="flex items-center space-x-3">
+									<Link 
+										href="/auth/signin" 
+										className="px-6 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
+									>
+										Iniciar Sesión
+									</Link>
+									<Link 
+										href="/auth/signup" 
+										className="px-8 py-3 bg-gradient-to-r from-sunset-orange to-soft-gold hover:from-sunset-orange/90 hover:to-soft-gold/90 text-deep-night font-bold rounded-2xl transition-all duration-300 hover:transform hover:scale-105 shadow-lg"
+									>
+										Registrarse
+									</Link>
+								</div>
+								
+								{/* Cart Button */}
+								<button
+									onClick={toggleCart}
+									className="relative p-3 bg-soft-gray/10 hover:bg-soft-gray/20 rounded-2xl transition-all duration-300 group"
+									aria-label="Carrito de compras"
 								>
-									Iniciar Sesión
-								</Link>
-								<Link 
-									href="/auth/signup" 
-									className="px-8 py-3 bg-gradient-to-r from-sunset-orange to-soft-gold hover:from-sunset-orange/90 hover:to-soft-gold/90 text-deep-night font-bold rounded-2xl transition-all duration-300 hover:transform hover:scale-105 shadow-lg"
-								>
-									Registrarse
-								</Link>
-							</div>
+									<ShoppingCartIcon className="w-5 h-5 text-soft-beige group-hover:text-sunset-orange transition-colors duration-300" />
+									{cartState.totalItems > 0 && (
+										<div className="absolute -top-1 -right-1 w-5 h-5 bg-sunset-orange text-deep-night text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+											{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
+										</div>
+									)}
+								</button>
+							</>
 						)}
 					</div>
 
@@ -214,19 +248,35 @@ export default function Navigation() {
 						<div className="p-4 space-y-2">
 							<Link 
 								href="/events" 
-								className="flex items-center px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
+								className="flex items-center space-x-3 px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 								onClick={() => setIsMenuOpen(false)}
 							>
-								Eventos
+								<CalendarIcon className="w-5 h-5" />
+								<span>Eventos</span>
 							</Link>
 							<Link 
-								href="/cart" 
+								href="/shop" 
 								className="flex items-center space-x-3 px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium"
 								onClick={() => setIsMenuOpen(false)}
 							>
 								<ShoppingBagIcon className="w-5 h-5" />
 								<span>Tienda</span>
 							</Link>
+							<button 
+								onClick={() => {
+									toggleCart()
+									setIsMenuOpen(false)
+								}}
+								className="flex items-center space-x-3 w-full px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-2xl transition-all duration-300 font-medium relative"
+							>
+								<ShoppingCartIcon className="w-5 h-5" />
+								<span>Carrito</span>
+								{cartState.totalItems > 0 && (
+									<div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 bg-sunset-orange text-deep-night text-xs font-bold rounded-full flex items-center justify-center">
+										{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
+									</div>
+								)}
+							</button>
 							{isAuthenticated && (
 								<>
 									<Link 

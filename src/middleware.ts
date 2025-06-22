@@ -26,7 +26,7 @@ const PUBLIC_PATHS = [
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
-
+	
 	// Ignorar archivos estáticos y rutas internas de Next.js
 	if (
 		pathname.startsWith('/_next') ||

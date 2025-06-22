@@ -89,6 +89,7 @@ export async function EventsDataAccess({ searchParams }: EventsDataAccessProps) 
 		category: event.category,
 		imdbId: event.imdbId,
 		tmdbId: event.tmdbId,
+		imageUrl: event.imageUrl,
 		reservationCount: event._count.reservations,
 		totalSeats: event.seats.length,
 		availableSeats: event.seats.filter(seat => !seat.isReserved).length,

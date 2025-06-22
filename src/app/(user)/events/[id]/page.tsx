@@ -27,8 +27,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
 	return (
 		<>
-			<Navigation />
-			<main className="min-h-screen bg-deep-night pt-20 pb-12">
+			<main className="min-h-screen bg-deep-night pt-28 pb-12">
 				<Suspense fallback={<EventDetailSkeletonComponent />}>
 					<EventDetailDataAccess eventId={id} />
 				</Suspense>

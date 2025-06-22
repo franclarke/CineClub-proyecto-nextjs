@@ -76,6 +76,7 @@ export async function EventDetailDataAccess({ eventId }: EventDetailDataAccessPr
 		category: event.category,
 		imdbId: event.imdbId,
 		tmdbId: event.tmdbId,
+		imageUrl: event.imageUrl,
 		seatStats,
 		seats: event.seats,
 		reservationCount: event._count.reservations,

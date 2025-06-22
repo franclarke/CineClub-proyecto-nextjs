@@ -30,7 +30,7 @@ export function DashboardHome({ user }: DashboardHomeProps) {
 		{
 			title: 'Tienda',
 			description: 'Food & drinks para tu experiencia',
-			href: '/cart',
+			href: '/shop',
 			icon: ShoppingBagIcon,
 			color: 'warm-red',
 			gradient: 'from-warm-red/20 to-warm-red/5',

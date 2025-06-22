@@ -226,40 +226,38 @@ export function CartClientComponent({
 
 									{/* Quantity Controls */}
 									<div className="flex items-center justify-between mb-4">
-										<div className="flex items-center gap-2">
+										<div className="flex items-center space-x-3">
 											<button
 												onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
 												disabled={isItemLoading || item.quantity <= 1}
-												className="w-8 h-8 bg-soft-gray/20 border border-soft-gray/30 rounded-lg flex items-center justify-center transition-all duration-300 hover:bg-soft-gray/30 disabled:opacity-50 disabled:cursor-not-allowed"
+												className="w-8 h-8 bg-soft-gray/20 hover:bg-soft-gray/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center justify-center transition-colors duration-200"
 											>
-												<Minus className="w-3 h-3 text-soft-beige" />
+												<Minus className="w-4 h-4 text-soft-beige" />
 											</button>
-											<span className="w-12 text-center font-semibold text-soft-beige text-lg">
+											
+											<span className="text-soft-beige font-semibold min-w-8 text-center">
 												{item.quantity}
 											</span>
+											
 											<button
 												onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
 												disabled={isItemLoading}
-												className="w-8 h-8 bg-soft-gray/20 border border-soft-gray/30 rounded-lg flex items-center justify-center transition-all duration-300 hover:bg-soft-gray/30 disabled:opacity-50 disabled:cursor-not-allowed"
+												className="w-8 h-8 bg-soft-gray/20 hover:bg-soft-gray/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center justify-center transition-colors duration-200"
 											>
-												<Plus className="w-3 h-3 text-soft-beige" />
+												<Plus className="w-4 h-4 text-soft-beige" />
 											</button>
 										</div>
 
 										<button
 											onClick={() => removeItem(item.product.id)}
 											disabled={isItemLoading}
-											className="w-8 h-8 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center justify-center transition-all duration-300 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+											className="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center justify-center transition-colors duration-200 group"
 										>
-											{isItemLoading ? (
-												<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-											) : (
-												<Trash2 className="w-3 h-3 text-red-400" />
-											)}
+											<Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-300" />
 										</button>
 									</div>
 
-									{/* Price */}
+									{/* Subtotal */}
 									<div className="pt-4 border-t border-soft-gray/20">
 										<div className="flex justify-between items-center">
 											<span className="text-soft-beige/60 text-sm">Subtotal</span>
@@ -271,6 +269,53 @@ export function CartClientComponent({
 								</div>
 							)
 						})}
+					</div>
+
+					{/* Checkout Summary Section */}
+					<div className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-8">
+						<div className="flex items-center space-x-3 mb-6">
+							<div className="w-1 h-6 bg-gradient-to-b from-soft-gold to-sunset-orange rounded-full"></div>
+							<h3 className="text-xl font-bold text-soft-beige">
+								Resumen de Compra
+							</h3>
+						</div>
+
+						<div className="space-y-3 mb-6">
+							<div className="flex justify-between items-center">
+								<span className="text-soft-beige/70">Subtotal</span>
+								<span className="text-soft-beige font-medium">${subtotal.toFixed(2)}</span>
+							</div>
+							
+							{user.membership && discount > 0 && (
+								<div className="flex justify-between items-center text-soft-gold">
+									<span>Descuento {user.membership.name} ({user.membership.discounts}%)</span>
+									<span>-${discount.toFixed(2)}</span>
+								</div>
+							)}
+							
+							<div className="h-px bg-soft-gray/20 my-4"></div>
+							
+							<div className="flex justify-between items-center">
+								<span className="text-xl font-bold text-soft-beige">Total</span>
+								<span className="text-xl font-bold text-sunset-orange">${total.toFixed(2)}</span>
+							</div>
+						</div>
+
+						<button
+							onClick={proceedToCheckout}
+							disabled={isLoading || cartItems.length === 0}
+							className="w-full bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+						>
+							{isLoading ? (
+								<div className="w-5 h-5 border-2 border-deep-night/30 border-t-deep-night rounded-full animate-spin"></div>
+							) : (
+								<>
+									<CheckCircle className="w-5 h-5" />
+									<span>Proceder al Checkout</span>
+									<ArrowRight className="w-5 h-5" />
+								</>
+							)}
+						</button>
 					</div>
 				</div>
 			)}
@@ -303,32 +348,28 @@ export function CartClientComponent({
 					{/* Products by Category */}
 					<div className="space-y-8">
 						{Object.entries(categorizedProducts).map(([category, products]) => (
-							<div key={category}>
-								<h3 className="text-lg font-semibold text-soft-beige mb-4 flex items-center gap-2">
+							<div key={category} className="space-y-4">
+								<div className="flex items-center space-x-3">
 									<Coffee className="w-5 h-5 text-soft-gold" />
-									{category}
-								</h3>
+									<h3 className="text-lg font-semibold text-soft-beige">{category}</h3>
+									<div className="flex-1 h-px bg-soft-gray/20"></div>
+									<span className="text-soft-beige/60 text-sm">{products.length} productos</span>
+								</div>
+								
 								<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 									{products.map((product) => {
 										const cartItem = cartItems.find(item => item.product.id === product.id)
 										const inCart = !!cartItem
 										const isOutOfStock = product.stock === 0
-
+										
 										return (
 											<div
 												key={product.id}
-												className={`bg-deep-night/40 backdrop-blur-xl border rounded-2xl p-6 transition-all duration-300 group ${
-													isOutOfStock 
-														? 'border-soft-gray/20 opacity-50' 
-														: inCart
-															? 'border-soft-gold/30 bg-soft-gold/5'
-															: 'border-soft-gray/20 hover:border-sunset-orange/30'
-												}`}
+												className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-6 transition-all duration-300 hover:border-soft-gold/30 group"
 											>
-												{/* Product Header */}
 												<div className="flex items-start justify-between mb-4">
 													<div className="flex-1">
-														<h4 className="font-semibold text-soft-beige mb-1">
+														<h4 className="font-semibold text-soft-beige group-hover:text-soft-gold transition-colors duration-300 mb-1">
 															{product.name}
 														</h4>
 														{product.description && (
@@ -336,24 +377,20 @@ export function CartClientComponent({
 																{product.description}
 															</p>
 														)}
-														<div className="flex items-center gap-2">
-															<span className="font-bold text-sunset-orange">
-																${product.price}
+														<div className="flex justify-between items-center">
+															<span className="text-sunset-orange font-bold">
+																${product.price.toFixed(2)}
 															</span>
-															<span className="text-soft-beige/40 text-xs">
+															<span className="text-soft-beige/60 text-sm">
 																Stock: {product.stock}
 															</span>
 														</div>
 													</div>
-													
-													{inCart && (
-														<div className="w-10 h-10 bg-soft-gold/20 rounded-lg flex items-center justify-center">
-															<CheckCircle className="w-5 h-5 text-soft-gold" />
-														</div>
-													)}
+													<div className="w-10 h-10 bg-gradient-to-r from-soft-gold/20 to-sunset-orange/20 rounded-lg flex items-center justify-center ml-4">
+														<Package className="w-5 h-5 text-soft-gold" />
+													</div>
 												</div>
 
-												{/* Actions */}
 												<div className="pt-4 border-t border-soft-gray/20">
 													{inCart ? (
 														<div className="flex items-center justify-between">
@@ -378,81 +415,18 @@ export function CartClientComponent({
 														</button>
 													)}
 												</div>
+
+												{isOutOfStock && (
+													<div className="mt-2 text-red-400 text-xs font-medium">
+														Agotado
+													</div>
+												)}
 											</div>
 										)
 									})}
 								</div>
 							</div>
 						))}
-					</div>
-				</div>
-			)}
-
-			{/* Checkout Section */}
-			{cartItems.length > 0 && (
-				<div className="sticky bottom-0 bg-deep-night/95 backdrop-blur-xl border-t border-soft-gray/20 p-6 -mx-4 sm:-mx-6 lg:-mx-8">
-					<div className="max-w-7xl mx-auto">
-						<div className="bg-deep-night/60 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-6">
-							<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-								{/* Order Summary */}
-								<div className="flex-1 space-y-3">
-									<h3 className="text-lg font-bold text-soft-beige">Resumen de Orden</h3>
-									
-									<div className="space-y-2 text-sm">
-										<div className="flex justify-between text-soft-beige/80">
-											<span>Subtotal ({cartItems.length} productos)</span>
-											<span>${subtotal.toFixed(2)}</span>
-										</div>
-										
-										{discount > 0 && (
-											<div className="flex justify-between text-soft-gold">
-												<span>Descuento {user.membership.name} ({user.membership.discounts}%)</span>
-												<span>-${discount.toFixed(2)}</span>
-											</div>
-										)}
-										
-										<div className="flex justify-between text-lg font-bold text-soft-beige pt-2 border-t border-soft-gray/20">
-											<span>Total</span>
-											<span className="text-sunset-orange">${total.toFixed(2)}</span>
-										</div>
-									</div>
-
-									{user.membership && (
-										<div className="flex items-center gap-2 bg-soft-gold/20 border border-soft-gold/30 rounded-lg px-3 py-2">
-											<Sparkles className="w-4 h-4 text-soft-gold" />
-											<span className="text-soft-gold text-sm font-medium">
-												Descuento {user.membership.name} aplicado
-											</span>
-										</div>
-									)}
-								</div>
-
-								{/* Actions */}
-								<div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-									<button
-										onClick={() => router.push('/events')}
-										className="flex items-center justify-center gap-2 bg-soft-gray/20 text-soft-beige px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-soft-gray/30 border border-soft-gray/20"
-									>
-										<span>Continuar Comprando</span>
-									</button>
-									
-									<button
-										onClick={proceedToCheckout}
-										disabled={isLoading}
-										className="flex items-center justify-center gap-3 bg-gradient-sunset-gold text-deep-night px-8 py-3 rounded-xl font-bold transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
-									>
-										{isLoading ? (
-											<div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-										) : (
-											<>
-												<span>Proceder al Checkout</span>
-												<ArrowRight className="w-5 h-5" />
-											</>
-										)}
-									</button>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			)}

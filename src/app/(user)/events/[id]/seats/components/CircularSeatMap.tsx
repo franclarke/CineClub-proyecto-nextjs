@@ -93,6 +93,10 @@ export function CircularSeatMap({
 		const seatTierPriority = getTierPriority(seat.tier)
 		const userTierPriority = currentUserMembership.priority
 		
+		// User can select seat if their priority is <= seat priority
+		// Gold (1) can select Gold (1), Silver (2), Bronze (3)
+		// Silver (2) can select Silver (2), Bronze (3)
+		// Bronze (3) can only select Bronze (3)
 		return userTierPriority <= seatTierPriority
 	}
 

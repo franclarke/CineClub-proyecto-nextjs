@@ -37,8 +37,10 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Verificar que sea un upgrade válido
-		if (user.membership && newTier.priority <= user.membership.priority) {
-			return NextResponse.json({ error: 'No es posible downgrade' }, { status: 400 })
+		// Priority: Gold=1, Silver=2, Bronze=3
+		// Solo se permite upgrade si la nueva prioridad es menor (mejor tier)
+		if (user.membership && newTier.priority >= user.membership.priority) {
+			return NextResponse.json({ error: 'No es posible realizar este cambio de membresía' }, { status: 400 })
 		}
 
 		// Crear preferencia de Mercado Pago

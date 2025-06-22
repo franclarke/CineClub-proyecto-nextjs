@@ -14,7 +14,7 @@ async function main() {
 			create: {
 				name: 'Bronze',
 				description: 'Membresía básica para disfrutar del cine bajo las estrellas',
-				priority: 1,
+				priority: 3,
 				price: 15.00,
 				benefits: 'Acceso a eventos regulares • Reserva con 7 días de anticipación • Descuento 5% en snacks',
 			},
@@ -36,7 +36,7 @@ async function main() {
 			create: {
 				name: 'Gold',
 				description: 'Membresía premium con todos los beneficios',
-				priority: 3,
+				priority: 1,
 				price: 40.00,
 				benefits: 'Acceso VIP a todos los eventos • Reserva con 21 días de anticipación • Bebida gratis por evento • Descuento 15% en snacks • Playlist colaborativa de Spotify • Asientos preferenciales',
 			},
@@ -345,16 +345,17 @@ async function main() {
 	// Crear eventos - AMPLIADO
 	const events = await Promise.all([
 		prisma.event.upsert({
-			where: { title: 'Noche de Clásicos: Casablanca' },
+			where: { title: 'Noche de Clásicos: Inception' },
 			update: {},
 			create: {
-				title: 'Noche de Clásicos: Casablanca',
-				description: 'Una noche mágica bajo las estrellas con uno de los clásicos más queridos del cine. Disfruta de Casablanca en un ambiente único con audio silencioso de alta calidad.',
+				title: 'Noche de Clásicos: Inception',
+				description: 'Una experiencia mental única con Christopher Nolan. Sumérgete en el mundo de los sueños con esta obra maestra del cine.',
 				dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // En 7 días
 				location: 'Terraza Principal - Puff & Chill',
-				category: 'Drama Clásico',
-				imdbId: 'tt0034583', // Casablanca en IMDb
-				tmdbId: '299534', // Avengers Endgame para prueba (tiene trailers disponibles)
+				category: 'Ciencia Ficción',
+				imdbId: 'tt1375666',
+				tmdbId: '27205',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', // Inception
 			},
 		}),
 		prisma.event.upsert({
@@ -362,38 +363,97 @@ async function main() {
 			update: {},
 			create: {
 				title: 'Ciencia Ficción: Blade Runner 2049',
-				description: 'Sumérgete en el futuro distópico de Blade Runner 2049. Una experiencia visual y sonora que te transportará a otro mundo bajo el cielo estrellado.',
-				dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // En 14 días
-				location: 'Terraza Norte - Puff & Chill',
-				category: 'Ciencia Ficción',
-				imdbId: 'tt1856101',
-				tmdbId: '335984', // Blade Runner 2049 en TMDB
-			},
-		}),
-		prisma.event.upsert({
-			where: { title: 'Comedia Romántica: La La Land' },
-			update: {},
-			create: {
-				title: 'Comedia Romántica: La La Land',
-				description: 'Una noche de romance y música con La La Land. Déjate envolver por la magia de Los Ángeles y sus sueños bajo las estrellas.',
-				dateTime: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000), // En 21 días
-				location: 'Jardín Sur - Puff & Chill',
-				category: 'Musical Romance',
-				imdbId: 'tt3783958',
-				tmdbId: '313369', // La La Land en TMDB
-			},
-		}),
-		prisma.event.upsert({
-			where: { title: 'Thriller Psicológico: El Cisne Negro' },
-			update: {},
-			create: {
-				title: 'Thriller Psicológico: El Cisne Negro',
-				description: 'Una experiencia intensa con Natalie Portman en Black Swan. Perfecta para una noche de suspense bajo la luna llena.',
+				description: 'Una experiencia visual impresionante en el futuro distópico. Blade Runner 2049 te transportará a un mundo cyberpunk bajo las estrellas.',
 				dateTime: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000), // En 28 días
 				location: 'Terraza Principal - Puff & Chill',
+				category: 'Ciencia Ficción',
+				imdbId: 'tt1856101',
+				tmdbId: '335984',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg', // Blade Runner 2049
+			},
+		}),
+		prisma.event.upsert({
+			where: { title: 'Superhéroes: Spider-Man: No Way Home' },
+			update: {},
+			create: {
+				title: 'Superhéroes: Spider-Man: No Way Home',
+				description: 'La película más épica del multiverso Spider-Man. Una noche llena de acción y nostalgia bajo el cielo nocturno.',
+				dateTime: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000), // En 35 días
+				location: 'Terraza Norte - Puff & Chill',
+				category: 'Superhéroes',
+				imdbId: 'tt10872600',
+				tmdbId: '634649',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg', // Spider-Man: No Way Home
+			},
+		}),
+		prisma.event.upsert({
+			where: { title: 'Terror Moderno: Get Out' },
+			update: {},
+			create: {
+				title: 'Terror Moderno: Get Out',
+				description: 'Horror psicológico y social de Jordan Peele. Una experiencia aterradora que te hará reflexionar sobre temas profundos.',
+				dateTime: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000), // En 42 días
+				location: 'Jardín Secreto - Puff & Chill',
+				category: 'Terror Moderno',
+				imdbId: 'tt5052448',
+				tmdbId: '419430',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg', // Get Out
+			},
+		}),
+		prisma.event.upsert({
+			where: { title: 'Acción Épica: Avengers: Endgame' },
+			update: {},
+			create: {
+				title: 'Acción Épica: Avengers: Endgame',
+				description: 'La batalla final del universo cinematográfico de Marvel. Una experiencia épica que cierra una década de aventuras superheroicas.',
+				dateTime: new Date(Date.now() + 56 * 24 * 60 * 60 * 1000), // En 56 días
+				location: 'Terraza Principal - Puff & Chill',
+				category: 'Acción Épica',
+				imdbId: 'tt4154796',
+				tmdbId: '299534',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg', // Avengers: Endgame
+			},
+		}),
+		prisma.event.upsert({
+			where: { title: 'Drama: The Shawshank Redemption' },
+			update: {},
+			create: {
+				title: 'Drama: The Shawshank Redemption',
+				description: 'Una historia atemporal sobre esperanza y redención. Considerada una de las mejores películas de todos los tiempos.',
+				dateTime: new Date(Date.now() + 63 * 24 * 60 * 60 * 1000), // En 63 días
+				location: 'Terraza Norte - Puff & Chill',
+				category: 'Drama',
+				imdbId: 'tt0111161',
+				tmdbId: '278',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg', // The Shawshank Redemption
+			},
+		}),
+		prisma.event.upsert({
+			where: { title: 'Thriller: Joker' },
+			update: {},
+			create: {
+				title: 'Thriller: Joker',
+				description: 'La transformación de Arthur Fleck en el icónico villano. Una experiencia psicológicamente intensa con la actuación ganadora del Oscar de Joaquin Phoenix.',
+				dateTime: new Date(Date.now() + 70 * 24 * 60 * 60 * 1000), // En 70 días
+				location: 'Jardín Sur - Puff & Chill',
 				category: 'Thriller Psicológico',
-				imdbId: 'tt0947798',
-				tmdbId: '36685', // Black Swan en TMDB
+				imdbId: 'tt7286456',
+				tmdbId: '475557',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg', // Joker
+			},
+		}),
+		prisma.event.upsert({
+			where: { title: 'Drama Musical: La La Land' },
+			update: {},
+			create: {
+				title: 'Drama Musical: La La Land',
+				description: 'Romance, música y sueños en Los Ángeles. Una experiencia mágica que combina perfectamente con una noche bajo las estrellas.',
+				dateTime: new Date(Date.now() + 77 * 24 * 60 * 60 * 1000), // En 77 días
+				location: 'Jardín Central - Puff & Chill',
+				category: 'Drama Musical',
+				imdbId: 'tt3783958',
+				tmdbId: '313369',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg', // La La Land
 			},
 		}),
 		prisma.event.upsert({
@@ -402,50 +462,12 @@ async function main() {
 			create: {
 				title: 'Animación: El Viaje de Chihiro',
 				description: 'Una noche familiar con la obra maestra de Studio Ghibli. Magia, aventura y hermosos paisajes bajo el cielo nocturno.',
-				dateTime: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000), // En 35 días
-				location: 'Jardín Central - Puff & Chill',
-				category: 'Animación Familiar',
-				imdbId: 'tt0245429',
-				tmdbId: '129', // Spirited Away en TMDB
-			},
-		}),
-		prisma.event.upsert({
-			where: { title: 'Terror Clásico: El Exorcista' },
-			update: {},
-			create: {
-				title: 'Terror Clásico: El Exorcista',
-				description: 'Una noche de terror clásico con El Exorcista. Solo para valientes que quieran vivir una experiencia escalofriante bajo las estrellas.',
 				dateTime: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000), // En 42 días
 				location: 'Terraza Norte - Puff & Chill',
-				category: 'Terror Clásico',
-				imdbId: 'tt0070047',
-				tmdbId: '9552', // The Exorcist en TMDB
-			},
-		}),
-		prisma.event.upsert({
-			where: { title: 'Acción: Mad Max Fury Road' },
-			update: {},
-			create: {
-				title: 'Acción: Mad Max Fury Road',
-				description: 'Adrenalina pura con Mad Max: Fury Road. Una experiencia explosiva de acción en el desierto bajo el cielo estrellado.',
-				dateTime: new Date(Date.now() + 49 * 24 * 60 * 60 * 1000), // En 49 días
-				location: 'Terraza Principal - Puff & Chill',
-				category: 'Acción',
-				imdbId: 'tt1392190',
-				tmdbId: '76341', // Mad Max: Fury Road en TMDB
-			},
-		}),
-		prisma.event.upsert({
-			where: { title: 'Drama Histórico: 1917' },
-			update: {},
-			create: {
-				title: 'Drama Histórico: 1917',
-				description: 'Una obra maestra cinematográfica sobre la Primera Guerra Mundial. Una experiencia emotiva e inmersiva bajo las estrellas.',
-				dateTime: new Date(Date.now() + 56 * 24 * 60 * 60 * 1000), // En 56 días
-				location: 'Jardín Sur - Puff & Chill',
-				category: 'Drama Bélico',
-				imdbId: 'tt8579674',
-				tmdbId: '530915', // 1917 en TMDB
+				category: 'Animación Familiar',
+				imdbId: 'tt0245429',
+				tmdbId: '129',
+				imageUrl: 'https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg', // Spirited Away
 			},
 		}),
 	])
@@ -477,12 +499,12 @@ async function main() {
 	console.log('✅ Asientos creados:', totalSeats, 'asientos total')
 
 	// Crear algunas reservas de ejemplo
-	const casablancaEvent = events.find(e => e.title.includes('Casablanca'))
+	const inceptionEvent = events.find(e => e.title.includes('Inception'))
 	const bladeRunnerEvent = events.find(e => e.title.includes('Blade Runner'))
 	
-	if (casablancaEvent && bladeRunnerEvent) {
-		const casablancaSeats = await prisma.seat.findMany({
-			where: { eventId: casablancaEvent.id },
+	if (inceptionEvent && bladeRunnerEvent) {
+		const inceptionSeats = await prisma.seat.findMany({
+			where: { eventId: inceptionEvent.id },
 			take: 5
 		})
 		
@@ -491,29 +513,29 @@ async function main() {
 			take: 3
 		})
 
-		// Reservas para Casablanca
-		const casablancaReservations = await Promise.all([
+		// Reservas para Inception
+		const inceptionReservations = await Promise.all([
 			prisma.reservation.create({
 				data: {
 					userId: users[0].id, // Carlos
-					eventId: casablancaEvent.id,
-					seatId: casablancaSeats[0].id,
+					eventId: inceptionEvent.id,
+					seatId: inceptionSeats[0].id,
 					status: 'confirmed',
 				}
 			}),
 			prisma.reservation.create({
 				data: {
 					userId: users[1].id, // María
-					eventId: casablancaEvent.id,
-					seatId: casablancaSeats[1].id,
+					eventId: inceptionEvent.id,
+					seatId: inceptionSeats[1].id,
 					status: 'confirmed',
 				}
 			}),
 			prisma.reservation.create({
 				data: {
 					userId: users[2].id, // Ana
-					eventId: casablancaEvent.id,
-					seatId: casablancaSeats[2].id,
+					eventId: inceptionEvent.id,
+					seatId: inceptionSeats[2].id,
 					status: 'pending',
 				}
 			}),
@@ -539,13 +561,13 @@ async function main() {
 			}),
 		])
 
-		console.log('✅ Reservas creadas:', casablancaReservations.length + bladeRunnerReservations.length, 'reservas')
+		console.log('✅ Reservas creadas:', inceptionReservations.length + bladeRunnerReservations.length, 'reservas')
 
 		// Marcar asientos como reservados
 		await prisma.seat.updateMany({
 			where: {
 				id: {
-					in: [...casablancaSeats.slice(0, 3), ...bladeRunnerSeats.slice(0, 2)].map(s => s.id)
+					in: [...inceptionSeats.slice(0, 3), ...bladeRunnerSeats.slice(0, 2)].map(s => s.id)
 				}
 			},
 			data: { isReserved: true }
@@ -720,26 +742,20 @@ async function main() {
 
 	console.log('🎉 Seed completado exitosamente!')
 	console.log('\n📊 Resumen de datos creados:')
-	console.log(`👥 Usuarios: ${users.length + 1} (incluyendo admin)`)
-	console.log(`🎭 Membresías: ${memberships.length}`)
-	console.log(`🎬 Eventos: ${events.length}`)
-	console.log(`🪑 Asientos: ${totalSeats}`)
-	console.log(`🍿 Productos: ${products.length}`)
-	console.log(`🏷️ Descuentos: ${discounts.length}`)
-	console.log(`📋 Órdenes: ${orders.length}`)
-	console.log(`💳 Pagos: ${payments.length}`)
-	console.log('\n📋 Credenciales de prueba:')
-	console.log('👤 Admin: admin@puffandchill.com / admin123')
-	console.log('👤 Usuario Bronze: carlos@test.com / user123')
-	console.log('👤 Usuario Silver: maria@test.com / user123')
-	console.log('👤 Usuario Gold: ana@test.com / user123')
+	console.log(`💳 Pagos: ${payments.length}`);
+
+	console.log('\n📋 Credenciales de prueba:');
+	console.log('👤 Admin: admin@puffandchill.com / admin123');
+	console.log('👤 Usuario Bronze: carlos@test.com / user123');
+	console.log('👤 Usuario Silver: maria@test.com / user123');
+	console.log('👤 Usuario Gold: ana@test.com / user123');
 }
 
 main()
 	.catch((e) => {
-		console.error('❌ Error durante el seed:', e)
-		process.exit(1)
+		console.error('❌ Error durante el seed:', e);
+		process.exit(1);
 	})
 	.finally(async () => {
-		await prisma.$disconnect()
-	}) 
+		await prisma.$disconnect();
+	});

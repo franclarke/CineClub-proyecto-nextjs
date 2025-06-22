@@ -44,8 +44,8 @@ export default function MembershipTiers() {
 			const data = await res.json()
 			const arr: MembershipTier[] = Array.isArray(data) ? data : data.memberships
 
-			// Encontrar el mayor valor de priority (mayor prioridad)
-			const maxPriority = Math.max(...arr.map((m: MembershipTier) => m.priority ?? Infinity))
+			// Encontrar el menor valor de priority (mayor prioridad) - Gold = 1 es la más alta
+			const minPriority = Math.min(...arr.map((m: MembershipTier) => m.priority ?? Infinity))
 
 			const mapped = arr.map((m: MembershipTier) => {
 				const style = membershipStyles[m.name] || {
@@ -58,7 +58,7 @@ export default function MembershipTiers() {
 					price: m.price,
 					features: m.benefits ? m.benefits.split(',').map((f: string) => f.trim()) : [],
 					color: style.color,
-					popular: m.priority === maxPriority,
+					popular: m.name === 'Silver', // Silver es la más popular según el diseño
 					borderColor: style.borderColor,
 					priority: m.priority,
 				}

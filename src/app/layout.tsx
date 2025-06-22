@@ -4,6 +4,9 @@ import "./globals.css";
 import { AuthProvider } from "./components/providers/session-provider";
 import { QueryProvider } from "./components/providers/query-provider";
 import ConditionalNavigation from "./components/conditional-navigation";
+import { CartProvider } from "@/lib/cart/cart-context";
+import { GlobalCartSidebar } from "./components/cart/GlobalCartSidebar";
+import { FloatingCartButton } from "./components/cart/FloatingCartButton";
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -73,8 +76,19 @@ export default function RootLayout({
 			>
 				<AuthProvider>
 					<QueryProvider>
-						<ConditionalNavigation />
-						{children}
+						<CartProvider
+							config={{
+								maxProductQuantity: 10,
+								seatReservationTimeoutMinutes: 15,
+								autoSyncWithServer: true,
+								persistToLocalStorage: true
+							}}
+						>
+							<ConditionalNavigation />
+								{children}
+							<GlobalCartSidebar />
+							<FloatingCartButton />
+						</CartProvider>
 					</QueryProvider>
 				</AuthProvider>
 			</body>

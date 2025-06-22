@@ -1,10 +1,10 @@
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { DashboardHome } from './(user)/(home)/dashboard-home'
 import { HeroSection } from './components/home/hero-section'
 import { AuthForm } from './components/home/auth/auth-form'
 import { DashboardContent } from './(admin)/components/dashboard-content'
+import { prisma } from '@/lib/prisma'
+import { authOptions } from '@/lib/auth'
 
 async function getUserWithMembership(email: string) {
 	return await prisma.user.findUnique({
@@ -30,7 +30,7 @@ export default async function Home() {
 			const userData = {
 				name: userWithMembership.name,
 				email: userWithMembership.email,
-				membershipName: userWithMembership.membership.name,
+				membershipName: userWithMembership.membership?.name || 'Bronce',
 			}
 
 			if (session.user.isAdmin) {
@@ -49,7 +49,7 @@ export default async function Home() {
 	})
 
 	return (
-		<main className="pt-16 relative flex h-screen w-full items-center justify-center overflow-hidden">
+		<main className="relative flex h-screen w-full items-center justify-center overflow-hidden">
 			{/* Background Image */}
 			<div
 				className="absolute inset-0 bg-cover bg-center"

@@ -13,6 +13,8 @@ import {
 	MusicIcon
 } from 'lucide-react'
 import { TrailerPlayer } from './TrailerPlayer'
+import { formatFullDate, formatTime, formatMonthShort } from '@/lib/utils/date'
+import { parseISO } from 'date-fns'
 
 interface Seat {
 	id: string
@@ -30,6 +32,7 @@ interface Event {
 	category: string | null
 	imdbId: string | null
 	tmdbId: string | null
+	imageUrl: string | null
 	seatStats: {
 		total: number
 		available: number
@@ -87,17 +90,12 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 	}, [event.imdbId, event.title, event.category, event.description])
 
 	const formatDate = (dateString: string) => {
-		const date = new Date(dateString)
+		const date = parseISO(dateString)
 		return {
-			full: date.toLocaleDateString('es-ES', { 
-				weekday: 'long', 
-				year: 'numeric', 
-				month: 'long', 
-				day: 'numeric' 
-			}),
-			time: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+			full: formatFullDate(dateString),
+			time: formatTime(dateString),
 			day: date.getDate(),
-			month: date.toLocaleDateString('es-ES', { month: 'short' }),
+			month: formatMonthShort(dateString),
 		}
 	}
 
@@ -125,19 +123,20 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					<div className="relative">
 						{/* Movie Poster / Hero Image */}
 						<div className="aspect-video bg-gradient-to-br from-sunset-orange/20 to-warm-red/20 rounded-xl overflow-hidden flex items-center justify-center relative">
-							{isLoadingImdb ? (
+							{event.imageUrl ? (
+								<Image 
+									src={event.imageUrl} 
+									alt={event.title}
+									fill
+									className="object-cover"
+									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+								/>
+							) : isLoadingImdb ? (
 								<div className="animate-pulse">
 									<div className="w-24 h-24 bg-soft-gray/30 rounded-full flex items-center justify-center">
 										<PlayIcon className="w-12 h-12 text-soft-gray" />
 									</div>
 								</div>
-							) : imdbData?.poster ? (
-								<Image 
-									src={imdbData.poster} 
-									alt={event.title}
-									fill
-									className="object-cover"
-								/>
 							) : (
 								<div className="text-center">
 									<PlayIcon className="w-24 h-24 text-sunset-orange/60 mx-auto mb-4" />
@@ -273,7 +272,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					</div>
 
 					{/* Event Details */}
-					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6">
+					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6 sticky top-8">
 						<h3 className="text-display text-xl text-soft-beige mb-4">
 							Detalles del Evento
 						</h3>
