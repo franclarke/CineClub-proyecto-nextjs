@@ -55,9 +55,11 @@ export function DashboardContent() {
 					<p className="text-gray-300 text-sm mb-4">
 						Gestionar productos del kiosco
 					</p>
-					<Button variant="primary" size="sm" className="w-full">
-						Gestionar Productos
-					</Button>
+					<Link href="/manage-products">
+						<Button variant="primary" size="sm" className="w-full">
+							Gestionar Productos
+						</Button>
+					</Link>
 				</div>
 
 			</div>
