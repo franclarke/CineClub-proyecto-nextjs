@@ -97,9 +97,9 @@ export async function createPaymentPreference(data: MPPreferenceData) {
 			items: data.items,
 			back_urls: data.back_urls,
 			auto_return: data.auto_return,
-			notification_url: data.notification_url
+			notification_url: data.notification_url,
 		})
-		
+
 		const response = await preference.create({
 			body: {
 				items: data.items,
@@ -117,17 +117,17 @@ export async function createPaymentPreference(data: MPPreferenceData) {
 				})
 			}
 		})
-		
+
 		console.log('MercadoPago preference created successfully:', response.id)
 		return response
 	} catch (error) {
 		console.error('Error creating MercadoPago preference:', error)
-		
+
 		// Proporcionar información más específica del error
 		if (error && typeof error === 'object' && 'message' in error) {
 			throw new Error(`Error de MercadoPago: ${error.message}`)
 		}
-		
+
 		throw new Error('Error al crear la preferencia de pago')
 	}
 }
@@ -157,7 +157,7 @@ interface MPWebhookBody {
 export function validateMPWebhook(body: MPWebhookBody, headers: Headers): boolean {
 	// Aquí puedes agregar validación adicional de seguridad
 	// Por ejemplo, verificar el x-signature header
-	
+
 	// Verificar que el webhook tenga la estructura esperada
 	if (!body || typeof body !== 'object') {
 		return false
@@ -181,7 +181,7 @@ export function validateMPWebhook(body: MPWebhookBody, headers: Headers): boolea
 
 // Helper para calcular descuentos
 export function calculateOrderTotals(
-	items: CartItem[], 
+	items: CartItem[],
 	membershipDiscount: number = 0
 ) {
 	const subtotal = items.reduce((acc, item) => acc + item.totalPrice, 0)
@@ -207,7 +207,7 @@ export async function getPaymentStatus() {
 		// Aquí usarías la API de payments de MercadoPago
 		// const payment = new Payment(client)
 		// return await payment.get({ id: paymentId })
-		
+
 		// Por ahora retornamos un mock
 		return { status: 'pending' }
 	} catch (error) {

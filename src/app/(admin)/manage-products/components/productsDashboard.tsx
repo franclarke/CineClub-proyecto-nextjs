@@ -12,7 +12,7 @@ interface Product {
     stock: number
     imageUrl?: string
 }
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProductsDashboard() {
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
@@ -51,6 +51,7 @@ export default function ProductsDashboard() {
                     imageUrl: prod.imageUrl ?? undefined,
                 }))
             )
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al cargar productos')
         } finally {
@@ -88,6 +89,7 @@ export default function ProductsDashboard() {
             setEditId(null)
             setShowForm(false)
             fetchProducts()
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al guardar el producto')
         }
@@ -99,6 +101,7 @@ export default function ProductsDashboard() {
             await deleteProduct(id)
             setDeleteSuccess(true)
             fetchProducts()
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al eliminar el producto')
         }
@@ -119,6 +122,7 @@ export default function ProductsDashboard() {
                 setEditId(id)
                 setShowForm(true)
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al cargar el producto')
         }

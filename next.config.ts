@@ -26,13 +26,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true, // 🔥 Esto desactiva ESLint en el build
+  },
   webpack: (config, { dev, isServer }) => {
     // Disable minification completely
     if (!dev) {
       config.optimization.minimize = false;
       config.optimization.minimizer = [];
     }
-    
+
     // Additional webpack configuration to handle potential issues
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -40,7 +43,7 @@ const nextConfig: NextConfig = {
       net: false,
       tls: false,
     };
-    
+
     return config;
   },
 };

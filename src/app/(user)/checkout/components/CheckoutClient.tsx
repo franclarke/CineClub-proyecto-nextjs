@@ -5,14 +5,14 @@ import { User } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/cart-context'
 import { ProductCartItem, SeatCartItem } from '@/types/cart'
-import { 
-	ShoppingCart, 
-	CreditCard, 
-	Package, 
-	Trash2, 
-	Plus, 
-	Minus, 
-	ArrowRight, 
+import {
+	ShoppingCart,
+	CreditCard,
+	Package,
+	Trash2,
+	Plus,
+	Minus,
+	ArrowRight,
 	Sparkles,
 	Shield,
 	CheckCircle,
@@ -54,14 +54,14 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 	const allItems = cartState.items
 	const productItems = cartState.items.filter(item => item.type === 'product') as ProductCartItem[]
 	const seatItems = cartState.items.filter(item => item.type === 'seat') as SeatCartItem[]
-	
+
 	// Calcular descuento basado en el nombre de la membresía
-	const membershipDiscount = user.membership?.name === 'Oro' ? 15 : 
-		user.membership?.name === 'Plata' ? 10 : 
-		user.membership?.name === 'Bronce' ? 5 : 0
-	
+	const membershipDiscount = user.membership?.name === 'Oro' ? 15 :
+		user.membership?.name === 'Plata' ? 10 :
+			user.membership?.name === 'Bronce' ? 5 : 0
+
 	// Calcular totales con TODOS los items
-	const subtotal = allItems.reduce((acc, item) => 
+	const subtotal = allItems.reduce((acc, item) =>
 		acc + item.totalPrice, 0
 	)
 	const membershipDiscountAmount = subtotal * (membershipDiscount / 100)
@@ -69,9 +69,21 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 	const totalDiscount = membershipDiscountAmount + additionalDiscountAmount
 	const total = subtotal - totalDiscount
 
+	/*************  ✨ Windsurf Command ⭐  *************/
+	/**
+	 * Updates the quantity of a product in the cart.
+	 * 
+	 * @param productId - The ID of the product to update.
+	 * @param newQuantity - The new quantity to set for the product.
+	 * 
+	 * If the new quantity is less than 1, the update is not performed.
+	 * The function also manages the loading state for the product.
+	 */
+
+	/*******  48e78e07-1a5c-4efc-8697-623835434035  *******/
 	const updateQuantity = async (productId: string, newQuantity: number) => {
 		if (newQuantity < 1) return
-		
+
 		setLoadingItems(prev => new Set(prev).add(productId))
 		try {
 			updateProductQuantity(productId, newQuantity)
@@ -90,7 +102,7 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 		if (item && item.type === 'product') {
 			setLoadingItems(prev => new Set(prev).add((item as ProductCartItem).product.id))
 		}
-		
+
 		try {
 			removeItem(itemId)
 		} finally {
@@ -136,13 +148,13 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 
 		setIsLoading(true)
 		setError(null)
-		
+
 		try {
 			// Enviar TODOS los items al endpoint
 			const response = await fetch('/api/payments/create-preference', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ 
+				body: JSON.stringify({
 					items: allItems,
 					discountCode: appliedDiscount > 0 ? discountCode : null
 				})
@@ -153,14 +165,11 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 				throw new Error(error.error || 'Error al crear la preferencia de pago')
 			}
 
-			const { initPoint, sandboxInitPoint } = await response.json()
-			
-			const checkoutUrl = process.env.NODE_ENV === 'development' ? sandboxInitPoint : initPoint
-			
-			if (checkoutUrl) {
-				// Limpiar carrito del contexto antes de redirigir
+			const { initPoint } = await response.json()
+
+			if (initPoint) {
 				clearCart()
-				window.location.href = checkoutUrl
+				window.location.href = initPoint
 			} else {
 				throw new Error('URL de checkout no disponible')
 			}
@@ -321,11 +330,11 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 													>
 														<Minus className="w-4 h-4 text-soft-beige" />
 													</button>
-													
+
 													<span className="text-soft-beige font-semibold min-w-8 text-center">
 														{item.quantity}
 													</span>
-													
+
 													<button
 														onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
 														disabled={isItemLoading || item.quantity >= 10}
@@ -363,7 +372,7 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 						<Sparkles className="w-5 h-5 text-soft-gold" />
 						Código de Descuento
 					</h3>
-					
+
 					{appliedDiscount > 0 ? (
 						<div className="bg-soft-gold/20 border border-soft-gold/30 rounded-xl p-4">
 							<div className="flex items-center justify-between">
@@ -428,7 +437,7 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 							</span>
 							<span className="text-soft-beige font-medium">${subtotal.toFixed(2)}</span>
 						</div>
-						
+
 						{user.membership && membershipDiscountAmount > 0 && (
 							<div className="flex justify-between items-center text-soft-gold">
 								<span className="flex items-center gap-2">
@@ -445,9 +454,9 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 								<span>-${additionalDiscountAmount.toFixed(2)}</span>
 							</div>
 						)}
-						
+
 						<div className="h-px bg-gradient-to-r from-transparent via-soft-gray/30 to-transparent my-4"></div>
-						
+
 						<div className="flex justify-between items-center py-2 bg-soft-gold/10 rounded-xl px-4">
 							<span className="text-xl font-bold text-soft-beige">Total Final</span>
 							<span className="text-2xl font-bold text-sunset-orange">${total.toFixed(2)}</span>
@@ -497,7 +506,7 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 							<div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
 							<span>Serás redirigido a MercadoPago para completar el pago</span>
 						</div>
-						
+
 						<p className="text-center text-soft-beige/40 text-xs">
 							Al continuar, aceptas nuestros términos y condiciones
 						</p>

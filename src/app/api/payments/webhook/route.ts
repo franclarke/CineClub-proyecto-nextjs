@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
 			// Obtener información del pago desde MercadoPago
 			const paymentInfo = await getPaymentInfo(paymentId)
-			
+
 			if (!paymentInfo) {
 				return NextResponse.json({ error: 'Pago no encontrado' }, { status: 404 })
 			}
@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
 			}
 
 			const order = await prisma.order.findFirst({
-				where: { 
-					externalReference: externalReference 
+				where: {
+					externalReference: externalReference
 				},
 				include: {
 					items: true,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
 				// Eliminar reservas pendientes cuando el pago falla
 				const deletedReservations = await prisma.reservation.deleteMany({
-					where: { 
+					where: {
 						orderId: order.id,
 						status: 'pending'
 					}
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		console.error('Error procesando webhook:', error)
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' }, 
+			{ error: 'Error interno del servidor' },
 			{ status: 500 }
 		)
 	}
@@ -149,7 +149,7 @@ async function processOrderItems(order: OrderWithItems) {
 		if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
 			const metadata = order.metadata as { membershipTierId?: string }
 			const membershipId = metadata.membershipTierId
-			
+
 			if (membershipId) {
 				await prisma.user.update({
 					where: { id: order.userId },
@@ -157,7 +157,7 @@ async function processOrderItems(order: OrderWithItems) {
 						membershipId: membershipId
 					}
 				})
-				
+
 				console.log(`Membresía ${membershipId} activada para usuario ${order.userId}`)
 			}
 		} else {
@@ -201,4 +201,3 @@ async function processOrderItems(order: OrderWithItems) {
 	}
 }
 
- 

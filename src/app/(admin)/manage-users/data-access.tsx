@@ -135,3 +135,14 @@ export async function editUserById(id: string, data: Partial<{
         include: { membership: true },
     })
 }
+
+export async function fetchUserByIdClient(userId: string) {
+    try {
+        const user = await getUserById(userId)
+        if (!user) throw new Error('User not found')
+        return user
+    } catch (error) {
+        console.error('Error fetching user:', error)
+        throw error
+    }
+}
