@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { Order, OrderItem, Product, Payment } from '@prisma/client'
 import { WalletSummary } from './WalletSummary'
@@ -33,42 +33,90 @@ interface WalletClientProps {
 
 type TabType = 'tickets' | 'products' | 'history'
 
+interface TabInfo {
+	id: TabType
+	label: string
+	count: number
+	icon: React.ComponentType<{ className?: string }>
+	description: string
+}
+
 export function WalletClient({ reservationsByEvent, orders, summary }: WalletClientProps) {
 	const [activeTab, setActiveTab] = useState<TabType>('tickets')
 	const [searchQuery, setSearchQuery] = useState('')
 
-	// Calculate correct counts
-	const ticketCount = Object.keys(reservationsByEvent).length
-	const productOrdersCount = orders.filter(order => order.items.length > 0).length
-	const totalTransactions = orders.length + ticketCount
+	// Memoized counts calculation for performance
+	const counts = useMemo(() => {
+		const ticketCount = Object.keys(reservationsByEvent).length
+		const productOrdersCount = orders.filter(order => order.items.length > 0).length
+		const totalTransactions = orders.length + ticketCount
+		
+		return {
+			tickets: ticketCount,
+			products: productOrdersCount,
+			transactions: totalTransactions
+		}
+	}, [reservationsByEvent, orders])
 
-	const tabs = [
+	// Memoized tabs configuration
+	const tabs = useMemo<TabInfo[]>(() => [
 		{
-			id: 'tickets' as TabType,
+			id: 'tickets',
 			label: 'Tickets',
-			count: ticketCount,
+			count: counts.tickets,
 			icon: CalendarIcon,
 			description: 'Eventos reservados'
 		},
 		{
-			id: 'products' as TabType,
+			id: 'products',
 			label: 'Productos',
-			count: productOrdersCount,
+			count: counts.products,
 			icon: ShoppingBagIcon,
 			description: 'Consumibles por canjear'
 		},
 		{
-			id: 'history' as TabType,
+			id: 'history',
 			label: 'Historial',
-			count: totalTransactions,
+			count: counts.transactions,
 			icon: HistoryIcon,
 			description: 'Todas las transacciones'
 		}
-	]
+	], [counts])
 
-	const hasAnyContent = ticketCount > 0 || orders.length > 0
+	// Memoized content availability check
+	const hasAnyContent = useMemo(() => 
+		counts.tickets > 0 || orders.length > 0, 
+		[counts.tickets, orders.length]
+	)
 
-	// Empty state
+	// Optimized event handlers
+	const handleTabChange = useCallback((tabId: TabType) => {
+		setActiveTab(tabId)
+		// Clear search when switching tabs for better UX
+		setSearchQuery('')
+	}, [])
+
+	const handleSearchChange = useCallback((value: string) => {
+		setSearchQuery(value)
+	}, [])
+
+	// Memoized tab content renderer
+	const renderTabContent = useMemo(() => {
+		const contentMap = {
+			tickets: <TicketsSection reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />,
+			products: <ProductsSection orders={orders} searchQuery={searchQuery} />,
+			history: <HistorySection orders={orders} reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />
+		}
+		return contentMap[activeTab] || null
+	}, [activeTab, reservationsByEvent, orders, searchQuery])
+
+	// Memoized search placeholder
+	const searchPlaceholder = useMemo(() => {
+		const currentTab = tabs.find(t => t.id === activeTab)
+		return `Buscar en ${currentTab?.label.toLowerCase()}...`
+	}, [tabs, activeTab])
+
+	// Empty state component
 	if (!hasAnyContent) {
 		return (
 			<div className="space-y-8">
@@ -100,20 +148,6 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 		)
 	}
 
-	// Render tab content based on active tab
-	const renderTabContent = () => {
-		if (activeTab === 'tickets') {
-			return <TicketsSection reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />
-		}
-		if (activeTab === 'products') {
-			return <ProductsSection orders={orders} searchQuery={searchQuery} />
-		}
-		if (activeTab === 'history') {
-			return <HistorySection orders={orders} reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />
-		}
-		return null
-	}
-
 	return (
 		<div className="space-y-8">
 			{/* Summary Cards */}
@@ -130,7 +164,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 						return (
 							<button
 								key={tab.id}
-								onClick={() => setActiveTab(tab.id)}
+								onClick={() => handleTabChange(tab.id)}
 								className={`
 									group flex items-center gap-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300
 									${isActive
@@ -139,6 +173,8 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 									}
 								`}
 								style={{ animationDelay: `${index * 0.1}s` }}
+								aria-pressed={isActive}
+								aria-label={`Ver ${tab.label}`}
 							>
 								<div className={`
 									w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
@@ -184,17 +220,18 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 					<SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/40" />
 					<input
 						type="text"
-						placeholder={`Buscar en ${tabs.find(t => t.id === activeTab)?.label.toLowerCase()}...`}
+						placeholder={searchPlaceholder}
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						onChange={(e) => handleSearchChange(e.target.value)}
 						className="w-full bg-soft-gray/20 border border-soft-gray/30 rounded-2xl pl-12 pr-6 py-4 text-soft-beige placeholder-soft-beige/40 focus:outline-none focus:border-sunset-orange/50 focus:bg-soft-gray/30 transition-all duration-300"
+						aria-label={`Buscar en ${tabs.find(t => t.id === activeTab)?.label}`}
 					/>
 				</div>
 			</div>
 
 			{/* Tab Content */}
-			<div className="min-h-[400px]">
-				{renderTabContent()}
+			<div className="min-h-[400px]" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+				{renderTabContent}
 			</div>
 		</div>
 	)

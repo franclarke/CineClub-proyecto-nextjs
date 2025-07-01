@@ -51,18 +51,18 @@ export async function EventDetailDataAccess({ eventId }: EventDetailDataAccessPr
 		available: event.seats.filter(seat => !seat.isReserved).length,
 		reserved: event.seats.filter(seat => seat.isReserved).length,
 		byTier: {
-			gold: {
-				total: event.seats.filter(seat => seat.tier === 'Gold').length,
-				available: event.seats.filter(seat => seat.tier === 'Gold' && !seat.isReserved).length,
-			},
-			silver: {
-				total: event.seats.filter(seat => seat.tier === 'Silver').length,
-				available: event.seats.filter(seat => seat.tier === 'Silver' && !seat.isReserved).length,
-			},
-			bronze: {
-				total: event.seats.filter(seat => seat.tier === 'Bronze').length,
-				available: event.seats.filter(seat => seat.tier === 'Bronze' && !seat.isReserved).length,
-			},
+							gold: {
+					total: event.seats.filter(seat => seat.tier === 'Puff XXL Estelar').length,
+					available: event.seats.filter(seat => seat.tier === 'Puff XXL Estelar' && !seat.isReserved).length,
+				},
+				silver: {
+					total: event.seats.filter(seat => seat.tier === 'Reposera Deluxe').length,
+					available: event.seats.filter(seat => seat.tier === 'Reposera Deluxe' && !seat.isReserved).length,
+				},
+				bronze: {
+					total: event.seats.filter(seat => seat.tier === 'Banquito').length,
+					available: event.seats.filter(seat => seat.tier === 'Banquito' && !seat.isReserved).length,
+				},
 		},
 	}
 
@@ -76,6 +76,7 @@ export async function EventDetailDataAccess({ eventId }: EventDetailDataAccessPr
 		category: event.category,
 		imdbId: event.imdbId,
 		tmdbId: event.tmdbId,
+		imageUrl: event.imageUrl,
 		seatStats,
 		seats: event.seats,
 		reservationCount: event._count.reservations,

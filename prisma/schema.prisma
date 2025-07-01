@@ -3,23 +3,25 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  password    String
-  name        String?
-  membership  MembershipTier @relation(fields: [membershipId], references: [id])
-  membershipId String
-  reservations Reservation[]
-  orders      Order[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  isAdmin     Boolean   @default(false)
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String?
+  name           String?
+  phone          String?
+  birthDate      String?
+  location       String?
+  isAdmin        Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  membership     MembershipTier @relation(fields: [membershipId], references: [id])
+  membershipId   String
+  reservations   Reservation[]
+  orders         Order[]
 }
 
 model MembershipTier {
@@ -29,6 +31,7 @@ model MembershipTier {
   priority   Int      // 1 = highest (Oro)
   price      Float    // monthly fee or one-time
   benefits   String?  // textual description of benefits
+  imageUrl   String   // URL de la imagen de la membresía
   users      User[]
   discounts  Discount[]
 }
@@ -52,6 +55,8 @@ model Reservation {
   seat         Seat     @relation(fields: [seatId], references: [id])
   seatId       String   @unique
   status       String   @default("pending") // 'pending', 'confirmed', 'cancelled'
+  order        Order?   @relation(fields: [orderId], references: [id])
+  orderId      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -62,6 +67,7 @@ model Product {
   description String?
   price       Float
   stock       Int
+  imageUrl    String?  // URL de la imagen del producto
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orderItems  OrderItem[]
@@ -72,8 +78,12 @@ model Order {
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   items       OrderItem[]
-  status      String   @default("pending") // 'pending', 'paid', 'cancelled'
+  reservations Reservation[]
+  status      String   @default("cart") // 'cart', 'pending', 'paid', 'cancelled'
+  type        String   @default("cart") // 'cart', 'membership', 'event'
   totalAmount Float
+  externalReference String? @unique // Reference for payment provider (e.g. MercadoPago)
+  metadata    Json?    // Additional data for specific order types
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   payment     Payment?
@@ -121,6 +131,7 @@ model Event {
   location     String
   imdbId       String?   // store IMDb movie ID
   tmdbId       String?   // store TMDB movie ID
+  imageUrl     String?   // URL de la imagen almacenada en Supabase Storage
   category     String?   // e.g. Drama, Comedy (fetched from IMDb API or custom)
   seats        Seat[]
   reservations Reservation[]

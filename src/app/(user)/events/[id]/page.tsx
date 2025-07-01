@@ -1,9 +1,8 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Navigation from '../../components/Navigation'
-import { EventDetailSkeletonComponent } from './components/EventDetailSkeletonComponent'
 import { EventDetailDataAccess } from './components/EventDetailDataAccess'
+import { EventDetailSkeletonComponent } from './components/EventDetailSkeletonComponent'
 
 interface EventDetailPageProps {
 	params: Promise<{
@@ -27,8 +26,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
 	return (
 		<>
-			<Navigation />
-			<main className="min-h-screen bg-deep-night pt-20 pb-12">
+			<main className="min-h-screen bg-deep-night pt-28 pb-12">
 				<Suspense fallback={<EventDetailSkeletonComponent />}>
 					<EventDetailDataAccess eventId={id} />
 				</Suspense>

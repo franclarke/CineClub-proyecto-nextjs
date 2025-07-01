@@ -8,9 +8,10 @@ interface SeatMapPageProps {
 	}>
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: SeatMapPageProps): Promise<Metadata> {
+	const { id } = await params
 	return {
-		title: 'Seleccionar Asientos | Puff & Chill',
+		title: `Asientos para evento ${id} | Puff & Chill`,
 		description: 'Elige tu asiento perfecto para esta experiencia de cine bajo las estrellas'
 	}
 }
@@ -22,5 +23,9 @@ export default async function SeatMapPage({ params }: SeatMapPageProps) {
 		notFound()
 	}
 
-	return <DataAccess eventId={id} />
+	return (
+		<main className="min-h-screen bg-deep-night pt-28 pb-12">
+			<DataAccess eventId={id} />
+		</main>
+	)
 } 

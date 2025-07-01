@@ -1,4 +1,5 @@
 import { Event, Reservation, Seat } from '@prisma/client'
+import Image from 'next/image'
 import { Calendar, MapPin, Clock, Users, Ticket } from 'lucide-react'
 
 interface ReservationSummaryProps {
@@ -18,9 +19,22 @@ export function ReservationSummary({ reservation, event, seat }: ReservationSumm
 		<div className="space-y-6">
 			{/* Event Header */}
 			<div className="flex items-start gap-4 mb-4">
-				<div className="w-12 h-12 bg-gradient-to-r from-sunset-orange/20 to-soft-gold/20 rounded-xl flex items-center justify-center">
-					<Ticket className="w-6 h-6 text-sunset-orange" />
-				</div>
+				{/* Event Image or Icon */}
+				{event.imageUrl ? (
+					<div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+						<Image
+							src={event.imageUrl}
+							alt={event.title}
+							fill
+							className="object-cover"
+							sizes="80px"
+						/>
+					</div>
+				) : (
+					<div className="w-20 h-20 bg-gradient-to-r from-sunset-orange/20 to-soft-gold/20 rounded-xl flex items-center justify-center flex-shrink-0">
+						<Ticket className="w-8 h-8 text-sunset-orange" />
+					</div>
+				)}
 				<div className="flex-1">
 					<h3 className="text-xl font-bold text-sunset-orange mb-2">
 						{event.title}

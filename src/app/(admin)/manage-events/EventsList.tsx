@@ -1,9 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Event } from '@prisma/client'
 import { getAllEvents } from './data-access'
 import { EventCard } from '@/app/(user)/events/components/event-card'
+
 export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
-    const [events, setEvents] = useState<any[]>([])
+    const [events, setEvents] = useState<Event[]>([])
     const [loading, setLoading] = useState(true)
     const [success, setSuccess] = useState(false)
 

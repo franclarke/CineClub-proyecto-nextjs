@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 						{/* Left side - Title */}
 						<div className="space-y-2">
 							<h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-soft-beige leading-none tracking-tight">
-								Mi <span className="bg-gradient-to-r from-sunset-orange to-soft-gold bg-clip-text text-transparent">Perfil</span>
+								Mi Perfil
 							</h1>
 							<p className="text-lg text-soft-beige/60 font-light max-w-2xl leading-relaxed">
 								Gestiona tu información personal y configuración de tu cuenta

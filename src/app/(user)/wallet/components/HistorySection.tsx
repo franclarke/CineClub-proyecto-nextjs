@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Order, OrderItem, Product, Payment } from '@prisma/client'
 import { ReservationsByEvent, EventWithReservations } from '@/types/api'
 import { ShoppingBagIcon, TicketIcon, CalendarIcon, CreditCardIcon, HistoryIcon, FilterIcon } from 'lucide-react'
@@ -15,10 +16,20 @@ interface HistorySectionProps {
 	searchQuery?: string
 }
 
+type TransactionType = {
+	type: 'order' | 'reservation'
+	id: string
+	date: Date
+	amount: number
+	status: string
+	data: OrderWithExtras | EventWithReservations
+	searchableText: string
+}
+
 export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }: HistorySectionProps) {
-	// Combine and sort all transactions by date
-	const allTransactions = [
-		...orders.map(order => ({
+	// Memoized transactions processing for better performance
+	const { allTransactions, hasTransactions } = useMemo(() => {
+		const orderTransactions: TransactionType[] = orders.map(order => ({
 			type: 'order' as const,
 			id: order.id,
 			date: order.createdAt,
@@ -26,8 +37,9 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 			status: order.status,
 			data: order,
 			searchableText: `${order.id} ${order.items.map(item => item.product.name).join(' ')}`
-		})),
-		...Object.values(reservationsByEvent).map(({ event, reservations }) => ({
+		}))
+
+		const reservationTransactions: TransactionType[] = Object.values(reservationsByEvent).map(({ event, reservations }) => ({
 			type: 'reservation' as const,
 			id: event.id,
 			date: reservations[0]?.createdAt || event.createdAt,
@@ -36,15 +48,37 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 			data: { event, reservations },
 			searchableText: `${event.title} ${event.location}`
 		}))
-	].filter(transaction => {
-		if (!searchQuery) return true
-		const searchLower = searchQuery.toLowerCase()
-		return transaction.searchableText.toLowerCase().includes(searchLower) ||
-			   transaction.date.toLocaleDateString('es-ES').includes(searchLower) ||
-			   transaction.amount.toString().includes(searchLower)
-	}).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-	if (orders.length === 0 && Object.keys(reservationsByEvent).length === 0) {
+		const combined = [...orderTransactions, ...reservationTransactions]
+		const hasAny = combined.length > 0
+
+		// Apply search filter if provided
+		const filtered = !searchQuery 
+			? combined 
+			: combined.filter(transaction => {
+				const searchLower = searchQuery.toLowerCase()
+				return transaction.searchableText.toLowerCase().includes(searchLower) ||
+					   transaction.date.toLocaleDateString('es-ES').includes(searchLower) ||
+					   transaction.amount.toString().includes(searchLower)
+			})
+
+		// Sort by date (newest first)
+		const sorted = filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+		return { allTransactions: sorted, hasTransactions: hasAny }
+	}, [orders, reservationsByEvent, searchQuery])
+
+	// Format currency helper
+	const formatCurrency = (amount: number) => {
+		return new Intl.NumberFormat('es-ES', {
+			style: 'currency',
+			currency: 'USD',
+			minimumFractionDigits: 2
+		}).format(amount)
+	}
+
+	// Empty state when no transactions exist
+	if (!hasTransactions) {
 		return (
 			<div className="text-center py-20">
 				<div className="bg-soft-beige/5 backdrop-blur-xl border border-soft-beige/10 rounded-3xl max-w-lg mx-auto p-12">
@@ -62,6 +96,7 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 		)
 	}
 
+	// No search results state
 	if (allTransactions.length === 0 && searchQuery) {
 		return (
 			<div className="text-center py-16">
@@ -81,7 +116,7 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 		<div className="space-y-8">
 			{/* Search Results Info */}
 			{searchQuery && (
-				<div className="text-soft-beige/60 text-sm">
+				<div className="text-soft-beige/60 text-sm" role="status" aria-live="polite">
 					{allTransactions.length} resultado{allTransactions.length !== 1 ? 's' : ''} 
 					{allTransactions.length > 0 && ` para "${searchQuery}"`}
 				</div>
@@ -90,30 +125,48 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 			{/* Transactions List */}
 			<div className="space-y-6">
 				{allTransactions.map((transaction, index) => (
-					<div
+					<article
 						key={`${transaction.type}-${transaction.id}`}
 						className="bg-soft-beige/5 backdrop-blur-xl border border-soft-beige/10 rounded-3xl p-8 animate-fade-in hover-lift"
 						style={{ animationDelay: `${index * 0.05}s` }}
+						aria-labelledby={`transaction-${transaction.type}-${transaction.id}`}
 					>
 						{transaction.type === 'order' ? (
-							<OrderHistoryItem order={transaction.data as OrderWithExtras} />
+							<OrderHistoryItem 
+								order={transaction.data as OrderWithExtras} 
+								formatCurrency={formatCurrency}
+								transactionId={`transaction-${transaction.type}-${transaction.id}`}
+							/>
 						) : (
-							<ReservationHistoryItem data={transaction.data as EventWithReservations} />
+							<ReservationHistoryItem 
+								data={transaction.data as EventWithReservations} 
+								formatCurrency={formatCurrency}
+								transactionId={`transaction-${transaction.type}-${transaction.id}`}
+							/>
 						)}
-					</div>
+					</article>
 				))}
 			</div>
 		</div>
 	)
 }
 
-function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
+interface ItemProps {
+	formatCurrency: (amount: number) => string
+	transactionId: string
+}
+
+interface OrderHistoryItemProps extends ItemProps {
+	order: OrderWithExtras
+}
+
+function OrderHistoryItem({ order, formatCurrency, transactionId }: OrderHistoryItemProps) {
 	const hasProducts = order.items.length > 0
 
 	return (
 		<div className="flex items-start justify-between">
 			<div className="flex-1">
-				<div className="flex items-center gap-4 mb-6">
+				<header className="flex items-center gap-4 mb-6">
 					<div className="w-14 h-14 bg-gradient-to-r from-sunset-orange/20 to-soft-gold/20 rounded-2xl flex items-center justify-center">
 						{hasProducts ? (
 							<ShoppingBagIcon className="w-7 h-7 text-sunset-orange" />
@@ -122,7 +175,7 @@ function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 						)}
 					</div>
 					<div>
-						<h3 className="text-soft-beige font-bold text-xl">
+						<h3 id={transactionId} className="text-soft-beige font-bold text-xl">
 							{hasProducts ? 'Compra de Productos' : 'Compra de Tickets'}
 						</h3>
 						<p className="text-soft-beige/60">
@@ -135,10 +188,10 @@ function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 							})}
 						</p>
 					</div>
-				</div>
+				</header>
 
 				{hasProducts && (
-					<div className="ml-18 mb-6">
+					<section className="ml-18 mb-6">
 						<div className="bg-soft-gray/10 border border-soft-gray/20 rounded-2xl p-4">
 							<p className="text-soft-beige/80 font-medium mb-3">Productos:</p>
 							<div className="text-soft-beige/60">
@@ -150,11 +203,11 @@ function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 								))}
 							</div>
 						</div>
-					</div>
+					</section>
 				)}
 
 				{order.payment && (
-					<div className="ml-18">
+					<footer className="ml-18">
 						<div className="flex items-center gap-2 text-soft-beige/60 text-sm">
 							<CreditCardIcon className="w-4 h-4" />
 							<span>
@@ -163,13 +216,13 @@ function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 									'Fecha no disponible'}
 							</span>
 						</div>
-					</div>
+					</footer>
 				)}
 			</div>
 
 			<div className="text-right">
 				<div className="text-soft-beige font-bold text-2xl mb-3">
-					${order.totalAmount.toFixed(2)}
+					{formatCurrency(order.totalAmount)}
 				</div>
 				<div className={`
 					px-4 py-2 rounded-xl text-sm font-bold border
@@ -189,7 +242,11 @@ function OrderHistoryItem({ order }: { order: OrderWithExtras }) {
 	)
 }
 
-function ReservationHistoryItem({ data }: { data: EventWithReservations }) {
+interface ReservationHistoryItemProps extends ItemProps {
+	data: EventWithReservations
+}
+
+function ReservationHistoryItem({ data, formatCurrency, transactionId }: ReservationHistoryItemProps) {
 	const { event, reservations } = data
 	const eventDate = new Date(event.dateTime)
 	const isUpcoming = eventDate > new Date()
@@ -197,12 +254,12 @@ function ReservationHistoryItem({ data }: { data: EventWithReservations }) {
 	return (
 		<div className="flex items-start justify-between">
 			<div className="flex-1">
-				<div className="flex items-center gap-4 mb-6">
+				<header className="flex items-center gap-4 mb-6">
 					<div className="w-14 h-14 bg-gradient-to-r from-soft-gold/20 to-sunset-orange/20 rounded-2xl flex items-center justify-center">
 						<TicketIcon className="w-7 h-7 text-soft-gold" />
 					</div>
 					<div>
-						<h3 className="text-soft-beige font-bold text-xl">
+						<h3 id={transactionId} className="text-soft-beige font-bold text-xl">
 							{event.title}
 						</h3>
 						<div className="flex items-center gap-2 text-soft-beige/60">
@@ -219,16 +276,16 @@ function ReservationHistoryItem({ data }: { data: EventWithReservations }) {
 							</span>
 						</div>
 					</div>
-				</div>
+				</header>
 
-				<div className="ml-18">
+				<section className="ml-18">
 					<div className="bg-soft-gray/10 border border-soft-gray/20 rounded-2xl p-4 mb-3">
 						<p className="text-soft-beige/80 font-medium mb-2">
 							{reservations.length} asiento{reservations.length > 1 ? 's' : ''}:
 						</p>
-						<div className="flex flex-wrap gap-2">
+						<div className="flex flex-wrap gap-2" role="list">
 							{reservations.map(r => (
-								<span key={r.id} className="bg-soft-gray/20 px-3 py-1 rounded-lg text-sm text-soft-beige">
+								<span key={r.id} className="bg-soft-gray/20 px-3 py-1 rounded-lg text-sm text-soft-beige" role="listitem">
 									#{r.seat.seatNumber}
 								</span>
 							))}
@@ -237,12 +294,12 @@ function ReservationHistoryItem({ data }: { data: EventWithReservations }) {
 					<div className="text-soft-beige/60 text-sm">
 						📍 {event.location}
 					</div>
-				</div>
+				</section>
 			</div>
 
 			<div className="text-right">
 				<div className="text-soft-beige font-bold text-2xl mb-3">
-					${(reservations.length * 25).toFixed(2)}
+					{formatCurrency(reservations.length * 25)}
 				</div>
 				<div className={`
 					px-4 py-2 rounded-xl text-sm font-bold border

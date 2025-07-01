@@ -4,15 +4,24 @@ import { fetchUsersByMembership } from './actions'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 
+type UserWithMembership = {
+    id: string
+    name: string | null
+    email: string
+    membership: {
+        name: string
+    } | null
+}
+
 const MEMBERSHIP_OPTIONS = [
     { label: 'Todos', value: 'all' },
-    { label: 'Bronze', value: 'bronze' },
-    { label: 'Silver', value: 'silver' },
-    { label: 'Gold', value: 'gold' },
+    { label: 'Banquito', value: 'banquito' },
+    { label: 'Reposera Deluxe', value: 'reposera-deluxe' },
+    { label: 'Puff XXL Estelar', value: 'puff-xxl-estelar' },
 ]
 
 export default function UsersTable() {
-    const [users, setUsers] = useState<any[]>([])
+    const [users, setUsers] = useState<UserWithMembership[]>([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
     const [search, setSearch] = useState('')
@@ -93,9 +102,9 @@ export default function UsersTable() {
                                         <span
                                             className={`
                                                 px-2 py-1 rounded text-xs font-semibold border text-center w-18 inline-block
-                                                ${user.membership?.name === 'Gold' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
-                                                    user.membership?.name === 'Silver' ? 'bg-gray-400/20 text-gray-200 border-gray-400/30' :
-                                                        user.membership?.name === 'Bronze' ? 'bg-orange-700/20 text-orange-400/70 border-orange-700/30' :
+                                                ${user.membership?.name === 'Puff XXL Estelar' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
+                                                    user.membership?.name === 'Reposera Deluxe' ? 'bg-gray-400/20 text-gray-200 border-gray-400/30' :
+                                                        user.membership?.name === 'Banquito' ? 'bg-orange-700/20 text-orange-400/70 border-orange-700/30' :
                                                             'bg-gray-700/40 text-gray-400 border-gray-700/30'}
                                             `}>
                                             {user.membership?.name || 'Sin membresía'}

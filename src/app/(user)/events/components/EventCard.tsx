@@ -1,8 +1,10 @@
 "use client"
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, ArrowRightIcon, HeartIcon, BookmarkIcon } from 'lucide-react'
 import { useState } from 'react'
+import { getDay, formatShortDate, formatTime, formatWeekdayShort, formatMonthShort } from '@/lib/utils/date'
 
 interface Event {
 	id: string
@@ -13,6 +15,7 @@ interface Event {
 	category: string | null
 	imdbId: string | null
 	tmdbId: string | null
+	imageUrl: string | null
 	reservationCount: number
 	totalSeats: number
 	availableSeats: number
@@ -31,22 +34,12 @@ export function EventCard({ event }: EventCardProps) {
 	const [isFavorite, setIsFavorite] = useState(false)
 	const [isBookmarked, setIsBookmarked] = useState(false)
 	
-	// Format date for display
-	const dateObj = typeof event.dateTime === 'string' ? new Date(event.dateTime) : event.dateTime
-	
-	const formattedDate = dateObj.toLocaleDateString('es-ES', { 
-		day: 'numeric', 
-		month: 'short'
-	})
-
-	const formattedTime = dateObj.toLocaleTimeString('es-ES', {
-		hour: '2-digit',
-		minute: '2-digit'
-	})
-
-	const formattedWeekday = dateObj.toLocaleDateString('es-ES', { 
-		weekday: 'short' 
-	}).toUpperCase()
+	// Format date for display using consistent formatting
+	const formattedDate = formatShortDate(event.dateTime)
+	const formattedTime = formatTime(event.dateTime)
+	const formattedWeekday = formatWeekdayShort(event.dateTime)
+	const dayNumber = getDay(event.dateTime)
+	const monthShort = formatMonthShort(event.dateTime)
 
 	const occupancyRate = ((event.totalSeats - event.availableSeats) / event.totalSeats) * 100
 	const isAlmostFull = event.availableSeats < event.totalSeats * 0.2
@@ -66,25 +59,35 @@ export function EventCard({ event }: EventCardProps) {
 			{/* Header Image Area */}
 			<div className="relative h-40 bg-gradient-to-br from-sunset-orange/10 to-warm-red/10 overflow-hidden">
 				{/* Background Pattern */}
-				<div className="absolute inset-0 bg-gradient-to-t from-deep-night/80 via-transparent to-transparent"></div>
+				<div className="absolute inset-0 bg-gradient-to-t from-deep-night/80 via-transparent to-transparent z-10"></div>
 				
-				{/* Movie Icon */}
-				<div className="absolute inset-0 flex items-center justify-center">
-					<div className="text-4xl opacity-30 group-hover:opacity-50 transition-opacity duration-300">
-						🎬
+				{/* Movie Image or Icon */}
+				{event.imageUrl ? (
+					<Image
+						src={event.imageUrl}
+						alt={event.title}
+						fill
+						className="object-cover"
+						sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+					/>
+				) : (
+					<div className="absolute inset-0 flex items-center justify-center">
+						<div className="text-4xl opacity-30 group-hover:opacity-50 transition-opacity duration-300">
+							🎬
+						</div>
 					</div>
-				</div>
+				)}
 
 				{/* Top Row - Date & Actions */}
-				<div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+				<div className="absolute top-3 left-3 right-3 flex justify-between items-start z-20">
 					{/* Date Badge */}
 					<div className="bg-deep-night/90 backdrop-blur-sm rounded-xl px-3 py-2 border border-soft-gray/20">
 						<div className="text-center">
 							<div className="text-lg font-bold text-soft-beige leading-none">
-								{dateObj.getDate()}
+								{dayNumber}
 							</div>
 							<div className="text-xs text-soft-gold uppercase font-medium">
-								{dateObj.toLocaleDateString('es-ES', { month: 'short' })}
+								{monthShort}
 							</div>
 						</div>
 					</div>
@@ -121,7 +124,7 @@ export function EventCard({ event }: EventCardProps) {
 				</div>
 
 				{/* Bottom Row - Category & Status */}
-				<div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+				<div className="absolute bottom-3 left-3 right-3 flex justify-between items-end z-20">
 					{/* Category Badge */}
 					{event.category && (
 						<div className="bg-sunset-orange/90 backdrop-blur-sm rounded-lg px-2.5 py-1 border border-sunset-orange/50">
@@ -145,6 +148,8 @@ export function EventCard({ event }: EventCardProps) {
 			{/* Content */}
 			<div className="p-5 space-y-4">
 				{/* Title */}
+
+				<Link href={`/events/${event.id}`}>
 				<div>
 					<h3 className="text-lg font-bold text-soft-beige group-hover:text-sunset-orange transition-colors duration-300 leading-tight line-clamp-2 mb-1">
 						{event.title}
@@ -155,7 +160,7 @@ export function EventCard({ event }: EventCardProps) {
 						</p>
 					)}
 				</div>
-
+				</Link>
 				{/* Event Details */}
 				<div className="space-y-2.5">
 					<div className="flex items-center gap-2.5 text-soft-beige/80">

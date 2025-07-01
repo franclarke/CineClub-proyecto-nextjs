@@ -2,10 +2,22 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import { createEvent } from '../data-access'
 
 const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
+
+type TMDbMovie = {
+    id: number
+    title: string
+    overview: string
+    poster_path: string | null
+    release_date: string
+    vote_average: number
+}
+
+
 
 export default function NewEventPage() {
     const [form, setForm] = useState({
@@ -20,14 +32,14 @@ export default function NewEventPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
-    const [selectedMovie, setSelectedMovie] = useState<any>(null)
+    const [selectedMovie, setSelectedMovie] = useState<TMDbMovie | null>(null)
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string | null>(null)
 
     // Modal y búsqueda
     const [modalOpen, setModalOpen] = useState(false)
     const [search, setSearch] = useState('')
-    const [results, setResults] = useState<any[]>([])
+    const [results, setResults] = useState<TMDbMovie[]>([])
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [searching, setSearching] = useState(false)
@@ -94,7 +106,7 @@ export default function NewEventPage() {
     }
 
     // Selecciona película y cierra modal
-    const handleSelectMovie = async (movie: any) => {
+    const handleSelectMovie = async (movie: TMDbMovie) => {
         setSelectedMovie(movie)
         console.log('Película seleccionada:', movie)
         // Intentar obtener el imdb_id, pero no mostrar error si no existe
@@ -168,8 +180,8 @@ export default function NewEventPage() {
             setSelectedMovie(null)
             setImageFile(null)
             setImagePreview(null)
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error desconocido')
         } finally {
             setLoading(false)
         }
@@ -300,7 +312,13 @@ export default function NewEventPage() {
                                         onClick={() => handleSelectMovie(movie)}
                                         className="flex items-center p-2 rounded-lg hover:bg-gray-700 cursor-pointer"
                                     >
-                                        <img src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} alt={movie.title} className="w-16 h-24 rounded-md mr-2" />
+                                        <Image 
+                                            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} 
+                                            alt={movie.title} 
+                                            width={64} 
+                                            height={96} 
+                                            className="w-16 h-24 rounded-md mr-2 object-cover" 
+                                        />
                                         <div className="flex-1">
                                             <span className="text-white font-semibold">{movie.title}</span>
                                             <br />
@@ -353,7 +371,7 @@ export default function NewEventPage() {
                         className="w-40 h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-500 rounded-lg cursor-pointer bg-gray-900 hover:border-orange-500 transition-all"
                     >
                         {imagePreview ? (
-                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                            <Image src={imagePreview} alt="Preview" width={160} height={160} className="w-full h-full object-cover rounded-lg" />
                         ) : (
                             <span className="text-gray-400 text-center">
                                 Seleccionar Imagen<br />

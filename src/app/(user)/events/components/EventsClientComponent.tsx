@@ -14,6 +14,7 @@ interface Event {
 	category: string | null
 	imdbId: string | null
 	tmdbId: string | null
+	imageUrl: string | null
 	reservationCount: number
 	totalSeats: number
 	availableSeats: number
@@ -102,10 +103,10 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 								setSortBy(e.target.value)
 								handleFilterChange()
 							}}
-							className="px-3 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200"
+							className="px-3 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 hover:bg-soft-gray/20"
 						>
 							{sortOptions.map((option) => (
-								<option key={option.value} value={option.value}>
+								<option key={option.value} value={option.value} className="bg-deep-night text-soft-beige">
 									{option.label}
 								</option>
 							))}

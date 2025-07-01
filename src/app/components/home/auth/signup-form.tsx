@@ -1,17 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
 import { MembershipTier } from '@prisma/client'
 
-import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth'
-import { signUpAction } from '@/lib/actions/auth'
 import { FormField } from '../../ui/form-field'
 import { Button } from '../../ui/button'
 import { MembershipSelector } from './membership-selector'
+import { type SignUpFormData, signUpSchema } from '@/lib/validations/auth'
+import { signUpAction } from '@/lib/actions/auth'
 
 interface SignUpFormProps {
 	memberships: MembershipTier[]
@@ -23,7 +22,6 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 	const [selectedMembership, setSelectedMembership] = useState<string>('')
 	const [membershipError, setMembershipError] = useState<string>('')
 	const [currentStep, setCurrentStep] = useState(1)
-	const router = useRouter()
 
 	const {
 		register,
@@ -76,9 +74,39 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 				return
 			}
 
-			// Redirigir a eventos (el flujo de pago se implementará más adelante)
-			router.push('/events')
-		} catch {
+			// Crear preferencia de pago para la membresía seleccionada
+			const paymentResponse = await fetch('/api/memberships/payment', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					membershipId: selectedMembership,
+				}),
+			})
+
+			if (!paymentResponse.ok) {
+				const errorData = await paymentResponse.json()
+				setError(errorData.error || 'Error al procesar el pago')
+				return
+			}
+
+			const paymentData = await paymentResponse.json()
+
+			// Redirigir a MercadoPago
+			if (paymentData.initPoint) {
+				// En desarrollo usar sandbox, en producción usar initPoint normal
+				const redirectUrl = process.env.NODE_ENV === 'development' 
+					? paymentData.sandboxInitPoint 
+					: paymentData.initPoint
+
+				window.location.href = redirectUrl
+			} else {
+				setError('Error al generar el enlace de pago')
+			}
+
+		} catch (error) {
+			console.error('Error en signup:', error)
 			setError('Error al crear la cuenta')
 		} finally {
 			setIsLoading(false)
@@ -211,9 +239,17 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 							<h3 className="text-2xl font-semibold text-white mb-2">
 								Elige tu membresía
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-400 mb-4">
 								Selecciona el plan que mejor se adapte a tu estilo de vida cinematográfico
 							</p>
+							<div className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-400/30">
+								<svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+									<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+								</svg>
+								<span className="text-sm text-blue-300">
+									Serás redirigido a MercadoPago para completar el pago
+								</span>
+							</div>
 						</div>
 
 						<MembershipSelector
@@ -261,13 +297,13 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 								{isLoading ? (
 									<div className="flex items-center justify-center space-x-2">
 										<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-										<span>Creando cuenta...</span>
+										<span>Procesando...</span>
 									</div>
 								) : (
 									<>
-										Crear cuenta
+										Continuar al pago
 										<svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
 										</svg>
 									</>
 								)}

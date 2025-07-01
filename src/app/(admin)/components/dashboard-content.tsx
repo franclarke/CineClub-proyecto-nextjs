@@ -6,7 +6,7 @@ import Link from "next/link"
 
 
 export function DashboardContent() {
-	const { user, signOut, isLoading } = useAuth()
+	const { isLoading } = useAuth()
 
 	if (isLoading) {
 		return (

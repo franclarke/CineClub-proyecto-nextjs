@@ -36,7 +36,7 @@ async function getUserProfile(email: string) {
 
 async function getMembershipTiers() {
 	return await prisma.membershipTier.findMany({
-		orderBy: { price: 'asc' }
+		orderBy: { priority: 'asc' }
 	})
 }
 

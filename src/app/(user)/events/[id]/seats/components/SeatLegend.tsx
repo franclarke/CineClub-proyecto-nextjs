@@ -8,17 +8,17 @@ export function SeatLegend({ currentUserMembership }: SeatLegendProps) {
 	const legendItems = [
 		{
 			color: '#FFC857',
-			label: 'Gold',
+			label: 'Puff XXL Estelar',
 			available: currentUserMembership.priority <= 1
 		},
 		{
 			color: '#F0E3CA',
-			label: 'Silver',
+			label: 'Reposera Deluxe',
 			available: currentUserMembership.priority <= 2
 		},
 		{
 			color: '#4C4A3E',
-			label: 'Bronze',
+			label: 'Banquito',
 			available: currentUserMembership.priority <= 3
 		},
 		{

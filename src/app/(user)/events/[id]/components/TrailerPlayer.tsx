@@ -28,10 +28,9 @@ interface TrailerData {
 
 interface TrailerPlayerProps {
   tmdbId: string | null
-  eventTitle: string
 }
 
-export function TrailerPlayer({ tmdbId, eventTitle }: TrailerPlayerProps) {
+export function TrailerPlayer({ tmdbId }: TrailerPlayerProps) {
   const [trailerData, setTrailerData] = useState<TrailerData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,39 +38,39 @@ export function TrailerPlayer({ tmdbId, eventTitle }: TrailerPlayerProps) {
   const [selectedVideo, setSelectedVideo] = useState<KinoCheckVideo | null>(null)
 
   useEffect(() => {
+    const fetchTrailer = async () => {
+      if (!tmdbId) return
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(`/api/movies/trailer?tmdbId=${tmdbId}`)
+        const result = await response.json()
+
+        if (result.success) {
+          setTrailerData(result.data)
+          // Seleccionar el trailer principal o el primer video disponible
+          if (result.data.trailer) {
+            setSelectedVideo(result.data.trailer)
+          } else if (result.data.videos.length > 0) {
+            setSelectedVideo(result.data.videos[0])
+          }
+        } else {
+          setError(result.error || 'No se pudo cargar el trailer')
+        }
+      } catch (err) {
+        console.error('Error fetching trailer:', err)
+        setError('Error al cargar el trailer')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     if (tmdbId) {
       fetchTrailer()
     }
   }, [tmdbId])
-
-  const fetchTrailer = async () => {
-    if (!tmdbId) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch(`/api/movies/trailer?tmdbId=${tmdbId}`)
-      const result = await response.json()
-
-      if (result.success) {
-        setTrailerData(result.data)
-        // Seleccionar el trailer principal o el primer video disponible
-        if (result.data.trailer) {
-          setSelectedVideo(result.data.trailer)
-        } else if (result.data.videos.length > 0) {
-          setSelectedVideo(result.data.videos[0])
-        }
-      } else {
-        setError(result.error || 'No se pudo cargar el trailer')
-      }
-    } catch (err) {
-      console.error('Error fetching trailer:', err)
-      setError('Error al cargar el trailer')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handlePlayTrailer = () => {
     if (selectedVideo) {

@@ -75,7 +75,7 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 				</div>
 				<CountdownTimer
 					expiresAt={data.reservation.expiresAt}
-					onExpired={handleTimeExpired}
+					onExpire={handleTimeExpired}
 				/>
 			</div>
 
