@@ -1,14 +1,34 @@
 import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { CartItem, ProductCartItem, SeatCartItem } from '@/types/cart'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
+const accessToken = isProduction
+	? process.env.MP_ACCESS_TOKEN
+	: process.env.MP_TEST_ACCESS_TOKEN
+
+if (!accessToken) {
+	const requiredToken = isProduction ? 'MP_ACCESS_TOKEN' : 'MP_TEST_ACCESS_TOKEN'
+	throw new Error(`La variable de entorno ${requiredToken} no está configurada.`)
+}
+
 // Configurar MercadoPago
-if (!process.env.MP_ACCESS_TOKEN) {
+if (!accessToken) {
 	throw new Error('MP_ACCESS_TOKEN no está configurado en las variables de entorno')
 }
 
 const client = new MercadoPagoConfig({
-	accessToken: process.env.MP_ACCESS_TOKEN,
+	accessToken: accessToken,
 })
+
+export const publicKey = isProduction
+	? process.env.MP_PUBLIC_KEY
+	: process.env.MP_TEST_PUBLIC_KEY
+
+if (!publicKey) {
+	const requiredKey = isProduction ? 'MP_PUBLIC_KEY' : 'MP_TEST_PUBLIC_KEY'
+	console.warn(`Advertencia: La variable de entorno ${requiredKey} no está configurada. Es necesaria en el frontend.`)
+}
 
 const preference = new Preference(client)
 
