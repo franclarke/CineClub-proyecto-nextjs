@@ -1,11 +1,10 @@
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { DashboardHome } from './(user)/(home)/dashboard-home'
 import { HeroSection } from './components/home/hero-section'
-import { AuthForm } from './components/auth/auth-form'
-import { AppLogo } from './components/ui/app-logo'
-import { DashboardHome } from './components/home/dashboard-home'
-import Navigation from './components/Navigation'
+import { AuthForm } from './components/home/auth/auth-form'
+import { DashboardContent } from './(admin)/components/dashboard-content'
+import { prisma } from '@/lib/prisma'
+import { authOptions } from '@/lib/auth'
 
 async function getUserWithMembership(email: string) {
 	return await prisma.user.findUnique({
@@ -23,23 +22,22 @@ async function getUserWithMembership(email: string) {
 export default async function Home() {
 	const session = await getServerSession(authOptions)
 	
-	// Si el usuario está autenticado, mostramos el dashboard
+	// Si el usuario está autenticado, mostramos el dashboard correspondiente
 	if (session?.user?.email) {
 		const userWithMembership = await getUserWithMembership(session.user.email)
-		
+
 		if (userWithMembership) {
 			const userData = {
 				name: userWithMembership.name,
 				email: userWithMembership.email,
-				membershipName: userWithMembership.membership.name,
+				membershipName: userWithMembership.membership?.name || 'Bronce',
 			}
-			
-			return (
-				<>
-					<Navigation />
-					<DashboardHome user={userData} />
-				</>
-			)
+
+			if (session.user.isAdmin) {
+				return <DashboardContent />
+			}
+
+			return <DashboardHome user={userData} />
 		}
 	}
 
@@ -58,11 +56,6 @@ export default async function Home() {
 				style={{ backgroundImage: 'url(/background-image.png)' }}
 			/>
 			<div className="absolute inset-0 bg-black/60" />
-
-			{/* Logo */}
-			<div className="absolute left-1/2 top-8 z-20 -translate-x-1/2 md:left-8 md:translate-x-0">
-				<AppLogo />
-			</div>
 
 			{/* Layout Grid */}
 			<div className="relative z-10 grid h-full w-full max-w-screen-2xl grid-cols-1 md:grid-cols-3">
