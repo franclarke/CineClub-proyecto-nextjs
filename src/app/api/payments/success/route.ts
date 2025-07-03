@@ -5,14 +5,16 @@ import { getPaymentInfo } from '@/lib/mercado-pago'
 export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const paymentId = url.searchParams.get('payment_id')
-
+    console.log('Recibido paymentId:', paymentId)
     if (!paymentId) {
         return NextResponse.json({ error: 'Falta el ID de pago' }, { status: 400 })
     }
 
     try {
+
         const payment = await getPaymentInfo(paymentId)
         const orderId = payment.external_reference
+        console.log('Respuesta MercadoPago payment info:', payment)
 
         if (!orderId) {
             return NextResponse.json({ error: 'No se encontró la orden asociada al pago' }, { status: 404 })
