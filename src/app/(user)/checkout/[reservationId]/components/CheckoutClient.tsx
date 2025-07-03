@@ -8,11 +8,11 @@ import { OrderSummary } from './OrderSummary'
 import { CountdownTimer } from './CountdownTimer'
 import { CheckoutData } from '@/types/api'
 import { Separator } from '@/app/components/ui/separator'
-import { 
-	AlertCircle, 
-	CheckCircle, 
-	CreditCard, 
-	ShieldCheck, 
+import {
+	AlertCircle,
+	CheckCircle,
+	CreditCard,
+	ShieldCheck,
 	Clock,
 	Calculator
 } from 'lucide-react'
@@ -20,6 +20,8 @@ import {
 interface CheckoutClientProps {
 	data: CheckoutData
 }
+
+
 
 export function CheckoutClient({ data }: CheckoutClientProps) {
 	const router = useRouter()
@@ -29,6 +31,12 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 	const handlePayment = async () => {
 		setIsProcessing(true)
 		setError(null)
+
+		if (!data || !data.reservation || !data.reservation.id || !data.cartItems?.length) {
+			setError('No se puede procesar el pago sin una reserva válida y productos en el carrito.');
+			setIsProcessing(false);
+			return;
+		}
 
 		try {
 			const response = await fetch('/api/payments/create-preference', {
@@ -41,13 +49,30 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 			})
 
 			const result = await response.json()
+			console.log('Respuesta backend:', result);
 
 			if (!response.ok) {
 				throw new Error(result.error || 'Error al procesar el pago')
 			}
 
-			// Redirect to MercadoPago
-			window.location.href = result.init_point
+			if (!result.initPoint) { // Nota: El backend envía 'initPoint', no 'init_point'
+				console.error('Mercado Pago initPoint no recibido:', result);
+				throw new Error('No se pudo obtener la URL de pago de Mercado Pago.');
+			}
+
+			const isProduction = process.env.NODE_ENV === 'production';
+
+			const checkoutUrl = isProduction
+				? result.initPoint
+				: result.sandboxInitPoint;
+
+			if (!checkoutUrl) {
+				console.error('No se recibió URL de pago de Mercado Pago:', result);
+				throw new Error('No se pudo obtener la URL de pago.');
+			}
+
+			window.location.href = checkoutUrl;
+			console.log('CheckoutClient data:', data)
 		} catch (error) {
 			console.error('Payment error:', error)
 			setError(error instanceof Error ? error.message : 'Error al procesar el pago')
@@ -88,7 +113,7 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 							<div className="w-1 h-6 bg-gradient-to-b from-sunset-orange to-soft-gold rounded-full"></div>
 							<h2 className="text-2xl font-bold text-soft-beige">Tu Reserva</h2>
 						</div>
-						
+
 						<div className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-6">
 							<ReservationSummary
 								reservation={data.reservation}
@@ -104,7 +129,7 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 							<div className="w-1 h-6 bg-gradient-to-b from-soft-gold to-sunset-orange rounded-full"></div>
 							<h2 className="text-2xl font-bold text-soft-beige">Productos</h2>
 						</div>
-						
+
 						<div className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-6">
 							<ProductCart
 								items={data.cartItems}
@@ -119,7 +144,7 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 							<div className="w-1 h-6 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
 							<h2 className="text-2xl font-bold text-soft-beige">Pago Seguro</h2>
 						</div>
-						
+
 						<div className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-6">
 							<div className="flex items-center gap-4 mb-6">
 								<div className="w-12 h-12 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl flex items-center justify-center">
@@ -130,7 +155,7 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 									<p className="text-soft-beige/60 text-sm">Tus datos están completamente seguros</p>
 								</div>
 							</div>
-							
+
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 								<div className="flex items-center gap-3 p-4 bg-soft-gray/10 rounded-xl border border-soft-gray/20">
 									<CheckCircle className="w-5 h-5 text-green-400" />

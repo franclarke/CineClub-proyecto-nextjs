@@ -224,12 +224,18 @@ export async function POST(request: NextRequest) {
 
 		})
 
-		console.log('Preference creada:', preference);
+		console.log('Respuesta API create-preference:', {
+			preferenceId: preference.id,
+			orderId: order.id,
+			initPoint: preference.init_point,
+			sandboxInitPoint: preference.sandbox_init_point
+		});
 
 		return NextResponse.json({
 			preferenceId: preference.id,
 			orderId: order.id,
-			initPoint: preference.init_point
+			initPoint: preference.init_point,
+			sandboxInitPoint: preference.sandbox_init_point
 		})
 
 	} catch (error) {

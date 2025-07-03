@@ -7,11 +7,12 @@ const accessToken = isProduction
 	? process.env.MP_ACCESS_TOKEN
 	: process.env.MP_TEST_ACCESS_TOKEN
 
+console.log('MercadoPago SDK Config - Access Token (first 5 chars):', accessToken?.substring(0, 5)); // <-- Agrega este log (no muestres el token completo por seguridad)
+
 if (!accessToken) {
 	const requiredToken = isProduction ? 'MP_ACCESS_TOKEN' : 'MP_TEST_ACCESS_TOKEN'
 	throw new Error(`La variable de entorno ${requiredToken} no está configurada.`)
 }
-
 // Configurar MercadoPago
 if (!accessToken) {
 	throw new Error('MP_ACCESS_TOKEN no está configurado en las variables de entorno')
@@ -24,6 +25,9 @@ const client = new MercadoPagoConfig({
 export const publicKey = isProduction
 	? process.env.MP_PUBLIC_KEY
 	: process.env.MP_TEST_PUBLIC_KEY
+
+console.log('MercadoPago SDK Config - Public Key (first 5 chars):', publicKey?.substring(0, 5)); // <-- Agrega este log
+
 
 if (!publicKey) {
 	const requiredKey = isProduction ? 'MP_PUBLIC_KEY' : 'MP_TEST_PUBLIC_KEY'
