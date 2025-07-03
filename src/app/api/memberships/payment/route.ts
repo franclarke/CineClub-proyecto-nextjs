@@ -2,22 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { 
-	createPaymentPreference, 
+import {
+	createPaymentPreference,
 	generateExternalReference,
-	MPPreferenceData 
+	MPPreferenceData
 } from '@/lib/mercado-pago'
 
 export async function POST(request: NextRequest) {
 	try {
 		const session = await getServerSession(authOptions)
-		
+
 		if (!session?.user?.email) {
 			return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 		}
 
 		const { membershipId } = await request.json()
-		
+
 		if (!membershipId) {
 			return NextResponse.json({ error: 'ID de membresía requerido' }, { status: 400 })
 		}
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 		// Determine base URL for callbacks
 		const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
 		const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
-		
+
 		const successUrl = `${cleanBaseUrl}/memberships/payment/success?order_id=${order.id}`
 		const failureUrl = `${cleanBaseUrl}/memberships/payment/failure?order_id=${order.id}`
 		const pendingUrl = `${cleanBaseUrl}/memberships/payment/pending?order_id=${order.id}`
@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
 
 		const preference = await createPaymentPreference(preferenceData)
 
+
 		// Crear registro de pago
 		await prisma.payment.create({
 			data: {
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		console.error('Error creando preferencia de pago para membresía:', error)
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' }, 
+			{ error: 'Error interno del servidor' },
 			{ status: 500 }
 		)
 	}

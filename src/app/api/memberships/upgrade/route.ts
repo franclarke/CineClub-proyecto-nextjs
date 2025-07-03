@@ -80,13 +80,9 @@ export async function POST(request: NextRequest) {
 
 		const preference = await createPaymentPreference(preferenceData)
 
-		// Actualizar orden con referencia externa
-		await prisma.order.update({
-			where: { id: order.id },
-			data: { externalReference: preference.id }
-		})
 
-		return NextResponse.json({ 
+
+		return NextResponse.json({
 			url: preference.init_point,
 			orderId: order.id,
 			preferenceId: preference.id
@@ -95,7 +91,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		console.error('Error creating membership upgrade:', error)
 		return NextResponse.json(
-			{ error: 'Error interno del servidor' }, 
+			{ error: 'Error interno del servidor' },
 			{ status: 500 }
 		)
 	}
