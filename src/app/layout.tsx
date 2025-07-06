@@ -8,6 +8,8 @@ import { CartProvider } from "@/lib/cart/cart-context";
 import { GlobalCartSidebar } from "./components/cart/GlobalCartSidebar";
 import { FloatingCartButton } from "./components/cart/FloatingCartButton";
 import { Toaster } from 'react-hot-toast';
+import { RegisterSW } from "./register-sw";
+
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -26,11 +28,11 @@ export const metadata: Metadata = {
 	title: "CineClub Puff & Chill | Cine Silencioso Bajo las Estrellas",
 	description: "Vive una experiencia cinematográfica única al aire libre. Únete a nuestro club exclusivo y disfruta de películas bajo un cielo estrellado con tecnología de audio silencioso premium.",
 	keywords: [
-		"cine al aire libre", 
-		"películas bajo las estrellas", 
-		"audio silencioso", 
-		"cine club", 
-		"experiencia premium", 
+		"cine al aire libre",
+		"películas bajo las estrellas",
+		"audio silencioso",
+		"cine club",
+		"experiencia premium",
 		"membresía exclusiva",
 		"entretenimiento nocturno",
 		"cine boutique"
@@ -71,6 +73,9 @@ export default function RootLayout({
 		<html lang="es" className="scroll-smooth">
 			<head>
 				<link rel="preload" href="/background-image.png" as="image" />
+				<link rel="manifest" href="/manifest.json" />
+				<meta name="theme-color" content="#ea580c" />
+				<link rel="icon" href="/icons/icon-192x192.png" />
 			</head>
 			<body
 				className={`${inter.variable} ${bebasNeue.variable} antialiased min-h-screen`}
@@ -87,11 +92,11 @@ export default function RootLayout({
 							}}
 						>
 							<ConditionalNavigation />
-								{children}
+							{children}
 							<GlobalCartSidebar />
 							<FloatingCartButton />
 							<div suppressHydrationWarning>
-								<Toaster 
+								<Toaster
 									position="top-right"
 									toastOptions={{
 										duration: 4000,
@@ -118,6 +123,7 @@ export default function RootLayout({
 						</CartProvider>
 					</QueryProvider>
 				</AuthProvider>
+				<RegisterSW />
 			</body>
 		</html>
 	);
