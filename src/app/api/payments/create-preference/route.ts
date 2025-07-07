@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
 		const mpItems = convertCartItemsToMPItems(items)
 
 		// Determine base URL for callbacks
-		const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
+		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
 
 		// Ensure baseUrl doesn't have trailing slash
 		const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
@@ -188,6 +188,8 @@ export async function POST(request: NextRequest) {
 			pending: pendingUrl,
 			webhook: webhookUrl
 		})
+
+		console.log(typeof successUrl, successUrl.length, successUrl)
 
 		const preferenceData: MPPreferenceData = {
 			items: mpItems,
@@ -245,4 +247,4 @@ export async function POST(request: NextRequest) {
 			{ status: 500 }
 		)
 	}
-} 
+}
