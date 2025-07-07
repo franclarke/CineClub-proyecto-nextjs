@@ -1,19 +1,31 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Event } from '@prisma/client'
+import { EventsClientComponent } from '@/app/(user)/events/components/EventsClientComponent'
 import { getAllEvents } from './data-access'
-import { EventCard } from '@/app/(user)/events/components/event-card'
+import type { Seat } from '@prisma/client'
 
 export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
-    const [events, setEvents] = useState<Event[]>([])
+    const [events, setEvents] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [success, setSuccess] = useState(false)
+    const [categories, setCategories] = useState<string[]>([])
+    const [filters, setFilters] = useState({
+        category: 'all',
+        sort: 'date',
+        search: '',
+    })
 
-    // Cargar eventos al montar y cuando se elimina uno
+    // Cargar eventos y categorías
     const fetchEvents = async () => {
         setLoading(true)
         const evts = await getAllEvents()
         setEvents(evts)
+
+        // Obtener categorías únicas
+        const uniqueCategories = Array.from(
+            new Set(evts.map(event => event.category).filter((c): c is string => !!c))
+        ).sort()
+        setCategories(uniqueCategories)
         setLoading(false)
     }
 
@@ -30,6 +42,19 @@ export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
 
     if (loading) return <div className="text-white">Cargando eventos...</div>
 
+    // Formatear datos para el componente cliente
+    const formattedEvents = events.map(event => ({
+        ...event,
+        dateTime: typeof event.dateTime === 'string' ? event.dateTime : event.dateTime?.toISOString?.() ?? '',
+        deleteMode,
+        onDeleted: handleEventDeleted,
+        seatsByTier: {
+            gold: event.seats?.filter?.((seat: Seat) => seat.tier === 'Gold').length ?? 0,
+            silver: event.seats?.filter?.((seat: Seat) => seat.tier === 'Silver').length ?? 0,
+            bronze: event.seats?.filter?.((seat: Seat) => seat.tier === 'Bronze').length ?? 0,
+        },
+    }))
+
     return (
         <div className="relative">
             {success && (
@@ -37,16 +62,11 @@ export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
                     Evento eliminado correctamente
                 </div>
             )}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {events.map(event => (
-                    <EventCard
-                        key={event.id}
-                        event={event}
-                        deleteMode={deleteMode}
-                        onDeleted={handleEventDeleted}
-                    />
-                ))}
-            </div>
+            <EventsClientComponent
+                events={formattedEvents}
+                categories={categories}
+                currentFilters={filters}
+            />
         </div>
     )
 }

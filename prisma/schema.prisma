@@ -7,134 +7,144 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  keys      Json // Guarda las claves 'p256dh' y 'auth' del objeto de suscripción
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String? // Opcional: asocia la suscripción a un usuario si hay login
+  createdAt DateTime @default(now())
+}
+
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  password       String?
-  name           String?
-  phone          String?
-  birthDate      String?
-  location       String?
-  isAdmin        Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  membership     MembershipTier @relation(fields: [membershipId], references: [id])
-  membershipId   String
-  reservations   Reservation[]
-  orders         Order[]
+  id               String             @id @default(cuid())
+  email            String             @unique
+  password         String?
+  name             String?
+  phone            String?
+  birthDate        String?
+  location         String?
+  isAdmin          Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  membership       MembershipTier     @relation(fields: [membershipId], references: [id])
+  membershipId     String
+  reservations     Reservation[]
+  orders           Order[]
+  PushSubscription PushSubscription[]
 }
 
 model MembershipTier {
-  id         String   @id @default(uuid())
-  name       String   @unique // e.g. 'Bronce', 'Plata', 'Oro'
+  id          String     @id @default(uuid())
+  name        String     @unique // e.g. 'Bronce', 'Plata', 'Oro'
   description String?
-  priority   Int      // 1 = highest (Oro)
-  price      Float    // monthly fee or one-time
-  benefits   String?  // textual description of benefits
-  imageUrl   String   // URL de la imagen de la membresía
-  users      User[]
-  discounts  Discount[]
+  priority    Int // 1 = highest (Oro)
+  price       Float // monthly fee or one-time
+  benefits    String? // textual description of benefits
+  imageUrl    String // URL de la imagen de la membresía
+  users       User[]
+  discounts   Discount[]
 }
 
 model Seat {
-  id          String   @id @default(uuid())
-  event       Event    @relation(fields: [eventId], references: [id])
+  id          String       @id @default(uuid())
+  event       Event        @relation(fields: [eventId], references: [id])
   eventId     String
   seatNumber  Int
-  tier        String   // 'Oro', 'Plata', 'Bronce'
-  isReserved  Boolean  @default(false)
+  tier        String // 'Oro', 'Plata', 'Bronce'
+  isReserved  Boolean      @default(false)
   reservation Reservation?
 }
 
 model Reservation {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields: [userId], references: [id])
-  userId       String
-  event        Event    @relation(fields: [eventId], references: [id])
-  eventId      String
-  seat         Seat     @relation(fields: [seatId], references: [id])
-  seatId       String   @unique
-  status       String   @default("pending") // 'pending', 'confirmed', 'cancelled'
-  order        Order?   @relation(fields: [orderId], references: [id])
-  orderId      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  seat      Seat     @relation(fields: [seatId], references: [id])
+  seatId    String   @unique
+  status    String   @default("pending") // 'pending', 'confirmed', 'cancelled'
+  order     Order?   @relation(fields: [orderId], references: [id])
+  orderId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id          String   @id @default(uuid())
-  name        String   @unique
+  id          String      @id @default(uuid())
+  name        String      @unique
   description String?
   price       Float
   stock       Int
-  imageUrl    String?  // URL de la imagen del producto
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  imageUrl    String? // URL de la imagen del producto
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
 }
 
 model Order {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  items       OrderItem[]
-  reservations Reservation[]
-  status      String   @default("cart") // 'cart', 'pending', 'paid', 'cancelled'
-  type        String   @default("cart") // 'cart', 'membership', 'event'
-  totalAmount Float
-  externalReference String? @unique // Reference for payment provider (e.g. MercadoPago)
-  metadata    Json?    // Additional data for specific order types
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  payment     Payment?
+  id                String        @id @default(uuid())
+  user              User          @relation(fields: [userId], references: [id])
+  userId            String
+  items             OrderItem[]
+  reservations      Reservation[]
+  status            String        @default("cart") // 'cart', 'pending', 'paid', 'cancelled'
+  type              String        @default("cart") // 'cart', 'membership', 'event'
+  totalAmount       Float
+  externalReference String?       @unique // Reference for payment provider (e.g. MercadoPago)
+  metadata          Json? // Additional data for specific order types
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  payment           Payment?
 }
 
 model OrderItem {
-  id         String   @id @default(uuid())
-  order      Order    @relation(fields: [orderId], references: [id])
-  orderId    String
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  String
-  quantity   Int
-  price      Float
+  id        String  @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Float
 }
 
 model Payment {
-  id          String   @id @default(uuid())
-  order       Order    @relation(fields: [orderId], references: [id])
-  orderId     String   @unique
+  id          String    @id @default(uuid())
+  order       Order     @relation(fields: [orderId], references: [id])
+  orderId     String    @unique
   amount      Float
-  status      String   @default("pending") // 'pending', 'paid', 'failed'
+  status      String    @default("pending") // 'pending', 'paid', 'failed'
   paymentDate DateTime?
-  provider    String?  // e.g. Mercado Pago
-  providerRef String?  // ID from payment provider
+  provider    String? // e.g. Mercado Pago
+  providerRef String? // ID from payment provider
 }
 
 model Discount {
-  id            String    @id @default(uuid())
-  code          String    @unique
-  description   String?
-  percentage    Float
-  validFrom     DateTime?
-  validUntil    DateTime?
-  membershipTier MembershipTier? @relation(fields: [membershipTierId], references: [id])
+  id               String          @id @default(uuid())
+  code             String          @unique
+  description      String?
+  percentage       Float
+  validFrom        DateTime?
+  validUntil       DateTime?
+  membershipTier   MembershipTier? @relation(fields: [membershipTierId], references: [id])
   membershipTierId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 }
 
 model Event {
-  id           String    @id @default(uuid())
-  title        String    @unique
+  id           String        @id @default(uuid())
+  title        String        @unique
   description  String
   dateTime     DateTime
   location     String
-  imdbId       String?   // store IMDb movie ID
-  tmdbId       String?   // store TMDB movie ID
-  imageUrl     String?   // URL de la imagen almacenada en Supabase Storage
-  category     String?   // e.g. Drama, Comedy (fetched from IMDb API or custom)
+  imdbId       String? // store IMDb movie ID
+  tmdbId       String? // store TMDB movie ID
+  imageUrl     String? // URL de la imagen almacenada en Supabase Storage
+  category     String? // e.g. Drama, Comedy (fetched from IMDb API or custom)
   seats        Seat[]
   reservations Reservation[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
