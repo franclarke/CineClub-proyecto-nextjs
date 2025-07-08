@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const glassCardVariants = cva(
-	"relative backdrop-blur-xl border rounded-2xl transition-all duration-500 animate-fade-in", 
+	"relative backdrop-blur-xl border rounded-2xl transition-all duration-500 animate-fade-in",
 	{
 		variants: {
 			variant: {
@@ -32,7 +32,7 @@ const glassCardVariants = cva(
 				xl: "p-[var(--spacing-xl)]",
 			},
 			hover: {
-				true: "hover:scale-105 hover:shadow-glow hover:bg-black/25 cursor-pointer transition-base",
+				true: " hover:shadow-glow hover:bg-black/25 transition-base",
 				false: "",
 			}
 		},
@@ -44,9 +44,9 @@ const glassCardVariants = cva(
 	}
 )
 
-export interface GlassCardProps 
+export interface GlassCardProps
 	extends React.HTMLAttributes<HTMLDivElement>,
-		VariantProps<typeof glassCardVariants> {
+	VariantProps<typeof glassCardVariants> {
 	children: ReactNode
 	className?: string
 }
@@ -60,7 +60,7 @@ export function GlassCard({
 	...props
 }: GlassCardProps) {
 	return (
-		<div 
+		<div
 			className={cn(glassCardVariants({ variant, size, hover }), className)}
 			{...props}
 		>

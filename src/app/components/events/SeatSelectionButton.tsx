@@ -33,18 +33,18 @@ export function SeatSelectionButton({
 
 	const handleAddToCart = async (e: React.MouseEvent) => {
 		e.stopPropagation()
-		
+
 		if (isInCart || isReserved || !canSelect) return
 
 		setIsAddingToCart(true)
-		
+
 		try {
 			// Calcular tiempo de expiración (15 minutos)
 			const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
-			
+
 			// Agregar al carrito global
 			addSeat(event, seat, expiresAt)
-			
+
 			// Feedback visual
 			setTimeout(() => {
 				setIsAddingToCart(false)
@@ -57,36 +57,36 @@ export function SeatSelectionButton({
 
 	const getSeatButtonClasses = () => {
 		const baseClasses = "relative transition-all duration-200 flex items-center justify-center text-xs font-semibold rounded-lg border group"
-		
+
 		if (isReserved) {
 			return `${baseClasses} bg-neutral-600 text-neutral-400 cursor-not-allowed opacity-50 border-neutral-500`
 		}
-		
+
 		if (isInCart) {
 			return `${baseClasses} bg-soft-gold text-deep-night shadow-lg shadow-soft-gold/30 border-soft-gold ring-2 ring-soft-gold/50`
 		}
-		
+
 		if (!canSelect) {
 			return `${baseClasses} bg-neutral-700 text-neutral-500 cursor-not-allowed border-dashed border-neutral-600`
 		}
-		
+
 		if (isSelected) {
 			const tierColors = {
-							'Puff XXL Estelar': 'bg-yellow-500 text-deep-night border-yellow-500 shadow-lg shadow-yellow-500/30',
-			'Reposera Deluxe': 'bg-gray-300 text-deep-night border-gray-300 shadow-lg shadow-gray-300/30',
-			'Banquito': 'bg-orange-400 text-deep-night border-orange-400 shadow-lg shadow-orange-400/30'
+				'Puff XXL Estelar': 'bg-yellow-500 text-deep-night border-yellow-500 shadow-lg shadow-yellow-500/30',
+				'Reposera Deluxe': 'bg-gray-300 text-deep-night border-gray-300 shadow-lg shadow-gray-300/30',
+				'Banquito': 'bg-orange-400 text-deep-night border-orange-400 shadow-lg shadow-orange-400/30'
 			}
-			return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Banquito} scale-105`
+			return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Banquito} `
 		}
-		
+
 		// Available state
 		const tierColors = {
 			'Puff XXL Estelar': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500 hover:text-deep-night hover:border-yellow-500 hover:shadow-lg hover:shadow-yellow-500/30',
 			'Reposera Deluxe': 'bg-gray-300/20 text-gray-300 border-gray-300/30 hover:bg-gray-300 hover:text-deep-night hover:border-gray-300 hover:shadow-lg hover:shadow-gray-300/30',
 			'Banquito': 'bg-orange-400/20 text-orange-300 border-orange-400/30 hover:bg-orange-400 hover:text-deep-night hover:border-orange-400 hover:shadow-lg hover:shadow-orange-400/30'
 		}
-		
-		return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Banquito} hover:scale-105 cursor-pointer`
+
+		return `${baseClasses} ${tierColors[seat.tier as keyof typeof tierColors] || tierColors.Banquito} cursor-pointer`
 	}
 
 	return (
@@ -98,10 +98,10 @@ export function SeatSelectionButton({
 				whileTap={canSelect && !isReserved ? { scale: 0.95 } : {}}
 			>
 				{seat.seatNumber}
-				
+
 				{/* Premium seat indicator */}
 				{seat.tier === 'Puff XXL Estelar' && !isReserved && (
-					<motion.div 
+					<motion.div
 						className="absolute -top-1 -right-1 text-yellow-400"
 						animate={{ rotate: [0, 10, -10, 0] }}
 						transition={{ duration: 2, repeat: Infinity }}
@@ -169,7 +169,7 @@ export function useSeatSelection(event: Event) {
 			return // Ya está en el carrito, no hacer nada
 		}
 
-		setLocalSelectedSeats(prev => 
+		setLocalSelectedSeats(prev =>
 			prev.includes(seatId)
 				? prev.filter(id => id !== seatId)
 				: [...prev, seatId]

@@ -18,7 +18,7 @@ interface EventsPageProps {
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
 	const resolvedSearchParams = await searchParams
-	
+
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-deep-night via-deep-night/95 to-deep-night/90">
 			{/* Compact Header */}
@@ -33,7 +33,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 									Próximos Eventos
 								</h1>
 							</div>
-							<p className="text-soft-beige/70 text-lg font-light ml-7">
+							<p className="text-soft-beige/70 justify-center text-lg font-light ml-7 sm:ml-0">
 								Cine bajo las estrellas • Experiencias únicas
 							</p>
 						</div>
@@ -51,7 +51,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 			<section className="px-4 sm:px-6 lg:px-8 pb-16">
 				<div className="max-w-7xl mx-auto">
 					<Suspense fallback={<EventsSkeletonComponent />}>
-						<EventsDataAccess 
+						<EventsDataAccess
 							searchParams={resolvedSearchParams}
 						/>
 					</Suspense>

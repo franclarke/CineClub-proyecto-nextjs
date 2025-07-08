@@ -44,7 +44,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 
 	const handleFilterChange = () => {
 		const params = new URLSearchParams()
-		
+
 		if (selectedCategory && selectedCategory !== 'all') {
 			params.set('category', selectedCategory)
 		}
@@ -75,7 +75,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 	const hasActiveFilters = selectedCategory !== 'all' || searchTerm || sortBy !== 'date'
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 items-center">
 			{/* Compact Filter Bar */}
 			<div className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-4">
 				<div className="flex items-center justify-between">
@@ -85,17 +85,26 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-soft-beige/40" />
 							<input
 								type="text"
-								placeholder="Buscar eventos..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
 								onKeyPress={(e) => e.key === 'Enter' && handleFilterChange()}
-								className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige placeholder-soft-beige/50 focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 text-sm"
+								className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige placeholder-soft-beige/50 focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 text-sm
+									placeholder:sm:opacity-100 placeholder:opacity-0"
+								// Oculta el placeholder en mobile, lo muestra en sm+
+								placeholder={typeof window !== 'undefined' && window.innerWidth < 640 ? '' : 'Buscar eventos...'}
 							/>
+							{/* Alternativamente, usando Tailwind para el placeholder */}
+							<span className="sm:hidden absolute left-10 top-1/2 -translate-y-1/2 text-soft-beige/40 text-sm pointer-events-none">
+								{/* No texto en mobile */}
+							</span>
+							<span className="hidden sm:block absolute left-10 top-1/2 -translate-y-1/2 text-soft-beige/40 text-sm pointer-events-none">
+								Buscar eventos...
+							</span>
 						</div>
 					</div>
 
 					{/* Filter Controls */}
-					<div className="flex items-center space-x-3 ml-4">
+					<div className="flex items-center space-x-3 ml- mr-0">
 						{/* Quick Sort */}
 						<select
 							value={sortBy}
@@ -113,13 +122,13 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 						</select>
 
 						{/* Filter Toggle */}
+
 						<button
 							onClick={() => setShowFilters(!showFilters)}
-							className={`flex items-center space-x-2 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
-								showFilters || hasActiveFilters
-									? 'bg-sunset-orange text-deep-night'
-									: 'bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20'
-							}`}
+							className={`flex items-center space-x-2 pl-2 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${showFilters || hasActiveFilters
+								? 'bg-sunset-orange text-deep-night'
+								: 'bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20'
+								}`}
 						>
 							<SlidersHorizontalIcon className="w-4 h-4" />
 							<span className="hidden sm:inline">Filtros</span>
@@ -127,6 +136,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 								<div className="w-2 h-2 bg-soft-gold rounded-full animate-pulse"></div>
 							)}
 						</button>
+
 
 						{/* Apply Search */}
 						<button
@@ -148,7 +158,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 								<select
 									value={selectedCategory}
 									onChange={(e) => setSelectedCategory(e.target.value)}
-									className="w-full px-3 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200"
+									className="w-full px-3 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-gray-500 text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200"
 								>
 									<option value="all">Todas las categorías</option>
 									{categories.map((category) => (
@@ -245,7 +255,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							No hay eventos disponibles
 						</h3>
 						<p className="text-soft-beige/60 mb-6 text-sm leading-relaxed">
-							{currentFilters.search 
+							{currentFilters.search
 								? `No encontramos eventos que coincidan con &quot;${currentFilters.search}&quot;`
 								: 'No hay eventos disponibles con los filtros seleccionados'
 							}
@@ -276,4 +286,4 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 			)}
 		</div>
 	)
-} 
+}
