@@ -6,13 +6,66 @@ import { prisma } from "@/lib/prisma"
  * Obtiene todos los eventos desde la base de datos.
  */
 export async function getAllEvents() {
-    return prisma.event.findMany({
+    const events = await prisma.event.findMany({
         orderBy: { dateTime: 'asc' },
         include: {
             _count: {
                 select: { reservations: true },
             },
+            seats: {
+                select: {
+                    id: true,
+                    tier: true,
+                    isReserved: true,
+                }
+            }
         },
+    })
+
+    // Calculate additional properties for UI compatibility
+    return events.map(event => {
+        const totalSeats = event.seats.length
+        const availableSeats = event.seats.filter(seat => !seat.isReserved).length
+        const reservationCount = event._count.reservations
+
+        // Calculate seats by tier
+        const seatsByTier = {
+            'Puff XXL Estelar': event.seats.filter(seat => seat.tier === 'Oro').length,
+            'Reposera Deluxe': event.seats.filter(seat => seat.tier === 'Plata').length,
+            'Banquito': event.seats.filter(seat => seat.tier === 'Bronce').length,
+        }
+
+        // Calculate available tiers
+        const availableTiers = []
+        if (event.seats.some(seat => seat.tier === 'Oro' && !seat.isReserved)) {
+            availableTiers.push('Puff XXL Estelar')
+        }
+        if (event.seats.some(seat => seat.tier === 'Plata' && !seat.isReserved)) {
+            availableTiers.push('Reposera Deluxe')
+        }
+        if (event.seats.some(seat => seat.tier === 'Bronce' && !seat.isReserved)) {
+            availableTiers.push('Banquito')
+        }
+
+        // Basic price info (could be enhanced with actual pricing logic)
+        const priceInfo = {
+            lowestPrice: 5000, // Default price, should be calculated from membership tiers
+            tierPrices: {
+                'Puff XXL Estelar': 8000,
+                'Reposera Deluxe': 6000,
+                'Banquito': 5000,
+            },
+            availableTiers,
+        }
+
+        return {
+            ...event,
+            totalSeats,
+            availableSeats,
+            reservationCount,
+            seatsByTier,
+            priceInfo,
+        }
     })
 }
 

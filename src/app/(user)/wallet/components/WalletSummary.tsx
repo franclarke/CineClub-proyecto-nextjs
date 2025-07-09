@@ -122,15 +122,6 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 								</div>
 							</div>
 
-							{/* Progress indicator */}
-							<footer className="mt-6 pt-4 border-t border-soft-beige/10">
-								<div className="flex items-center justify-between text-xs">
-									<span className="text-soft-beige/40">Estado</span>
-									<span className={`font-semibold ${card.color}`}>
-										{card.status === 'empty' ? 'Vacío' : 'Activo'}
-									</span>
-								</div>
-							</footer>
 						</article>
 					)
 				})}

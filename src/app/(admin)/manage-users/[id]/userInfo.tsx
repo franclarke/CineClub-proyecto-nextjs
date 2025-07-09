@@ -4,8 +4,9 @@
 import React, { useEffect, useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
 import { fetchUserByIdClient, editUserByIdClient } from '../actions'
-import { PencilIcon, ArrowLeftIcon } from 'lucide-react'
+import { PencilIcon, ArrowLeftIcon, User as UserIcon, Mail, Crown } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/app/components/ui/button'
 
 interface UserWithMembership extends User {
   membership: MembershipTier
@@ -25,6 +26,7 @@ export default function UserInfo({ userId }: UserInfoProps) {
     membershipTierId: ''
   })
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -41,6 +43,7 @@ export default function UserInfo({ userId }: UserInfoProps) {
         }
       } catch (error) {
         setUser(null)
+        setError('No se pudo cargar la información del usuario')
       } finally {
         setIsLoading(false)
       }
@@ -50,6 +53,7 @@ export default function UserInfo({ userId }: UserInfoProps) {
 
   const handleSave = async () => {
     try {
+      setError(null)
       const updatedUser = await editUserByIdClient(userId, {
         name: editForm.name,
         email: editForm.email,
@@ -58,9 +62,10 @@ export default function UserInfo({ userId }: UserInfoProps) {
       setUser(updatedUser)
       setIsEditing(false)
       setSuccess(true)
-      setTimeout(() => setSuccess(false), 2000)
+      setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
       console.error('Error updating user:', error)
+      setError('Error al actualizar el usuario')
     }
   }
 
@@ -73,16 +78,21 @@ export default function UserInfo({ userId }: UserInfoProps) {
       })
     }
     setIsEditing(false)
+    setError(null)
   }
 
   if (isLoading) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-8 shadow-lg animate-pulse">
-        <div className="h-8 bg-gray-700 rounded w-1/3 mb-6"></div>
-        <div className="space-y-4">
-          <div className="h-5 bg-gray-700 rounded w-full"></div>
-          <div className="h-5 bg-gray-700 rounded w-2/3"></div>
-          <div className="h-5 bg-gray-700 rounded w-1/2"></div>
+      <div className="min-h-screen bg-deep-night pt-20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="card-modern p-8 animate-pulse">
+            <div className="h-8 bg-soft-gray/20 rounded w-1/3 mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-5 bg-soft-gray/20 rounded w-full"></div>
+              <div className="h-5 bg-soft-gray/20 rounded w-2/3"></div>
+              <div className="h-5 bg-soft-gray/20 rounded w-1/2"></div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -90,143 +100,233 @@ export default function UserInfo({ userId }: UserInfoProps) {
 
   if (!user) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-8 shadow-lg">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-2">Usuario no encontrado</h3>
-          <p className="text-gray-400">No se pudo cargar la información del usuario.</p>
+      <div className="min-h-screen bg-deep-night pt-20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="card-modern p-8">
+            <div className="text-center">
+              <UserIcon className="w-16 h-16 text-soft-beige/30 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-soft-beige mb-2">Usuario no encontrado</h3>
+              <p className="text-soft-beige/70 mb-6">No se pudo cargar la información del usuario.</p>
+              <Button asChild variant="secondary">
+                <Link href="/manage-users">
+                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                  Volver a usuarios
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-4 shadow-lg max-w-xl mt-10 mx-auto">
-      {success && (
-        <div className="mb-4 text-green-400 bg-green-900/60 rounded-lg px-4 py-2 text-center font-semibold transition-all duration-500">
-          ¡Usuario actualizado correctamente!
+    <div className="min-h-screen bg-deep-night pt-20">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6">
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/manage-users">
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              Volver a usuarios
+            </Link>
+          </Button>
         </div>
-      )}
-      <div className="flex justify-between items-center mb-8">
-        <Link
-          href="/manage-users"
-          className="flex items-center gap-2 text-gray-300 hover:text-orange-400 transition"
-        >
-          <ArrowLeftIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">Volver</span>
-        </Link>
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="p-2 rounded-full bg-gray-800 hover:bg-orange-600 transition flex items-center justify-center"
-            title="Editar usuario"
-          >
-            <PencilIcon className="w-5 h-5 text-orange-400" />
-          </button>
-        ) : (
-          <div className="flex space-x-2">
-            <button
-              onClick={handleSave}
-              className="px-5 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg shadow hover:from-green-700 hover:to-green-600 transition"
-            >
-              Guardar
-            </button>
-            <button
-              onClick={handleCancel}
-              className="px-5 py-2 bg-gray-700 text-white rounded-lg shadow hover:bg-gray-600 transition"
-            >
-              Cancelar
-            </button>
+
+        {/* Title */}
+        <div className="mb-8">
+          <h1 className="text-display text-3xl text-soft-beige mb-2">
+            Editar Usuario
+          </h1>
+          <p className="text-soft-beige/70">
+            Gestiona la información y membresía del usuario
+          </p>
+        </div>
+
+        {/* Messages */}
+        {success && (
+          <div className="mb-6 p-4 bg-dark-olive/20 border border-dark-olive/30 rounded-xl">
+            <div className="flex items-center gap-2 text-dark-olive">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="font-medium">Usuario actualizado correctamente</span>
+            </div>
           </div>
         )}
-      </div>
 
-      <form
-        className="space-y-6"
-        onSubmit={e => {
-          e.preventDefault()
-          handleSave()
-        }}
-      >
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-1">
-            Nombre
-          </label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editForm.name}
-              onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-              required
-            />
-          ) : (
-            <div className="px-4 py-2 bg-gray-800 rounded-lg text-white">
-              {user.name || <span className="text-gray-400 italic">Sin nombre</span>}
+        {error && (
+          <div className="mb-6 p-4 bg-warm-red/20 border border-warm-red/30 rounded-xl">
+            <div className="flex items-center gap-2 text-warm-red">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span className="font-medium">{error}</span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-1">
-            Email
-          </label>
-          {isEditing ? (
-            <input
-              type="email"
-              value={editForm.email}
-              onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-              required
-            />
-          ) : (
-            <div className="px-4 py-2 bg-gray-800 rounded-lg text-white">
-              {user.email}
+        {/* User Form */}
+        <div className="card-modern p-8">
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-sunset-orange/20 rounded-lg flex items-center justify-center">
+                <UserIcon className="w-6 h-6 text-sunset-orange" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-soft-beige">
+                  {user.name || 'Usuario sin nombre'}
+                </h2>
+                <p className="text-soft-beige/70 text-sm">
+                  ID: {user.id.slice(0, 8)}...
+                </p>
+              </div>
             </div>
-          )}
-        </div>
+            
+            {!isEditing ? (
+              <Button
+                onClick={() => setIsEditing(true)}
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <PencilIcon className="w-4 h-4" />
+                Editar
+              </Button>
+            ) : (
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleSave}
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Guardar
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            )}
+          </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-1">
-            Membresía
-          </label>
-          {isEditing ? (
-            <select
-              value={editForm.membershipTierId}
-              onChange={e => setEditForm({ ...editForm, membershipTierId: e.target.value })}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-            >
-              <option value="">Sin membresía</option>
-              {/* Puedes mapear tus membresías reales aquí */}
-              <option value="1">Bronce</option>
-              <option value="2">Plata</option>
-              <option value="3">Oro</option>
-            </select>
-          ) : (
-            <div className="px-4 py-2 bg-gray-800 rounded-lg text-white">
-              <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold
-                ${user.membership.name === 'Oro' ? 'bg-yellow-900 text-yellow-200' :
-                  user.membership.name === 'Plata' ? 'bg-gray-600 text-gray-200' :
-                    user.membership.name === 'Bronze' ? 'bg-orange-900 text-orange-200' :
-                      'bg-gray-700 text-gray-300'
-                }`}>
-                {user.membership.name}
-              </span>
+          <form
+            className="space-y-6"
+            onSubmit={e => {
+              e.preventDefault()
+              handleSave()
+            }}
+          >
+            {/* Name Field */}
+            <div>
+              <label className="block text-soft-beige/70 font-medium mb-2">
+                <UserIcon className="w-4 h-4 inline mr-2" />
+                Nombre
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                  placeholder="Ingresa el nombre del usuario"
+                  required
+                />
+              ) : (
+                <div className="px-4 py-3 bg-soft-gray/10 rounded-xl text-soft-beige">
+                  {user.name || <span className="text-soft-beige/50 italic">Sin nombre</span>}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </form>
 
-      <div className="mt-8 text-xs text-gray-500 text-center">
-        ID de usuario: <span className="font-mono">{user.id}</span>
-      </div>
-      <div className="mt-1 text-xs text-gray-500 text-center">
-        Registrado el {new Date(user.createdAt).toLocaleDateString('es-ES', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })}
+            {/* Email Field */}
+            <div>
+              <label className="block text-soft-beige/70 font-medium mb-2">
+                <Mail className="w-4 h-4 inline mr-2" />
+                Email
+              </label>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                  required
+                />
+              ) : (
+                <div className="px-4 py-3 bg-soft-gray/10 rounded-xl text-soft-beige">
+                  {user.email}
+                </div>
+              )}
+            </div>
+
+            {/* Membership Field */}
+            <div>
+              <label className="block text-soft-beige/70 font-medium mb-2">
+                <Crown className="w-4 h-4 inline mr-2" />
+                Membresía
+              </label>
+              {isEditing ? (
+                <select
+                  value={editForm.membershipTierId}
+                  onChange={e => setEditForm({ ...editForm, membershipTierId: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                >
+                  <option value="" className="bg-deep-night">Sin membresía</option>
+                  <option value="1" className="bg-deep-night">Banquito</option>
+                  <option value="2" className="bg-deep-night">Reposera Deluxe</option>
+                  <option value="3" className="bg-deep-night">Puff XXL Estelar</option>
+                </select>
+              ) : (
+                <div className="px-4 py-3 bg-soft-gray/10 rounded-xl">
+                  <span
+                    className={`
+                      px-3 py-1 rounded-full text-xs font-semibold border inline-block
+                      ${user.membership?.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20 text-soft-gold border-soft-gold/30' :
+                        user.membership?.name === 'Reposera Deluxe' ? 'bg-soft-beige/20 text-soft-beige border-soft-beige/30' :
+                          user.membership?.name === 'Banquito' ? 'bg-sunset-orange/20 text-sunset-orange border-sunset-orange/30' :
+                            'bg-soft-gray/20 text-soft-gray border-soft-gray/30'}
+                    `}>
+                    {user.membership?.name || 'Sin membresía'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </form>
+
+          {/* User Info */}
+          <div className="mt-8 pt-6 border-t border-soft-gray/20">
+            <div className="text-xs text-soft-beige/50 space-y-1">
+              <div>ID completo: <span className="font-mono text-soft-beige/70">{user.id}</span></div>
+              <div>
+                Registrado el {new Date(user.createdAt).toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+              {user.updatedAt && user.updatedAt !== user.createdAt && (
+                <div>
+                  Última actualización: {new Date(user.updatedAt).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
