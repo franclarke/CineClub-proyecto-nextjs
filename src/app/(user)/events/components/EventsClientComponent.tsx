@@ -4,36 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { EventCard } from './EventCard'
 import { SearchIcon, CalendarIcon, TrendingUpIcon, ArrowUpAZ, SlidersHorizontalIcon, XIcon } from 'lucide-react'
-
-interface Event {
-	id: string
-	title: string
-	description: string | null
-	dateTime: string
-	location: string | null
-	category: string | null
-	imdbId: string | null
-	tmdbId: string | null
-	imageUrl: string | null
-	reservationCount: number
-	totalSeats: number
-	availableSeats: number
-	seatsByTier: {
-		gold: number
-		silver: number
-		bronze: number
-	}
-}
-
-interface EventsClientComponentProps {
-	events: Event[]
-	categories: string[]
-	currentFilters: {
-		category: string
-		sort: string
-		search: string
-	}
-}
+import { Event, EventsClientComponentProps } from '@/types/events'
 
 export function EventsClientComponent({ events, categories, currentFilters }: EventsClientComponentProps) {
 	const router = useRouter()
@@ -130,18 +101,9 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
 								onKeyPress={(e) => e.key === 'Enter' && handleFilterChange()}
-								className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige placeholder-soft-beige/50 focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 text-sm
-									placeholder:sm:opacity-100 placeholder:opacity-0"
-								// Oculta el placeholder en mobile, lo muestra en sm+
-								placeholder={typeof window !== 'undefined' && window.innerWidth < 640 ? '' : 'Buscar eventos...'}
+								className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige placeholder-soft-beige/50 focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 text-sm"
+								placeholder="Buscar eventos..."
 							/>
-							{/* Alternativamente, usando Tailwind para el placeholder */}
-							<span className="sm:hidden absolute left-10 top-1/2 -translate-y-1/2 text-soft-beige/40 text-sm pointer-events-none">
-								{/* No texto en mobile */}
-							</span>
-							<span className="hidden sm:block absolute left-10 top-1/2 -translate-y-1/2 text-soft-beige/40 text-sm pointer-events-none">
-								Buscar eventos...
-							</span>
 						</div>
 					</div>
 

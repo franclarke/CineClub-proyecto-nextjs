@@ -15,43 +15,7 @@ import { formatFullDate, formatTime, formatMonthShort } from '@/lib/utils/date'
 import { parseISO } from 'date-fns'
 import { useCurrentDate } from '@/app/hooks/use-hydration'
 import { BackButton } from '@/app/components/ui/back-button'
-
-interface Seat {
-	id: string
-	seatNumber: number
-	tier: string
-	isReserved: boolean
-}
-
-interface Event {
-	id: string
-	title: string
-	description: string
-	dateTime: string
-	location: string
-	category: string | null
-	imdbId: string | null
-	tmdbId: string | null
-	imageUrl: string | null
-	seatStats: {
-		total: number
-		available: number
-		reserved: number
-		byTier: {
-				gold: { total: number; available: number }
-	silver: { total: number; available: number }
-	bronze: { total: number; available: number }
-		}
-	}
-	seats: Seat[]
-	reservationCount: number
-	createdAt: string
-	updatedAt: string
-}
-
-interface EventDetailClientComponentProps {
-	event: Event
-}
+import { EventDetail, EventDetailClientComponentProps } from '@/types/events'
 
 interface IMDbData {
 	title: string
@@ -80,7 +44,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					year: '2024',
 					genre: event.category || 'Drama',
 					director: 'Director Placeholder',
-					plot: event.description,
+					plot: event.description || 'Descripción no disponible',
 					poster: '/placeholder-movie-poster.jpg',
 					runtime: '120 min',
 					imdbRating: '8.5'
@@ -90,13 +54,14 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 		}
 	}, [event.imdbId, event.title, event.category, event.description])
 
-	const formatDate = (dateString: string) => {
-		const date = parseISO(dateString)
+	const formatDate = (dateString: string | Date) => {
+		const dateStr = typeof dateString === 'string' ? dateString : dateString.toISOString()
+		const date = parseISO(dateStr)
 		return {
-			full: formatFullDate(dateString),
-			time: formatTime(dateString),
+			full: formatFullDate(dateStr),
+			time: formatTime(dateStr),
 			day: date.getDate(),
-			month: formatMonthShort(dateString),
+			month: formatMonthShort(dateStr),
 		}
 	}
 
@@ -206,7 +171,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					<div className="space-y-4">
 						<h2 className="text-display text-2xl text-soft-beige">Sinopsis</h2>
 						<p className="text-soft-beige/80 leading-relaxed">
-							{imdbData?.plot || event.description}
+							{imdbData?.plot || event.description || 'Descripción no disponible'}
 						</p>
 					</div>
 

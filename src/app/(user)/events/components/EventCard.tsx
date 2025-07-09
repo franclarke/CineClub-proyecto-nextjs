@@ -5,39 +5,7 @@ import Image from 'next/image'
 import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, ArrowRightIcon, HeartIcon, BookmarkIcon } from 'lucide-react'
 import { useState } from 'react'
 import { getDay, formatShortDate, formatTime, formatWeekdayShort, formatMonthShort } from '@/lib/utils/date'
-
-interface Event {
-	id: string
-	title: string
-	description: string | null
-	dateTime: string | Date
-	location: string | null
-	category: string | null
-	imdbId: string | null
-	tmdbId: string | null
-	imageUrl: string | null
-	reservationCount: number
-	totalSeats: number
-	availableSeats: number
-	seatsByTier: {
-		'Puff XXL Estelar': number
-		'Reposera Deluxe': number
-		'Banquito': number
-	}
-	priceInfo: {
-		lowestPrice: number
-		tierPrices: {
-			'Puff XXL Estelar': number
-			'Reposera Deluxe': number
-			'Banquito': number
-		}
-		availableTiers: string[]
-	}
-}
-
-interface EventCardProps {
-	event: Event
-}
+import { Event, EventCardProps } from '@/types/events'
 
 export function EventCard({ event }: EventCardProps) {
 	const [isFavorite, setIsFavorite] = useState(false)

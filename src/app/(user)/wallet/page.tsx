@@ -9,6 +9,9 @@ export const metadata: Metadata = {
 	description: 'Gestiona tus tickets, productos y historial de compras'
 }
 
+// Force dynamic rendering since we use session data
+export const dynamic = 'force-dynamic'
+
 export default async function WalletPage() {
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-deep-night via-deep-night/95 to-deep-night/90">
