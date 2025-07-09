@@ -5,30 +5,7 @@ import Image from 'next/image'
 import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, ArrowRightIcon, HeartIcon, BookmarkIcon } from 'lucide-react'
 import { useState } from 'react'
 import { getDay, formatShortDate, formatTime, formatWeekdayShort, formatMonthShort } from '@/lib/utils/date'
-
-interface Event {
-	id: string
-	title: string
-	description: string | null
-	dateTime: string | Date
-	location: string | null
-	category: string | null
-	imdbId: string | null
-	tmdbId: string | null
-	imageUrl: string | null
-	reservationCount: number
-	totalSeats: number
-	availableSeats: number
-	seatsByTier: {
-		gold: number
-		silver: number
-		bronze: number
-	}
-}
-
-interface EventCardProps {
-	event: Event
-}
+import { Event, EventCardProps } from '@/types/events'
 
 export function EventCard({ event }: EventCardProps) {
 	const [isFavorite, setIsFavorite] = useState(false)
@@ -44,15 +21,23 @@ export function EventCard({ event }: EventCardProps) {
 	const occupancyRate = ((event.totalSeats - event.availableSeats) / event.totalSeats) * 100
 	const isAlmostFull = event.availableSeats < event.totalSeats * 0.2
 
-	// Get the cheapest tier available
-	const getLowestTier = () => {
-		if (event.seatsByTier.bronze > 0) return { name: 'Bronze', price: 25 }
-		if (event.seatsByTier.silver > 0) return { name: 'Silver', price: 35 }
-		if (event.seatsByTier.gold > 0) return { name: 'Gold', price: 50 }
-		return { name: 'Agotado', price: 0 }
+	// Get available tiers using the new data structure
+	const getAvailableTiers = () => {
+		return event.priceInfo.availableTiers
 	}
 
-	const lowestTier = getLowestTier()
+	const availableTiers = getAvailableTiers()
+	const hasAvailableSeats = availableTiers.length > 0
+
+	// Format price for display
+	const formatPrice = (price: number) => {
+		return new Intl.NumberFormat('es-AR', {
+			style: 'currency',
+			currency: 'ARS',
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 0,
+		}).format(price)
+	}
 
 	return (
 		<div className="group bg-deep-night/60 backdrop-blur-xl border border-soft-gray/20 rounded-2xl overflow-hidden hover:border-sunset-orange/40 transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-sunset-orange/10">
@@ -195,8 +180,8 @@ export function EventCard({ event }: EventCardProps) {
 				</div>
 
 				{/* Availability Section */}
-				<div className="bg-soft-gray/10 border border-soft-gray/20 rounded-xl p-3">
-					<div className="flex items-center justify-between mb-2">
+				<div className="bg-soft-gray/10 border border-soft-gray/20 rounded-xl p-3 space-y-3">
+					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2">
 							<div className="w-6 h-6 bg-gradient-to-r from-sunset-orange/20 to-soft-gold/20 rounded-lg flex items-center justify-center">
 								<UsersIcon className="w-3.5 h-3.5 text-sunset-orange" />
@@ -207,27 +192,54 @@ export function EventCard({ event }: EventCardProps) {
 							</div>
 						</div>
 						<div className="text-right">
-							<div className="text-sm font-semibold text-soft-gold">
-								${lowestTier.price}
-							</div>
-							<div className="text-xs text-soft-beige/60">
-								desde {lowestTier.name}
-							</div>
+							{hasAvailableSeats ? (
+								<>
+									<div className="text-sm font-semibold text-soft-gold">
+										{availableTiers.length} tier{availableTiers.length > 1 ? 's' : ''}
+									</div>
+									<div className="text-xs text-soft-beige/60">
+										disponible{availableTiers.length > 1 ? 's' : ''}
+									</div>
+								</>
+							) : (
+								<>
+									<div className="text-sm font-semibold text-warm-red">
+										Agotado
+									</div>
+									<div className="text-xs text-soft-beige/60">
+										Sin disponibilidad
+									</div>
+								</>
+							)}
 						</div>
 					</div>
 
 					{/* Progress Bar */}
-					<div className="w-full bg-soft-gray/30 rounded-full h-1.5 mb-2">
+					<div className="w-full bg-soft-gray/30 rounded-full h-1.5">
 						<div 
 							className="bg-gradient-to-r from-sunset-orange to-soft-gold h-1.5 rounded-full transition-all duration-300"
 							style={{ width: `${occupancyRate}%` }}
 						></div>
 					</div>
 					
-					<div className="flex justify-between text-xs text-soft-beige/60">
-						<span>{Math.round(occupancyRate)}% ocupado</span>
-						<span>{event.reservationCount} reservas</span>
+					<div className="flex justify-between items-center text-xs">
+						<span className="text-soft-beige/60">{Math.round(occupancyRate)}% ocupado</span>
+						<span className="text-soft-beige/60">{event.reservationCount} reservas</span>
 					</div>
+
+					{/* Price Information */}
+					{hasAvailableSeats && event.priceInfo.lowestPrice > 0 && (
+						<div className="pt-2 border-t border-soft-gray/20">
+							<div className="flex items-center justify-end">
+								<div>
+									<div className="text-xs text-soft-beige/60">Desde:</div>
+									<div className="text-lg font-bold text-soft-gold">
+										{formatPrice(event.priceInfo.lowestPrice)}
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 
 				{/* Action Button */}

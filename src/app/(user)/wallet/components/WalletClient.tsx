@@ -50,7 +50,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 		const ticketCount = Object.keys(reservationsByEvent).length
 		const productOrdersCount = orders.filter(order => order.items.length > 0).length
 		const totalTransactions = orders.length + ticketCount
-		
+
 		return {
 			tickets: ticketCount,
 			products: productOrdersCount,
@@ -84,8 +84,8 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 	], [counts])
 
 	// Memoized content availability check
-	const hasAnyContent = useMemo(() => 
-		counts.tickets > 0 || orders.length > 0, 
+	const hasAnyContent = useMemo(() =>
+		counts.tickets > 0 || orders.length > 0,
 		[counts.tickets, orders.length]
 	)
 
@@ -122,7 +122,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 			<div className="space-y-8">
 				{/* Summary Cards - Show even when empty */}
 				<WalletSummary summary={summary} />
-				
+
 				{/* Empty State */}
 				<div className="text-center py-20">
 					<div className="bg-soft-beige/5 backdrop-blur-xl border border-soft-beige/10 rounded-3xl max-w-lg mx-auto p-12">
@@ -160,13 +160,13 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 					{tabs.map((tab, index) => {
 						const IconComponent = tab.icon
 						const isActive = activeTab === tab.id
-						
+
 						return (
 							<button
 								key={tab.id}
 								onClick={() => handleTabChange(tab.id)}
 								className={`
-									group flex items-center gap-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300
+									group flex items-center gap-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300 cursor-pointer
 									${isActive
 										? 'bg-gradient-sunset-gold text-deep-night shadow-lg scale-[1.02]'
 										: 'bg-soft-gray/20 text-soft-beige hover:bg-soft-gray/30 border border-soft-gray/20 hover:scale-[1.02]'
@@ -185,8 +185,8 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 								`}>
 									<IconComponent className={`
 										w-5 h-5 transition-all duration-300
-										${isActive 
-											? 'text-deep-night' 
+										${isActive
+											? 'text-deep-night'
 											: 'text-sunset-orange'
 										}
 									`} />

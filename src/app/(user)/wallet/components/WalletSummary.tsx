@@ -29,8 +29,8 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 		const formatCurrency = (amount: number) => {
 			return new Intl.NumberFormat('es-ES', {
 				style: 'currency',
-				currency: 'USD',
-				minimumFractionDigits: 2
+				currency: 'ARS',
+				minimumFractionDigits: 0
 			}).format(amount)
 		}
 
@@ -66,7 +66,7 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 				label: 'Total Gastado',
 				value: formatCurrency(summary.totalSpent),
 				icon: DollarSignIcon,
-				color: 'text-green-400',
+				color: 'text-green-600',
 				bgColor: 'from-green-400/20 to-green-400/5',
 				borderColor: 'border-green-400/30',
 				status: summary.totalSpent > 0 ? 'active' : 'empty'
@@ -87,7 +87,7 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 							key={index}
 							className={`
 								bg-soft-beige/5 backdrop-blur-xl border ${card.borderColor} rounded-3xl p-8 
-								hover-lift group cursor-pointer transition-all duration-300 hover:scale-[1.02]
+								hover-lift group transition-all duration-300 
 							`}
 							style={{ animationDelay: `${index * 0.1}s` }}
 							aria-labelledby={`summary-card-${index}`}
@@ -105,7 +105,7 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 									<p className="text-soft-beige/60 text-sm mb-3 font-medium uppercase tracking-wide">
 										{card.label}
 									</p>
-									<p 
+									<p
 										id={`summary-card-${index}`}
 										className={`text-3xl font-bold ${card.color} group-hover:scale-110 transition-transform duration-300`}
 										aria-label={`${card.label}: ${card.value}`}
@@ -121,7 +121,7 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 									<IconComponent className={`w-8 h-8 ${card.color}`} />
 								</div>
 							</div>
-							
+
 							{/* Progress indicator */}
 							<footer className="mt-6 pt-4 border-t border-soft-beige/10">
 								<div className="flex items-center justify-between text-xs">

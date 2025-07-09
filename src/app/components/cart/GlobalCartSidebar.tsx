@@ -3,14 +3,15 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/lib/cart/cart-context'
+import { useAuth } from '@/app/hooks/use-auth'
 import { ProductCartItem, SeatCartItem } from '@/types/cart'
-import { 
-	X, 
-	Trash2, 
-	Plus, 
-	Minus, 
-	Package, 
-	Ticket, 
+import {
+	X,
+	Trash2,
+	Plus,
+	Minus,
+	Package,
+	Ticket,
 	Calendar,
 	MapPin,
 	Clock,
@@ -29,8 +30,14 @@ import { useHydration } from '@/app/hooks/use-hydration'
 
 export function GlobalCartSidebar() {
 	const { state, toggleCart, getExpiredSeats } = useCart()
+	const { isAuthenticated, isAdmin } = useAuth()
 	const router = useRouter()
 	const expiredSeats = getExpiredSeats()
+
+	// Solo mostrar si el usuario está logueado y no es administrador
+	if (!isAuthenticated || isAdmin) {
+		return null
+	}
 
 	const handleCheckout = () => {
 		if (state.items.length > 0) {
@@ -58,7 +65,7 @@ export function GlobalCartSidebar() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+						className="fixed inset-0 bg-black/60  backdrop-blur-sm z-50"
 						onClick={toggleCart}
 					/>
 
@@ -74,7 +81,7 @@ export function GlobalCartSidebar() {
 						<div className="p-6 border-b border-soft-gray/20 bg-gradient-to-r from-deep-night/50 to-deep-night/80">
 							<div className="flex items-center justify-between">
 								<div className="flex items-center space-x-4">
-									<div className="w-12 h-12 bg-gradient-to-r from-sunset-orange/30 to-soft-gold/30 rounded-2xl flex items-center justify-center ring-2 ring-soft-gold/20">
+									<div className="w-12 h-12 bg-gradient-to-r  from-sunset-orange/30 to-soft-gold/30 rounded-2xl flex items-center justify-center ring-2 ring-soft-gold/20">
 										<ShoppingBag className="w-6 h-6 text-soft-gold" />
 									</div>
 									<div>
@@ -155,13 +162,13 @@ export function GlobalCartSidebar() {
 										Finalizar Compra
 										<ArrowRight className="w-5 h-5 ml-3" />
 									</Button>
-									
+
 									<div className="grid grid-cols-2 gap-3">
 										<Button
 											onClick={handleViewCart}
 											className="bg-soft-gray/20 border border-soft-gray/30 text-soft-beige hover:bg-soft-gray/30 py-3 rounded-xl transition-all duration-200"
 										>
-											<ShoppingBag className="w-4 h-4 mr-2" />
+											<ShoppingBag className="w-4 h-4 mr-2 " />
 											Ir a Tienda
 										</Button>
 										<Button
@@ -198,7 +205,7 @@ function EmptyCart({ onContinueShopping }: { onContinueShopping: () => void }) {
 				transition={{ delay: 0.2 }}
 				className="w-24 h-24 bg-gradient-to-br from-soft-gray/20 to-soft-gray/10 rounded-3xl flex items-center justify-center mb-8 ring-1 ring-soft-gray/20"
 			>
-				<ShoppingBag className="w-12 h-12 text-soft-gray" />
+				<ShoppingBag className="w-12 h-12 text-soft-gray " />
 			</motion.div>
 			<h3 className="text-2xl font-bold text-soft-beige mb-4">
 				Tu carrito está vacío
@@ -266,11 +273,10 @@ function SeatCartItemComponent({ item }: { item: SeatCartItem }) {
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
-			className={`p-4 rounded-2xl border transition-all duration-200 ${
-				isExpired 
-					? 'bg-red-500/10 border-red-500/30' 
-					: 'bg-soft-gray/10 border-soft-gray/20 hover:bg-soft-gray/20'
-			}`}
+			className={`p-4 rounded-2xl border transition-all duration-200 ${isExpired
+				? 'bg-red-500/10 border-red-500/30'
+				: 'bg-soft-gray/10 border-soft-gray/20 hover:bg-soft-gray/20'
+				}`}
 		>
 			<div className="flex justify-between items-start">
 				<div className="flex-1">
@@ -295,12 +301,12 @@ function SeatCartItemComponent({ item }: { item: SeatCartItem }) {
 						{item.expiresAt && isHydrated && (
 							<div className="flex items-center gap-2">
 								<Clock className="w-3 h-3" />
-								<span 
+								<span
 									className={isExpired ? 'text-red-400' : 'text-yellow-400'}
 									suppressHydrationWarning
 								>
-									{isExpired 
-										? 'Expirado' 
+									{isExpired
+										? 'Expirado'
 										: `Expira ${formatDistanceToNow(item.expiresAt, { locale: es, addSuffix: true })}`
 									}
 								</span>
@@ -308,7 +314,7 @@ function SeatCartItemComponent({ item }: { item: SeatCartItem }) {
 						)}
 					</div>
 				</div>
-				
+
 				<div className="text-right ml-4">
 					<div className="text-soft-beige font-bold text-lg mb-2">
 						${item.totalPrice.toFixed(2)}
@@ -349,7 +355,7 @@ function ProductCartItemComponent({ item }: { item: ProductCartItem }) {
 				<div className="w-14 h-14 bg-gradient-to-br from-soft-gold/20 to-sunset-orange/20 rounded-2xl flex items-center justify-center ring-1 ring-soft-gold/20">
 					<Package className="w-7 h-7 text-soft-gold" />
 				</div>
-				
+
 				<div className="flex-1">
 					<h4 className="text-soft-beige font-medium mb-1">
 						{item.product.name}
@@ -363,7 +369,7 @@ function ProductCartItemComponent({ item }: { item: ProductCartItem }) {
 						${item.unitPrice.toFixed(2)} c/u
 					</div>
 				</div>
-				
+
 				<div className="flex items-center gap-3">
 					<div className="flex items-center gap-2 bg-deep-night/50 rounded-xl p-1">
 						<Button
@@ -383,7 +389,7 @@ function ProductCartItemComponent({ item }: { item: ProductCartItem }) {
 							<Plus className="w-4 h-4" />
 						</Button>
 					</div>
-					
+
 					<div className="text-right">
 						<div className="text-soft-beige font-bold text-lg">
 							${item.totalPrice.toFixed(2)}

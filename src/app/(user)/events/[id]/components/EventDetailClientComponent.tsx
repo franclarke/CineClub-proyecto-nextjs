@@ -8,50 +8,14 @@ import {
 	MapPinIcon, 
 	ClockIcon, 
 	PlayIcon,
-	ChevronLeftIcon,
 	TagIcon
 } from 'lucide-react'
 import { TrailerPlayer } from './TrailerPlayer'
 import { formatFullDate, formatTime, formatMonthShort } from '@/lib/utils/date'
 import { parseISO } from 'date-fns'
 import { useCurrentDate } from '@/app/hooks/use-hydration'
-
-interface Seat {
-	id: string
-	seatNumber: number
-	tier: string
-	isReserved: boolean
-}
-
-interface Event {
-	id: string
-	title: string
-	description: string
-	dateTime: string
-	location: string
-	category: string | null
-	imdbId: string | null
-	tmdbId: string | null
-	imageUrl: string | null
-	seatStats: {
-		total: number
-		available: number
-		reserved: number
-		byTier: {
-				gold: { total: number; available: number }
-	silver: { total: number; available: number }
-	bronze: { total: number; available: number }
-		}
-	}
-	seats: Seat[]
-	reservationCount: number
-	createdAt: string
-	updatedAt: string
-}
-
-interface EventDetailClientComponentProps {
-	event: Event
-}
+import { BackButton } from '@/app/components/ui/back-button'
+import { EventDetail, EventDetailClientComponentProps } from '@/types/events'
 
 interface IMDbData {
 	title: string
@@ -80,7 +44,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					year: '2024',
 					genre: event.category || 'Drama',
 					director: 'Director Placeholder',
-					plot: event.description,
+					plot: event.description || 'Descripción no disponible',
 					poster: '/placeholder-movie-poster.jpg',
 					runtime: '120 min',
 					imdbRating: '8.5'
@@ -90,13 +54,14 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 		}
 	}, [event.imdbId, event.title, event.category, event.description])
 
-	const formatDate = (dateString: string) => {
-		const date = parseISO(dateString)
+	const formatDate = (dateString: string | Date) => {
+		const dateStr = typeof dateString === 'string' ? dateString : dateString.toISOString()
+		const date = parseISO(dateStr)
 		return {
-			full: formatFullDate(dateString),
-			time: formatTime(dateString),
+			full: formatFullDate(dateStr),
+			time: formatTime(dateStr),
 			day: date.getDate(),
-			month: formatMonthShort(dateString),
+			month: formatMonthShort(dateStr),
 		}
 	}
 
@@ -108,13 +73,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			{/* Back Button */}
 			<div className="mb-8">
-				<Link 
-					href="/events"
-					className="inline-flex items-center space-x-2 text-soft-beige hover:text-sunset-orange transition-colors duration-200"
-				>
-					<ChevronLeftIcon className="w-5 h-5" />
-					<span>Volver a eventos</span>
-				</Link>
+				<BackButton href="/events" label="Volver a eventos" />
 			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -212,7 +171,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					<div className="space-y-4">
 						<h2 className="text-display text-2xl text-soft-beige">Sinopsis</h2>
 						<p className="text-soft-beige/80 leading-relaxed">
-							{imdbData?.plot || event.description}
+							{imdbData?.plot || event.description || 'Descripción no disponible'}
 						</p>
 					</div>
 
@@ -225,7 +184,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 				{/* Sidebar */}
 				<div className="space-y-6">
 					{/* Booking Card */}
-					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6 sticky top-24">
+					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6">
 						<h3 className="text-display text-xl text-soft-beige mb-4">
 							Reservar Asiento
 						</h3>
@@ -272,7 +231,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					</div>
 
 					{/* Event Details */}
-					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6 sticky top-8">
+					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6">
 						<h3 className="text-display text-xl text-soft-beige mb-4">
 							Detalles del Evento
 						</h3>

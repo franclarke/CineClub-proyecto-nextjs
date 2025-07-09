@@ -72,7 +72,7 @@ export function HistorySection({ orders, reservationsByEvent, searchQuery = '' }
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('es-ES', {
 			style: 'currency',
-			currency: 'USD',
+			currency: 'ARS',
 			minimumFractionDigits: 2
 		}).format(amount)
 	}

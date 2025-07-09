@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { getAllProducts, addProduct, deleteProduct, getProductById } from '../data-access'
 import ProductCard from './productCard'
+import { BackButton } from '@/app/components/ui/back-button'
 
 interface Product {
     id: string
@@ -135,6 +136,11 @@ export default function ProductsDashboard() {
 
     return (
         <div className="max-w-6xl mt-10 mx-auto py-8">
+            {/* Back Button */}
+            <div className="mb-4">
+                <BackButton href="/" label="Volver al inicio" />
+            </div>
+            
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                 <h1 className="text-2xl font-bold text-white">Administrar Productos</h1>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

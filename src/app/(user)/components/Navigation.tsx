@@ -12,7 +12,7 @@ export default function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const [isProfileOpen, setIsProfileOpen] = useState(false)
 	const [scrolled, setScrolled] = useState(false)
-	const { user, isAuthenticated, signOut, isLoading } = useAuth()
+	const { user, isAuthenticated, signOut, isLoading, isAdmin } = useAuth()
 	const { state: cartState, toggleCart } = useCart()
 	const pathname = usePathname()
 	const profileRef = useRef<HTMLDivElement>(null)
@@ -65,7 +65,7 @@ export default function Navigation() {
 		return (
 			<nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
 				scrolled 
-					? 'bg-deep-night/95 backdrop-blur-3xl shadow-2xl border-b border-soft-gray/20' 
+					? 'bg-deep-night/75 backdrop-blur-3xl shadow-2xl border-b border-soft-gray/20' 
 					: 'bg-deep-night/90 backdrop-blur-2xl border-b border-soft-gray/10'
 			}`}>
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,7 +91,7 @@ export default function Navigation() {
 	return (
 		<nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
 			scrolled 
-				? 'bg-deep-night/95 backdrop-blur-3xl shadow-2xl border-b border-soft-gray/20' 
+				? 'bg-deep-night/75 backdrop-blur-3xl shadow-2xl border-b border-soft-gray/20' 
 				: 'bg-deep-night/90 backdrop-blur-2xl border-b border-soft-gray/10'
 		}`}>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -242,7 +242,8 @@ export default function Navigation() {
 									)}
 								</div>
 								
-								{/* Enhanced Cart Button */}
+															{/* Enhanced Cart Button - Solo para usuarios no administradores */}
+							{!isAdmin && (
 								<button
 									onClick={toggleCart}
 									className="relative p-3 bg-gradient-to-br from-soft-gray/10 to-soft-gray/5 hover:from-sunset-orange/10 hover:to-soft-gold/10 rounded-xl transition-all duration-300 group border border-soft-gray/20 hover:border-sunset-orange/30 shadow-lg hover:shadow-xl"
@@ -261,6 +262,7 @@ export default function Navigation() {
 									{/* Indicador de actividad sutil */}
 									<div className="absolute bottom-0 right-0 w-2 h-2 bg-soft-gold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 								</button>
+							)}
 							</>
 						) : (
 							<>
@@ -278,26 +280,6 @@ export default function Navigation() {
 										Registrarse
 									</Link>
 								</div>
-								
-								{/* Cart Button */}
-								<button
-									onClick={toggleCart}
-									className="relative p-3 bg-gradient-to-br from-soft-gray/10 to-soft-gray/5 hover:from-sunset-orange/10 hover:to-soft-gold/10 rounded-xl transition-all duration-300 group border border-soft-gray/20 hover:border-sunset-orange/30 shadow-lg hover:shadow-xl"
-									aria-label="Carrito de compras"
-								>
-									<div className="relative">
-										<ShoppingCartIcon className="w-5 h-5 text-soft-beige group-hover:text-sunset-orange transition-all duration-300 group-hover:scale-110" />
-										{/* Efecto de brillo */}
-										<div className="absolute inset-0 bg-gradient-to-r from-transparent via-sunset-orange/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded blur-sm" />
-									</div>
-									{cartState.totalItems > 0 && (
-										<div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-sunset-orange via-soft-gold to-sunset-orange text-deep-night text-xs font-bold rounded-full flex items-center justify-center shadow-xl border-2 border-deep-night animate-bounce">
-											{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
-										</div>
-									)}
-									{/* Indicador de actividad sutil */}
-									<div className="absolute bottom-0 right-0 w-2 h-2 bg-soft-gold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-								</button>
 							</>
 						)}
 					</div>
@@ -340,21 +322,24 @@ export default function Navigation() {
 								</Link>
 							))}
 							
-							<button 
-								onClick={() => {
-									toggleCart()
-									setIsMenuOpen(false)
-								}}
-								className="flex items-center space-x-3 w-full px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-xl transition-all duration-300 font-medium relative"
-							>
-								<ShoppingCartIcon className="w-5 h-5" />
-								<span>Carrito</span>
-								{cartState.totalItems > 0 && (
-									<div className="ml-auto w-6 h-6 bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night text-xs font-bold rounded-full flex items-center justify-center">
-										{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
-									</div>
-								)}
-							</button>
+							{/* Cart Button - Solo para usuarios logueados no administradores */}
+							{isAuthenticated && !isAdmin && (
+								<button 
+									onClick={() => {
+										toggleCart()
+										setIsMenuOpen(false)
+									}}
+									className="flex items-center space-x-3 w-full px-4 py-3 text-soft-beige hover:text-sunset-orange hover:bg-soft-gray/10 rounded-xl transition-all duration-300 font-medium relative"
+								>
+									<ShoppingCartIcon className="w-5 h-5" />
+									<span>Carrito</span>
+									{cartState.totalItems > 0 && (
+										<div className="ml-auto w-6 h-6 bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night text-xs font-bold rounded-full flex items-center justify-center">
+											{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
+										</div>
+									)}
+								</button>
+							)}
 							
 							<div className="h-px bg-soft-gray/10 my-3" />
 							

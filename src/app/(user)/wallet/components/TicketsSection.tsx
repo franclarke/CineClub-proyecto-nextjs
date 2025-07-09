@@ -55,41 +55,72 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 	}, [ticketData, filter, searchQuery])
 
 	// Improved QR generation with proper timestamp and error handling
-	const generateTicketQR = useCallback((reservationId: string, eventTitle: string) => {
+	const generateTicketQR = useCallback((reservationId: string, eventTitle: string, seatNumbers: number[]) => {
 		try {
-			const currentTimestamp = new Date().toISOString()
-			const ticketData = {
-				id: reservationId,
-				event: eventTitle,
-				timestamp: currentTimestamp,
-				version: '1.0'
+			const qrData = {
+				type: 'event_ticket',
+				reservationId,
+				eventTitle,
+				seats: seatNumbers,
+				timestamp: new Date().toISOString(),
+				venue: 'CineClub Puff & Chill',
+				validUntil: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48 hours
 			}
 			
-			const qrData = encodeURIComponent(JSON.stringify(ticketData))
-			return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrData}&bgcolor=FFFFFF&color=000000&margin=10&ecc=M`
+			const encodedData = encodeURIComponent(JSON.stringify(qrData))
+			return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedData}&bgcolor=1a1a1a&color=f5f5dc&margin=20&ecc=M&format=png`
 		} catch (error) {
 			console.error('Error generating QR code:', error)
-			return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRkZGRkZGIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwIj5FcnJvcjwvdGV4dD4KPC9zdmc+'
+			return null
 		}
 	}, [])
 
 	// Optimized download handler
 	const handleDownloadTicket = useCallback(async (eventTitle: string, reservations: ReservationWithDetails[]) => {
 		try {
-			// Here would be the actual download logic
-			// For now, we'll simulate the process
 			const ticketData = {
 				event: eventTitle,
-				seats: reservations.map(r => r.seat.seatNumber),
-				downloadDate: new Date().toISOString()
+				seats: reservations.map(r => ({
+					seatNumber: r.seat.seatNumber,
+					tier: r.seat.tier,
+					reservationId: r.id
+				})),
+				downloadDate: new Date().toISOString(),
+				totalSeats: reservations.length
 			}
 			
-			// Create a blob and download
-			const blob = new Blob([JSON.stringify(ticketData, null, 2)], { type: 'application/json' })
+			// Create a more detailed ticket file
+			const ticketContent = `
+CINECLUB PUFF & CHILL
+=====================
+
+EVENTO: ${eventTitle}
+FECHA DE DESCARGA: ${new Date().toLocaleDateString('es-ES', {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit'
+			})}
+
+ASIENTOS RESERVADOS:
+${reservations.map(r => `• Asiento #${r.seat.seatNumber} (${r.seat.tier}) - ID: ${r.id}`).join('\n')}
+
+TOTAL DE ASIENTOS: ${reservations.length}
+
+INSTRUCCIONES:
+• Presenta este ticket en la entrada del evento
+• Llega 30 minutos antes del inicio
+• Conserva este ticket durante todo el evento
+
+¡Disfruta tu experiencia cinematográfica!
+			`.trim()
+			
+			const blob = new Blob([ticketContent], { type: 'text/plain' })
 			const url = URL.createObjectURL(blob)
 			const a = document.createElement('a')
 			a.href = url
-			a.download = `ticket-${eventTitle.replace(/\s+/g, '-').toLowerCase()}.json`
+			a.download = `ticket-${eventTitle.replace(/\s+/g, '-').toLowerCase()}.txt`
 			document.body.appendChild(a)
 			a.click()
 			document.body.removeChild(a)
@@ -279,18 +310,38 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 							{selectedTicket === eventId && isUpcoming && (
 								<div className="lg:w-64 flex flex-col items-center animate-scale-in">
 									<div className="bg-white p-6 rounded-2xl mb-6 shadow-lg">
-										<Image
-											src={generateTicketQR(reservations[0]?.id || '', event.title)}
-											alt={`Código QR del ticket para ${event.title}`}
-											width={300}
-											height={300}
-											className="rounded-xl"
-											loading="lazy"
-											onError={(e) => {
-												console.error('Error loading QR image')
-												e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNGRkZGRkYiLz48dGV4dCB4PSIxNTAiIHk9IjE1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCI+RXJyb3I8L3RleHQ+PC9zdmc+'
-											}}
-										/>
+										{(() => {
+											const qrUrl = generateTicketQR(
+												reservations[0]?.id || '', 
+												event.title,
+												reservations.map(r => r.seat.seatNumber)
+											)
+											return qrUrl ? (
+												<img
+													src={qrUrl}
+													alt={`Código QR del ticket para ${event.title}`}
+													className="w-full h-auto rounded-xl"
+													onError={(e) => {
+														console.error('Error loading QR image')
+														e.currentTarget.style.display = 'none'
+														e.currentTarget.nextElementSibling?.classList.remove('hidden')
+													}}
+												/>
+											) : (
+												<div className="w-64 h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+													<div className="text-center">
+														<QrCodeIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+														<p className="text-gray-600 text-sm">Error al generar QR</p>
+													</div>
+												</div>
+											)
+										})()}
+										<div className="hidden w-64 h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+											<div className="text-center">
+												<QrCodeIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+												<p className="text-gray-600 text-sm">Error al cargar QR</p>
+											</div>
+										</div>
 									</div>
 									<div className="text-center">
 										<div className="flex items-center gap-2 mb-3">
@@ -299,9 +350,14 @@ export function TicketsSection({ reservationsByEvent, searchQuery = '' }: Ticket
 												Código de Entrada
 											</p>
 										</div>
-										<p className="text-soft-beige/60 text-sm leading-relaxed">
+										<p className="text-soft-beige/60 text-sm leading-relaxed mb-4">
 											Presenta este código en la entrada del evento
 										</p>
+										<div className="bg-gradient-to-r from-soft-gold/10 to-sunset-orange/10 border border-soft-gold/20 rounded-xl p-3">
+											<p className="text-soft-beige/70 text-xs">
+												Válido por 48 horas • {reservations.length} asiento{reservations.length > 1 ? 's' : ''}
+											</p>
+										</div>
 									</div>
 								</div>
 							)}

@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { EventsSkeletonComponent } from './components/EventsSkeletonComponent'
 import { EventsDataAccess } from './components/EventsDataAccess'
+import { BackButton } from '@/app/components/ui/back-button'
 
 export const metadata: Metadata = {
 	title: 'Eventos | Puff & Chill',
@@ -18,12 +19,17 @@ interface EventsPageProps {
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
 	const resolvedSearchParams = await searchParams
-	
+
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-deep-night via-deep-night/95 to-deep-night/90">
 			{/* Compact Header */}
 			<section className="pt-28 pb-8 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-7xl mx-auto">
+					{/* Back Button */}
+					<div className="mb-6">
+						<BackButton href="/" />
+					</div>
+					
 					<div className="flex items-center justify-between">
 						{/* Title Section */}
 						<div className="space-y-2">
@@ -33,7 +39,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 									Próximos Eventos
 								</h1>
 							</div>
-							<p className="text-soft-beige/70 text-lg font-light ml-7">
+							<p className="text-soft-beige/70 justify-center text-lg font-light ml-7 sm:ml-0">
 								Cine bajo las estrellas • Experiencias únicas
 							</p>
 						</div>
@@ -51,7 +57,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 			<section className="px-4 sm:px-6 lg:px-8 pb-16">
 				<div className="max-w-7xl mx-auto">
 					<Suspense fallback={<EventsSkeletonComponent />}>
-						<EventsDataAccess 
+						<EventsDataAccess
 							searchParams={resolvedSearchParams}
 						/>
 					</Suspense>

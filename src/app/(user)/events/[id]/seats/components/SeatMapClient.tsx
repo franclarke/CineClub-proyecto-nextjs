@@ -7,6 +7,7 @@ import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle } from 'lucide-react'
 import { formatFullDate, formatTime } from '@/lib/utils/date'
+import { BackButton } from '@/app/components/ui/back-button'
 
 type SeatWithReservation = Seat & {
 	reservation: (Reservation & {
@@ -30,12 +31,12 @@ interface SeatMapClientProps {
 }
 
 // Amphitheater Seat Map Component
-const AmphitheaterSeatMap = ({ 
-	seatsByTier, 
-	selectedSeats, 
-	currentUserMembership, 
-	onSeatSelect 
-}: { 
+const AmphitheaterSeatMap = ({
+	seatsByTier,
+	selectedSeats,
+	currentUserMembership,
+	onSeatSelect
+}: {
 	seatsByTier: [string, SeatWithReservation[]][];
 	selectedSeats: string[];
 	currentUserMembership: MembershipTier;
@@ -57,7 +58,7 @@ const AmphitheaterSeatMap = ({
 			for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
 				const startIndex = rowIndex * seatsPerRow;
 				const rowSeats = seats.slice(startIndex, startIndex + seatsPerRow);
-				
+
 				if (rowSeats.length > 0) {
 					rows.push({
 						tier,
@@ -77,30 +78,30 @@ const AmphitheaterSeatMap = ({
 		const isSelected = selectedSeats.includes(seat.id);
 		const isReserved = !!seat.reservation;
 		const canSelect = canUserSelectSeat(seat, currentUserMembership).allowed;
-					const isPremiumTier = tier === 'Puff XXL Estelar';
-			const isVipTier = tier === 'Reposera Deluxe';
+		const isPremiumTier = tier === 'Puff XXL Estelar';
+		const isVipTier = tier === 'Reposera Deluxe';
 
 		const baseClasses = "transition-all duration-200 flex items-center justify-center text-xs font-semibold rounded-lg relative border";
-		
+
 		if (isReserved) {
 			return `${baseClasses} bg-neutral-600 text-neutral-400 cursor-not-allowed opacity-50 border-neutral-500`;
 		} else if (!canSelect) {
 			return `${baseClasses} bg-neutral-700 text-neutral-500 cursor-not-allowed border-dashed border-neutral-600`;
 		} else if (isSelected) {
 			if (isPremiumTier) {
-				return `${baseClasses} bg-soft-gold text-deep-night shadow-lg shadow-soft-gold/50 scale-105 border-soft-gold`;
+				return `${baseClasses} bg-soft-gold text-deep-night shadow-lg shadow-soft-gold/50 border-soft-gold`;
 			} else if (isVipTier) {
-				return `${baseClasses} bg-gray-300 text-deep-night shadow-lg shadow-gray-300/50 scale-105 border-gray-300`;
+				return `${baseClasses} bg-gray-300 text-deep-night shadow-lg shadow-gray-300/50 border-gray-300`;
 			} else {
-				return `${baseClasses} bg-orange-400 text-deep-night shadow-lg shadow-orange-400/50 scale-105 border-orange-400`;
+				return `${baseClasses} bg-orange-400 text-deep-night shadow-lg shadow-orange-400/50 border-orange-400`;
 			}
 		} else {
 			if (isPremiumTier) {
-				return `${baseClasses} bg-soft-gold/20 text-soft-gold hover:bg-soft-gold hover:text-deep-night hover:shadow-lg hover:shadow-soft-gold/30 hover:scale-105 cursor-pointer border-soft-gold/30 hover:border-soft-gold`;
+				return `${baseClasses} bg-soft-gold/20 text-soft-gold hover:bg-soft-gold hover:text-deep-night hover:shadow-lg hover:shadow-soft-gold/30  cursor-pointer border-soft-gold/30 hover:border-soft-gold`;
 			} else if (isVipTier) {
-				return `${baseClasses} bg-gray-300/20 text-gray-300 hover:bg-gray-300 hover:text-deep-night hover:shadow-lg hover:shadow-gray-300/30 hover:scale-105 cursor-pointer border-gray-300/30 hover:border-gray-300`;
+				return `${baseClasses} bg-gray-300/20 text-gray-300 hover:bg-gray-300 hover:text-deep-night hover:shadow-lg hover:shadow-gray-300/30  cursor-pointer border-gray-300/30 hover:border-gray-300`;
 			} else {
-				return `${baseClasses} bg-orange-400/20 text-orange-300 hover:bg-orange-400 hover:text-deep-night hover:shadow-lg hover:shadow-orange-400/30 hover:scale-105 cursor-pointer border-orange-400/30 hover:border-orange-400`;
+				return `${baseClasses} bg-orange-400/20 text-orange-300 hover:bg-orange-400 hover:text-deep-night hover:shadow-lg hover:shadow-orange-400/30  cursor-pointer border-orange-400/30 hover:border-orange-400`;
 			}
 		}
 	};
@@ -118,28 +119,27 @@ const AmphitheaterSeatMap = ({
 			{/* Amphitheater rows */}
 			<div className="space-y-4">
 				{amphitheaterRows.map((row, rowIndex) => {
-									const isPremiumTier = row.tier === 'Puff XXL Estelar';
-				const isVipTier = row.tier === 'Reposera Deluxe';
-					
+					const isPremiumTier = row.tier === 'Puff XXL Estelar';
+					const isVipTier = row.tier === 'Reposera Deluxe';
+
 					// Calculate curve for amphitheater effect
 					const totalRows = amphitheaterRows.length;
 					const curveIntensity = (rowIndex / totalRows) * 20; // More curve towards the back
-					
+
 					return (
 						<div key={`${row.tier}-${row.rowNumber}`} className="relative">
 							{/* Row label */}
 							<div className="absolute -left-20 top-1/2 transform -translate-y-1/2">
-								<div className={`text-xs font-medium px-2 py-1 rounded-md ${
-									isPremiumTier ? 'bg-soft-gold/20 text-soft-gold border border-soft-gold/30' : 
-									isVipTier ? 'bg-gray-400/20 text-gray-400 border border-gray-400/30' : 
-									'bg-orange-400/20 text-orange-400 border border-orange-400/30'
-								}`}>
+								<div className={`text-xs font-medium px-2 py-1 rounded-md ${isPremiumTier ? 'bg-soft-gold/20 text-soft-gold border border-soft-gold/30' :
+									isVipTier ? 'bg-gray-400/20 text-gray-400 border border-gray-400/30' :
+										'bg-orange-400/20 text-orange-400 border border-orange-400/30'
+									}`}>
 									{row.tier} {row.rowNumber}
 								</div>
 							</div>
-							
+
 							{/* Seats in row */}
-							<div 
+							<div
 								className="flex justify-center items-center gap-2"
 								style={{
 									transform: `perspective(1000px) rotateX(${curveIntensity / 4}deg)`,
@@ -150,7 +150,7 @@ const AmphitheaterSeatMap = ({
 								{row.seats.map((seat) => {
 									const isReserved = !!seat.reservation;
 									const canSelect = canUserSelectSeat(seat, currentUserMembership).allowed;
-									
+
 									return (
 										<div
 											key={seat.id}
@@ -162,7 +162,7 @@ const AmphitheaterSeatMap = ({
 											onClick={() => !isReserved && canSelect && onSeatSelect(seat.id)}
 										>
 											{seat.seatNumber}
-											
+
 											{/* Premium seat indicator */}
 											{isPremiumTier && !isReserved && (
 												<div className="absolute -top-1 -right-1 text-soft-gold animate-pulse">
@@ -208,19 +208,19 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 			state.map(seat =>
 				seat.id === seatId
 					? {
-							...seat,
-							reservation: {
-								id: 'temp',
-								userId: currentUser.id,
-								eventId: event.id,
-								seatId: seat.id,
-								status: 'pending',
-								orderId: null,
-								createdAt: new Date(),
-								updatedAt: new Date(),
-								user: currentUser
-							}
+						...seat,
+						reservation: {
+							id: 'temp',
+							userId: currentUser.id,
+							eventId: event.id,
+							seatId: seat.id,
+							status: 'pending',
+							orderId: null,
+							createdAt: new Date(),
+							updatedAt: new Date(),
+							user: currentUser
 						}
+					}
 					: seat
 			)
 	)
@@ -237,24 +237,24 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 
 		// Sort tiers by priority (Puff XXL Estelar: 1, Reposera Deluxe: 2, Banquito: 3)
 		const tierOrder = { 'Puff XXL Estelar': 1, 'Reposera Deluxe': 2, 'Banquito': 3 }
-		return Object.entries(grouped).sort(([a], [b]) => 
-			(tierOrder[a as keyof typeof tierOrder] || 999) - 
+		return Object.entries(grouped).sort(([a], [b]) =>
+			(tierOrder[a as keyof typeof tierOrder] || 999) -
 			(tierOrder[b as keyof typeof tierOrder] || 999)
 		)
 	}, [optimisticSeats])
 
 	// Calculate selection info
 	const selectionInfo = useMemo(() => {
-		const selectedSeatData = optimisticSeats.filter(seat => 
+		const selectedSeatData = optimisticSeats.filter(seat =>
 			selectedSeats.includes(seat.id)
 		)
-		
+
 		const totalPrice = selectedSeatData.reduce((total, seat) => {
 			// Price based on tier - Premium tiers cost more
 			const tierPrices = { 'Puff XXL Estelar': 50, 'Reposera Deluxe': 35, 'Banquito': 25 };
 			return total + (tierPrices[seat.tier as keyof typeof tierPrices] || 25);
 		}, 0);
-		
+
 		const tierBreakdown = selectedSeatData.reduce((acc, seat) => {
 			acc[seat.tier] = (acc[seat.tier] || 0) + 1
 			return acc
@@ -279,7 +279,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 			return
 		}
 
-		setSelectedSeats(prev => 
+		setSelectedSeats(prev =>
 			prev.includes(seatId)
 				? prev.filter(id => id !== seatId)
 				: [...prev, seatId]
@@ -290,7 +290,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 		if (selectedSeats.length === 0) return
 
 		setIsProcessing(true)
-		
+
 		try {
 			// Agregar asientos al carrito global
 			selectedSeats.forEach(seatId => {
@@ -306,7 +306,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 
 			// Abrir carrito para checkout
 			toggleCart()
-			
+
 			setIsProcessing(false)
 		} catch (error) {
 			console.error('Error:', error)
@@ -318,6 +318,11 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-deep-night to-deep-night/90 animate-fade-in">
 			<div className="container mx-auto px-4 py-8">
+				{/* Back Button */}
+				<div className="mb-6">
+					<BackButton href={`/events/${event.id}`} label="Volver al evento" />
+				</div>
+				
 				{/* Header */}
 				<div className="text-center mb-12">
 					<h1 className="text-display text-5xl md:text-6xl font-bold text-soft-beige mb-4 tracking-tight">
@@ -336,7 +341,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 							<h2 className="text-2xl font-semibold text-soft-beige text-center mb-8">
 								Mapa de Asientos - Vista Anfiteatro
 							</h2>
-							
+
 							{/* Amphitheater Seat Map */}
 							<AmphitheaterSeatMap
 								seatsByTier={seatsByTier}
@@ -350,7 +355,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 								<h4 className="text-soft-beige font-medium mb-6 text-center text-lg">
 									Información de Asientos
 								</h4>
-								
+
 								{/* Tier Legend */}
 								<div className="grid grid-cols-3 gap-6 mb-8">
 									<div className="text-center">
@@ -392,7 +397,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 										</div>
 									))}
 								</div>
-								
+
 								{/* Membership Access Info */}
 								<div className="bg-gradient-to-r from-sunset-orange/10 to-transparent p-4 rounded-lg border-l-2 border-sunset-orange">
 									<div className="flex items-start gap-3">
@@ -416,7 +421,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 						</GlassCard>
 					</div>
 
-										{/* Sidebar */}
+					{/* Sidebar */}
 					<div className="space-y-6">
 						{/* Event Info */}
 						<GlassCard variant="subtle" className="overflow-hidden">
@@ -428,7 +433,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 								</div>
 								<div className="absolute top-4 right-4 text-4xl opacity-60">🎬</div>
 							</div>
-							
+
 							<div className="p-6 space-y-4">
 								<div className="flex items-center gap-3">
 									<Calendar size={18} className="text-sunset-orange" />
@@ -437,7 +442,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 										<p className="text-xs text-soft-gray">{formatTime(event.dateTime)}</p>
 									</div>
 								</div>
-								
+
 								{event.location && (
 									<div className="flex items-center gap-3">
 										<MapPin size={18} className="text-sunset-orange" />
@@ -446,7 +451,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 										</div>
 									</div>
 								)}
-								
+
 								<div className="flex items-center gap-3">
 									<Users size={18} className="text-sunset-orange" />
 									<div>
@@ -466,7 +471,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 									<h3 className="text-xl font-semibold text-soft-beige">Resumen de Selección</h3>
 								</div>
 							</div>
-							
+
 							<div className="p-6">
 								{selectionInfo.count > 0 ? (
 									<div className="space-y-4">
@@ -475,17 +480,16 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 											<span className="text-soft-gray text-sm">Asientos seleccionados</span>
 											<span className="text-soft-beige font-semibold text-lg">{selectionInfo.count}</span>
 										</div>
-										
+
 										{/* Tier breakdown */}
 										<div className="space-y-2">
 											{Object.entries(selectionInfo.tierBreakdown).map(([tier, count]) => (
 												<div key={tier} className="flex justify-between items-center px-3 py-2">
 													<div className="flex items-center gap-3">
-														<div className={`w-2.5 h-2.5 rounded-full ${
-															tier === 'Puff XXL Estelar' ? 'bg-soft-gold' : 
-															tier === 'Reposera Deluxe' ? 'bg-gray-400' : 
-															'bg-orange-400'
-														}`}></div>
+														<div className={`w-2.5 h-2.5 rounded-full ${tier === 'Puff XXL Estelar' ? 'bg-soft-gold' :
+															tier === 'Reposera Deluxe' ? 'bg-gray-400' :
+																'bg-orange-400'
+															}`}></div>
 														<span className="text-soft-gray text-sm">{tier}</span>
 													</div>
 													<div className="flex items-center gap-2">
@@ -496,17 +500,17 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 												</div>
 											))}
 										</div>
-										
+
 										<div className="h-px bg-white/10" />
-										
+
 										{/* Total */}
 										<div className="flex justify-between items-center p-3 bg-gradient-to-r from-soft-gold/10 to-transparent rounded-lg">
 											<span className="text-soft-beige font-semibold">Total</span>
 											<span className="text-soft-gold font-bold text-xl">${selectionInfo.totalPrice.toFixed(2)}</span>
 										</div>
-										
+
 										{/* Action button */}
-										<Button 
+										<Button
 											onClick={handleProceedToCheckout}
 											disabled={isProcessing}
 											className="w-full bg-gradient-to-r from-sunset-orange to-warm-red hover:from-sunset-orange/90 hover:to-warm-red/90 text-white font-semibold py-3 rounded-xl transition-all transform hover:scale-[1.02]"
@@ -531,27 +535,24 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 						{/* Membership Info */}
 						<GlassCard variant="subtle" className="p-6">
 							<div className="flex items-center gap-4">
-								<div className={`flex items-center justify-center w-12 h-12 rounded-xl ${
-									currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20' :
+								<div className={`flex items-center justify-center w-12 h-12 rounded-xl ${currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20' :
 									currentUser.membership.name === 'Reposera Deluxe' ? 'bg-gray-400/20' :
-									'bg-orange-400/20'
-								}`}>
-									<Crown className={`h-6 w-6 ${
-										currentUser.membership.name === 'Puff XXL Estelar' ? 'text-soft-gold' :
+										'bg-orange-400/20'
+									}`}>
+									<Crown className={`h-6 w-6 ${currentUser.membership.name === 'Puff XXL Estelar' ? 'text-soft-gold' :
 										currentUser.membership.name === 'Reposera Deluxe' ? 'text-gray-400' :
-										'text-orange-400'
-									}`} />
+											'text-orange-400'
+										}`} />
 								</div>
 								<div className="flex-1">
 									<div className="flex items-center gap-3 mb-1">
 										<p className="font-semibold text-soft-beige">
 											Membresía {currentUser.membership.name}
 										</p>
-										<div className={`px-2 py-1 rounded-full text-xs font-medium ${
-											currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20 text-soft-gold' :
+										<div className={`px-2 py-1 rounded-full text-xs font-medium ${currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20 text-soft-gold' :
 											currentUser.membership.name === 'Reposera Deluxe' ? 'bg-gray-400/20 text-gray-400' :
-											'bg-orange-400/20 text-orange-400'
-										}`}>
+												'bg-orange-400/20 text-orange-400'
+											}`}>
 											Activa
 										</div>
 									</div>
@@ -580,14 +581,14 @@ function canUserSelectSeat(seat: SeatWithReservation, userMembership: Membership
 	// User can only select seats of their tier or lower priority tiers
 	// Lower priority number = higher tier (Gold=1, Silver=2, Bronze=3)
 	if (userTierPriority > seatTierPriority) {
-		const upgradeMessage = userMembership.name === 'Banquito' && seat.tier === 'Reposera Deluxe' 
+		const upgradeMessage = userMembership.name === 'Banquito' && seat.tier === 'Reposera Deluxe'
 			? 'Actualiza a membresía Reposera Deluxe o Puff XXL Estelar para acceder a estos asientos premium.'
 			: userMembership.name === 'Banquito' && seat.tier === 'Puff XXL Estelar'
-			? 'Los asientos Puff XXL Estelar son exclusivos para miembros Puff XXL Estelar. Actualiza tu membresía para acceder.'
-			: userMembership.name === 'Reposera Deluxe' && seat.tier === 'Puff XXL Estelar'
-			? 'Los asientos Puff XXL Estelar son exclusivos para miembros Puff XXL Estelar. Actualiza tu membresía para acceder.'
-			: `Este asiento está reservado para miembros ${seat.tier}. Actualiza tu membresía para acceder.`
-			
+				? 'Los asientos Puff XXL Estelar son exclusivos para miembros Puff XXL Estelar. Actualiza tu membresía para acceder.'
+				: userMembership.name === 'Reposera Deluxe' && seat.tier === 'Puff XXL Estelar'
+					? 'Los asientos Puff XXL Estelar son exclusivos para miembros Puff XXL Estelar. Actualiza tu membresía para acceder.'
+					: `Este asiento está reservado para miembros ${seat.tier}. Actualiza tu membresía para acceder.`
+
 		return {
 			allowed: false,
 			reason: upgradeMessage

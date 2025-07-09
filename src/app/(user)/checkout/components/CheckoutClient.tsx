@@ -160,23 +160,43 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 				})
 			})
 
+			// Primero verificar el tipo de contenido
+			const contentType = response.headers.get('content-type')
+			if (!contentType || !contentType.includes('application/json')) {
+				console.error('Respuesta no es JSON. Content-Type:', contentType)
+				console.error('Status:', response.status)
+				throw new Error('Error del servidor: respuesta inválida. Por favor, intenta nuevamente.')
+			}
+
 			if (!response.ok) {
 				const error = await response.json()
 				throw new Error(error.error || 'Error al crear la preferencia de pago')
 			}
 
-			const { initPoint } = await response.json()
+			const data = await response.json()
+			console.log('Respuesta de create-preference:', data)
 
-			if (initPoint) {
+			const { initPoint, sandboxInitPoint } = data
+
+			// Usar sandbox en desarrollo, initPoint en producción
+			const checkoutUrl = process.env.NODE_ENV === 'development' 
+				? (sandboxInitPoint || initPoint)
+				: initPoint
+
+			if (checkoutUrl) {
 				clearCart()
-				window.location.href = initPoint
+				window.location.href = checkoutUrl
 			} else {
 				throw new Error('URL de checkout no disponible')
 			}
 
 		} catch (error) {
 			console.error('Error en checkout:', error)
-			setError(error instanceof Error ? error.message : 'Error al procesar el checkout. Por favor, intenta nuevamente.')
+			if (error instanceof TypeError && error.message.includes('fetch')) {
+				setError('Error de conexión. Por favor, verifica tu conexión a internet.')
+			} else {
+				setError(error instanceof Error ? error.message : 'Error al procesar el checkout. Por favor, intenta nuevamente.')
+			}
 		} finally {
 			setIsLoading(false)
 		}

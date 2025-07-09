@@ -2,11 +2,15 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { DataAccess } from './components/DataAccess'
 import { WalletSkeletonComponent } from './components/WalletSkeletonComponent'
+import { BackButton } from '@/app/components/ui/back-button'
 
 export const metadata: Metadata = {
 	title: 'Mi Wallet | Puff & Chill',
 	description: 'Gestiona tus tickets, productos y historial de compras'
 }
+
+// Force dynamic rendering since we use session data
+export const dynamic = 'force-dynamic'
 
 export default async function WalletPage() {
 	return (
@@ -14,6 +18,11 @@ export default async function WalletPage() {
 			{/* Compact Header */}
 			<section className="pt-28 pb-8 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-7xl mx-auto">
+					{/* Back Button */}
+					<div className="mb-6">
+						<BackButton href="/" />
+					</div>
+					
 					<div className="flex items-center justify-between">
 						{/* Title Section */}
 						<div className="space-y-2">

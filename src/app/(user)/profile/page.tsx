@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { ProfileSkeletonComponent } from './components/ProfileSkeletonComponent'
 import { ProfileDataAccess } from './components/ProfileDataAccess'
+import { BackButton } from '@/app/components/ui/back-button'
 
 export const metadata: Metadata = {
 	title: 'Mi Perfil | Puff & Chill',
@@ -14,6 +15,11 @@ export default async function ProfilePage() {
 			{/* Header Section - Compact like /events */}
 			<section className="pt-28 pb-8 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-4xl mx-auto">
+					{/* Back Button */}
+					<div className="mb-6">
+						<BackButton href="/" />
+					</div>
+					
 					<div className="flex items-center justify-between">
 						{/* Left side - Title */}
 						<div className="space-y-2">

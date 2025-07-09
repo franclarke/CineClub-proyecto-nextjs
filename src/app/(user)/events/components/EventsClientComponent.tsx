@@ -4,36 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { EventCard } from './EventCard'
 import { SearchIcon, CalendarIcon, TrendingUpIcon, ArrowUpAZ, SlidersHorizontalIcon, XIcon } from 'lucide-react'
-
-interface Event {
-	id: string
-	title: string
-	description: string | null
-	dateTime: string
-	location: string | null
-	category: string | null
-	imdbId: string | null
-	tmdbId: string | null
-	imageUrl: string | null
-	reservationCount: number
-	totalSeats: number
-	availableSeats: number
-	seatsByTier: {
-		gold: number
-		silver: number
-		bronze: number
-	}
-}
-
-interface EventsClientComponentProps {
-	events: Event[]
-	categories: string[]
-	currentFilters: {
-		category: string
-		sort: string
-		search: string
-	}
-}
+import { Event, EventsClientComponentProps } from '@/types/events'
 
 export function EventsClientComponent({ events, categories, currentFilters }: EventsClientComponentProps) {
 	const router = useRouter()
@@ -44,12 +15,54 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 
 	const handleFilterChange = () => {
 		const params = new URLSearchParams()
-		
+
 		if (selectedCategory && selectedCategory !== 'all') {
 			params.set('category', selectedCategory)
 		}
 		if (sortBy && sortBy !== 'date') {
 			params.set('sort', sortBy)
+		}
+		if (searchTerm) {
+			params.set('search', searchTerm)
+		}
+
+		const queryString = params.toString()
+		router.push(`/events${queryString ? `?${queryString}` : ''}`)
+	}
+
+	// Auto-apply filter when category changes
+	const handleCategoryChange = (category: string) => {
+		setSelectedCategory(category)
+		
+		// Immediately apply the filter
+		const params = new URLSearchParams()
+		
+		if (category && category !== 'all') {
+			params.set('category', category)
+		}
+		if (sortBy && sortBy !== 'date') {
+			params.set('sort', sortBy)
+		}
+		if (searchTerm) {
+			params.set('search', searchTerm)
+		}
+
+		const queryString = params.toString()
+		router.push(`/events${queryString ? `?${queryString}` : ''}`)
+	}
+
+	// Auto-apply filter when sort changes
+	const handleSortChange = (sort: string) => {
+		setSortBy(sort)
+		
+		// Immediately apply the filter
+		const params = new URLSearchParams()
+		
+		if (selectedCategory && selectedCategory !== 'all') {
+			params.set('category', selectedCategory)
+		}
+		if (sort && sort !== 'date') {
+			params.set('sort', sort)
 		}
 		if (searchTerm) {
 			params.set('search', searchTerm)
@@ -75,7 +88,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 	const hasActiveFilters = selectedCategory !== 'all' || searchTerm || sortBy !== 'date'
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 items-center">
 			{/* Compact Filter Bar */}
 			<div className="bg-deep-night/40 backdrop-blur-xl border border-soft-gray/20 rounded-2xl p-4">
 				<div className="flex items-center justify-between">
@@ -85,24 +98,21 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-soft-beige/40" />
 							<input
 								type="text"
-								placeholder="Buscar eventos..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
 								onKeyPress={(e) => e.key === 'Enter' && handleFilterChange()}
 								className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige placeholder-soft-beige/50 focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 text-sm"
+								placeholder="Buscar eventos..."
 							/>
 						</div>
 					</div>
 
 					{/* Filter Controls */}
-					<div className="flex items-center space-x-3 ml-4">
+					<div className="flex items-center space-x-3 ml- mr-0">
 						{/* Quick Sort */}
 						<select
 							value={sortBy}
-							onChange={(e) => {
-								setSortBy(e.target.value)
-								handleFilterChange()
-							}}
+							onChange={(e) => handleSortChange(e.target.value)}
 							className="px-3 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 hover:bg-soft-gray/20"
 						>
 							{sortOptions.map((option) => (
@@ -112,14 +122,13 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							))}
 						</select>
 
-						{/* Filter Toggle */}
+						{/* Filter Toggle - Improved Design */}
 						<button
 							onClick={() => setShowFilters(!showFilters)}
-							className={`flex items-center space-x-2 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
-								showFilters || hasActiveFilters
-									? 'bg-sunset-orange text-deep-night'
-									: 'bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20'
-							}`}
+							className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium border ${showFilters || hasActiveFilters
+								? 'bg-sunset-orange text-deep-night border-sunset-orange shadow-lg'
+								: 'bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20 border-soft-gray/20 hover:border-soft-gray/30'
+								}`}
 						>
 							<SlidersHorizontalIcon className="w-4 h-4" />
 							<span className="hidden sm:inline">Filtros</span>
@@ -127,6 +136,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 								<div className="w-2 h-2 bg-soft-gold rounded-full animate-pulse"></div>
 							)}
 						</button>
+
 
 						{/* Apply Search */}
 						<button
@@ -142,17 +152,17 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 				{showFilters && (
 					<div className="mt-4 pt-4 border-t border-soft-gray/20">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							{/* Category Filter */}
+							{/* Category Filter - Improved Readability */}
 							<div>
 								<label className="block text-soft-beige/80 text-sm font-medium mb-2">Categoría</label>
 								<select
 									value={selectedCategory}
-									onChange={(e) => setSelectedCategory(e.target.value)}
-									className="w-full px-3 py-2.5 rounded-xl bg-soft-gray/10 border border-soft-gray/20 text-soft-beige text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200"
+									onChange={(e) => handleCategoryChange(e.target.value)}
+									className="w-full px-3 py-2.5 rounded-xl bg-deep-night/70 border border-soft-gray/30 text-soft-beige text-sm focus:border-sunset-orange focus:outline-none focus:ring-1 focus:ring-sunset-orange/20 transition-all duration-200 hover:bg-deep-night/80"
 								>
-									<option value="all">Todas las categorías</option>
+									<option value="all" className="bg-deep-night text-soft-beige py-2">Todas las categorías</option>
 									{categories.map((category) => (
-										<option key={category} value={category}>
+										<option key={category} value={category} className="bg-deep-night text-soft-beige py-2">
 											{category}
 										</option>
 									))}
@@ -163,14 +173,14 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							<div className="flex items-end space-x-3">
 								<button
 									onClick={clearFilters}
-									className="flex items-center space-x-2 px-4 py-2.5 bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20 rounded-xl transition-all duration-200 text-sm"
+									className="flex items-center space-x-2 px-4 py-2.5 bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20 rounded-xl transition-all duration-200 text-sm border border-soft-gray/20"
 								>
 									<XIcon className="w-4 h-4" />
 									<span>Limpiar</span>
 								</button>
 								<button
 									onClick={() => setShowFilters(false)}
-									className="px-4 py-2.5 bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20 rounded-xl transition-all duration-200 text-sm"
+									className="px-4 py-2.5 bg-soft-gray/10 text-soft-beige hover:bg-soft-gray/20 rounded-xl transition-all duration-200 text-sm border border-soft-gray/20"
 								>
 									Cerrar
 								</button>
@@ -187,10 +197,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 						<span className="inline-flex items-center space-x-1 bg-sunset-orange/20 text-sunset-orange border border-sunset-orange/30 px-3 py-1.5 rounded-full text-sm font-medium">
 							<span>{selectedCategory}</span>
 							<button
-								onClick={() => {
-									setSelectedCategory('all')
-									handleFilterChange()
-								}}
+								onClick={() => handleCategoryChange('all')}
 								className="hover:bg-sunset-orange/30 rounded-full p-0.5 transition-colors"
 							>
 								<XIcon className="w-3 h-3" />
@@ -203,7 +210,15 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							<button
 								onClick={() => {
 									setSearchTerm('')
-									handleFilterChange()
+									const params = new URLSearchParams()
+									if (selectedCategory && selectedCategory !== 'all') {
+										params.set('category', selectedCategory)
+									}
+									if (sortBy && sortBy !== 'date') {
+										params.set('sort', sortBy)
+									}
+									const queryString = params.toString()
+									router.push(`/events${queryString ? `?${queryString}` : ''}`)
 								}}
 								className="hover:bg-soft-gold/30 rounded-full p-0.5 transition-colors"
 							>
@@ -215,10 +230,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 						<span className="inline-flex items-center space-x-1 bg-soft-beige/20 text-soft-beige border border-soft-beige/30 px-3 py-1.5 rounded-full text-sm font-medium">
 							<span>{sortOptions.find(opt => opt.value === sortBy)?.label}</span>
 							<button
-								onClick={() => {
-									setSortBy('date')
-									handleFilterChange()
-								}}
+								onClick={() => handleSortChange('date')}
 								className="hover:bg-soft-beige/30 rounded-full p-0.5 transition-colors"
 							>
 								<XIcon className="w-3 h-3" />
@@ -245,7 +257,7 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 							No hay eventos disponibles
 						</h3>
 						<p className="text-soft-beige/60 mb-6 text-sm leading-relaxed">
-							{currentFilters.search 
+							{currentFilters.search
 								? `No encontramos eventos que coincidan con &quot;${currentFilters.search}&quot;`
 								: 'No hay eventos disponibles con los filtros seleccionados'
 							}
@@ -276,4 +288,4 @@ export function EventsClientComponent({ events, categories, currentFilters }: Ev
 			)}
 		</div>
 	)
-} 
+}

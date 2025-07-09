@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { CheckoutClient } from './components/CheckoutClient'
+import { BackButton } from '@/app/components/ui/back-button'
 
 export const metadata: Metadata = {
 	title: 'Checkout | Puff & Chill',
@@ -38,6 +39,11 @@ export default async function CheckoutPage() {
 			{/* Header */}
 			<section className="pt-28 pb-8 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-7xl mx-auto">
+					{/* Back Button */}
+					<div className="mb-6">
+						<BackButton href="/shop" label="Volver a la tienda" />
+					</div>
+					
 					<div className="flex items-center justify-between">
 						<div className="space-y-2">
 							<div className="flex items-center space-x-3">
