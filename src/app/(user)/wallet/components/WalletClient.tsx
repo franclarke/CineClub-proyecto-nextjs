@@ -27,7 +27,8 @@ interface Summary {
 
 interface WalletClientProps {
 	reservationsByEvent: ReservationsByEvent
-	orders: OrderWithExtras[]
+	paidOrders: OrderWithExtras[]
+	allOrders: OrderWithExtras[]
 	summary: Summary
 }
 
@@ -41,22 +42,21 @@ interface TabInfo {
 	description: string
 }
 
-export function WalletClient({ reservationsByEvent, orders, summary }: WalletClientProps) {
+export function WalletClient({ reservationsByEvent, paidOrders, allOrders, summary }: WalletClientProps) {
 	const [activeTab, setActiveTab] = useState<TabType>('tickets')
 	const [searchQuery, setSearchQuery] = useState('')
 
 	// Memoized counts calculation for performance
 	const counts = useMemo(() => {
 		const ticketCount = Object.keys(reservationsByEvent).length
-		const productOrdersCount = orders.filter(order => order.items.length > 0).length
-		const totalTransactions = orders.length + ticketCount
+		const totalTransactions = allOrders.length + ticketCount
 
 		return {
 			tickets: ticketCount,
-			products: productOrdersCount,
+			products: summary.totalProducts, // Use the total products from summary
 			transactions: totalTransactions
 		}
-	}, [reservationsByEvent, orders])
+	}, [reservationsByEvent, allOrders, summary.totalProducts])
 
 	// Memoized tabs configuration
 	const tabs = useMemo<TabInfo[]>(() => [
@@ -85,8 +85,8 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 
 	// Memoized content availability check
 	const hasAnyContent = useMemo(() =>
-		counts.tickets > 0 || orders.length > 0,
-		[counts.tickets, orders.length]
+		counts.tickets > 0 || allOrders.length > 0,
+		[counts.tickets, allOrders.length]
 	)
 
 	// Optimized event handlers
@@ -104,11 +104,11 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 	const renderTabContent = useMemo(() => {
 		const contentMap = {
 			tickets: <TicketsSection reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />,
-			products: <ProductsSection orders={orders} searchQuery={searchQuery} />,
-			history: <HistorySection orders={orders} reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />
+			products: <ProductsSection orders={paidOrders} searchQuery={searchQuery} />,
+			history: <HistorySection orders={allOrders} reservationsByEvent={reservationsByEvent} searchQuery={searchQuery} />
 		}
 		return contentMap[activeTab] || null
-	}, [activeTab, reservationsByEvent, orders, searchQuery])
+	}, [activeTab, reservationsByEvent, paidOrders, allOrders, searchQuery])
 
 	// Memoized search placeholder
 	const searchPlaceholder = useMemo(() => {
@@ -156,7 +156,7 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 			{/* Controls Section */}
 			<div className="bg-soft-beige/5 backdrop-blur-xl border border-soft-beige/10 rounded-3xl p-8">
 				{/* Navigation Tabs */}
-				<div className="flex flex-wrap gap-4 mb-8">
+				<div className="flex flex-wrap gap-4 justify-center">
 					{tabs.map((tab, index) => {
 						const IconComponent = tab.icon
 						const isActive = activeTab === tab.id
@@ -213,19 +213,6 @@ export function WalletClient({ reservationsByEvent, orders, summary }: WalletCli
 							</button>
 						)
 					})}
-				</div>
-
-				{/* Search Bar */}
-				<div className="relative">
-					<SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/40" />
-					<input
-						type="text"
-						placeholder={searchPlaceholder}
-						value={searchQuery}
-						onChange={(e) => handleSearchChange(e.target.value)}
-						className="w-full bg-soft-gray/20 border border-soft-gray/30 rounded-2xl pl-12 pr-6 py-4 text-soft-beige placeholder-soft-beige/40 focus:outline-none focus:border-sunset-orange/50 focus:bg-soft-gray/30 transition-all duration-300"
-						aria-label={`Buscar en ${tabs.find(t => t.id === activeTab)?.label}`}
-					/>
 				</div>
 			</div>
 

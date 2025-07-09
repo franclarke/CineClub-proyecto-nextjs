@@ -18,11 +18,20 @@ export function EventCard({ event }: EventCardProps) {
 	const dayNumber = getDay(event.dateTime)
 	const monthShort = formatMonthShort(event.dateTime)
 
-	const occupancyRate = ((event.totalSeats - event.availableSeats) / event.totalSeats) * 100
-	const isAlmostFull = event.availableSeats < event.totalSeats * 0.2
+	// Defensive programming: provide defaults for calculated properties
+	const totalSeats = event.totalSeats || 0
+	const availableSeats = event.availableSeats || 0
+	const reservationCount = event.reservationCount || 0
+	
+	const occupancyRate = totalSeats > 0 ? ((totalSeats - availableSeats) / totalSeats) * 100 : 0
+	const isAlmostFull = totalSeats > 0 && availableSeats < totalSeats * 0.2
 
-	// Get available tiers using the new data structure
+	// Get available tiers using the new data structure with defensive programming
 	const getAvailableTiers = () => {
+		// If priceInfo is not available, return empty array as fallback
+		if (!event.priceInfo || !event.priceInfo.availableTiers) {
+			return []
+		}
 		return event.priceInfo.availableTiers
 	}
 
@@ -187,8 +196,8 @@ export function EventCard({ event }: EventCardProps) {
 								<UsersIcon className="w-3.5 h-3.5 text-sunset-orange" />
 							</div>
 							<div className="text-sm">
-								<span className="font-semibold text-soft-beige">{event.availableSeats}</span>
-								<span className="text-soft-beige/60">/{event.totalSeats}</span>
+								<span className="font-semibold text-soft-beige">{availableSeats}</span>
+								<span className="text-soft-beige/60">/{totalSeats}</span>
 							</div>
 						</div>
 						<div className="text-right">
@@ -224,11 +233,11 @@ export function EventCard({ event }: EventCardProps) {
 					
 					<div className="flex justify-between items-center text-xs">
 						<span className="text-soft-beige/60">{Math.round(occupancyRate)}% ocupado</span>
-						<span className="text-soft-beige/60">{event.reservationCount} reservas</span>
+						<span className="text-soft-beige/60">{reservationCount} reservas</span>
 					</div>
 
 					{/* Price Information */}
-					{hasAvailableSeats && event.priceInfo.lowestPrice > 0 && (
+					{hasAvailableSeats && event.priceInfo?.lowestPrice && event.priceInfo.lowestPrice > 0 && (
 						<div className="pt-2 border-t border-soft-gray/20">
 							<div className="flex items-center justify-end">
 								<div>

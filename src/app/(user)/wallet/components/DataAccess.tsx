@@ -41,13 +41,31 @@ export async function DataAccess() {
 			}
 		})
 
-		// Get user's paid orders (fixed: was 'completed', now 'paid' to match schema)
-		// Also include other valid statuses that should contribute to wallet data
-		const orders = await prisma.order.findMany({
+		// Get user's paid orders for products section (only paid orders)
+		const paidOrders = await prisma.order.findMany({
+			where: {
+				userId: session.user.id,
+				status: 'paid'
+			},
+			include: {
+				items: {
+					include: {
+						product: true
+					}
+				},
+				payment: true
+			},
+			orderBy: {
+				createdAt: 'desc'
+			}
+		})
+
+		// Get all orders (paid and pending) for history section
+		const allOrders = await prisma.order.findMany({
 			where: {
 				userId: session.user.id,
 				status: {
-					in: ['paid', 'pending'] // Include both paid and pending orders
+					in: ['paid', 'pending']
 				}
 			},
 			include: {
@@ -86,11 +104,10 @@ export async function DataAccess() {
 		)
 
 		// Calculate total spent - only from PAID orders
-		const paidOrders = orders.filter(order => order.status === 'paid')
 		const totalSpent = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0)
 		
-		// Calculate total products - from all orders (paid and pending)
-		const totalProducts = orders.reduce((sum, order) => 
+		// Calculate total products - only from PAID orders (available for redemption)
+		const totalProducts = paidOrders.reduce((sum, order) => 
 			sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
 		)
 
@@ -109,7 +126,8 @@ export async function DataAccess() {
 		return (
 			<WalletClient
 				reservationsByEvent={reservationsByEvent}
-				orders={orders}
+				paidOrders={paidOrders}
+				allOrders={allOrders}
 				summary={summary}
 			/>
 		)

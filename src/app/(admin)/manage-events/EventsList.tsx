@@ -1,31 +1,18 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { EventsClientComponent } from '@/app/(user)/events/components/EventsClientComponent'
 import { getAllEvents } from './data-access'
-import type { Seat } from '@prisma/client'
+import AdminEventsTable from './components/AdminEventsTable'
 
 export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
     const [events, setEvents] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [success, setSuccess] = useState(false)
-    const [categories, setCategories] = useState<string[]>([])
-    const [filters, setFilters] = useState({
-        category: 'all',
-        sort: 'date',
-        search: '',
-    })
 
-    // Cargar eventos y categorías
+    // Cargar eventos
     const fetchEvents = async () => {
         setLoading(true)
         const evts = await getAllEvents()
         setEvents(evts)
-
-        // Obtener categorías únicas
-        const uniqueCategories = Array.from(
-            new Set(evts.map(event => event.category).filter((c): c is string => !!c))
-        ).sort()
-        setCategories(uniqueCategories)
         setLoading(false)
     }
 
@@ -40,32 +27,31 @@ export default function EventsList({ deleteMode }: { deleteMode: boolean }) {
         setTimeout(() => setSuccess(false), 2000)
     }
 
-    if (loading) return <div className="text-white">Cargando eventos...</div>
-
-    // Formatear datos para el componente cliente
-    const formattedEvents = events.map(event => ({
-        ...event,
-        dateTime: typeof event.dateTime === 'string' ? event.dateTime : event.dateTime?.toISOString?.() ?? '',
-        deleteMode,
-        onDeleted: handleEventDeleted,
-        seatsByTier: {
-            gold: event.seats?.filter?.((seat: Seat) => seat.tier === 'Gold').length ?? 0,
-            silver: event.seats?.filter?.((seat: Seat) => seat.tier === 'Silver').length ?? 0,
-            bronze: event.seats?.filter?.((seat: Seat) => seat.tier === 'Bronze').length ?? 0,
-        },
-    }))
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <div className="w-6 h-6 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin mr-3" />
+                <span className="text-soft-beige">Cargando eventos...</span>
+            </div>
+        )
+    }
 
     return (
         <div className="relative">
             {success && (
-                <div className="fixed top-8 left-1/2 -translate-x-1/2 bg-green-500/80 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-all duration-500">
-                    Evento eliminado correctamente
+                <div className="fixed top-8 left-1/2 -translate-x-1/2 bg-dark-olive text-soft-beige px-6 py-3 rounded-xl shadow-soft z-50 transition-all duration-500 border border-dark-olive/30">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Evento eliminado correctamente
+                    </div>
                 </div>
             )}
-            <EventsClientComponent
-                events={formattedEvents}
-                categories={categories}
-                currentFilters={filters}
+            <AdminEventsTable
+                events={events}
+                deleteMode={deleteMode}
+                onEventDeleted={handleEventDeleted}
             />
         </div>
     )
