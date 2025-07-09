@@ -10,7 +10,7 @@ import { Event, EventCardProps } from '@/types/events'
 export function EventCard({ event }: EventCardProps) {
 	const [isFavorite, setIsFavorite] = useState(false)
 	const [isBookmarked, setIsBookmarked] = useState(false)
-	
+
 	// Format date for display using consistent formatting
 	const formattedDate = formatShortDate(event.dateTime)
 	const formattedTime = formatTime(event.dateTime)
@@ -18,20 +18,11 @@ export function EventCard({ event }: EventCardProps) {
 	const dayNumber = getDay(event.dateTime)
 	const monthShort = formatMonthShort(event.dateTime)
 
-	// Defensive programming: provide defaults for calculated properties
-	const totalSeats = event.totalSeats || 0
-	const availableSeats = event.availableSeats || 0
-	const reservationCount = event.reservationCount || 0
-	
-	const occupancyRate = totalSeats > 0 ? ((totalSeats - availableSeats) / totalSeats) * 100 : 0
-	const isAlmostFull = totalSeats > 0 && availableSeats < totalSeats * 0.2
+	const occupancyRate = ((event.totalSeats - event.availableSeats) / event.totalSeats) * 100
+	const isAlmostFull = event.availableSeats < event.totalSeats * 0.2
 
-	// Get available tiers using the new data structure with defensive programming
+	// Get available tiers using the new data structure
 	const getAvailableTiers = () => {
-		// If priceInfo is not available, return empty array as fallback
-		if (!event.priceInfo || !event.priceInfo.availableTiers) {
-			return []
-		}
 		return event.priceInfo.availableTiers
 	}
 
@@ -54,7 +45,7 @@ export function EventCard({ event }: EventCardProps) {
 			<div className="relative h-40 bg-gradient-to-br from-sunset-orange/10 to-warm-red/10 overflow-hidden">
 				{/* Background Pattern */}
 				<div className="absolute inset-0 bg-gradient-to-t from-deep-night/80 via-transparent to-transparent z-10"></div>
-				
+
 				{/* Movie Image or Icon */}
 				{event.imageUrl ? (
 					<Image
@@ -93,11 +84,10 @@ export function EventCard({ event }: EventCardProps) {
 								e.preventDefault()
 								setIsFavorite(!isFavorite)
 							}}
-							className={`w-8 h-8 rounded-lg backdrop-blur-sm border border-soft-gray/20 flex items-center justify-center transition-all duration-200 ${
-								isFavorite 
-									? 'bg-warm-red text-soft-beige' 
-									: 'bg-deep-night/60 text-soft-beige/60 hover:bg-deep-night/80 hover:text-soft-beige'
-							}`}
+							className={`w-8 h-8 rounded-lg backdrop-blur-sm border border-soft-gray/20 flex items-center justify-center transition-all duration-200 ${isFavorite
+								? 'bg-warm-red text-soft-beige'
+								: 'bg-deep-night/60 text-soft-beige/60 hover:bg-deep-night/80 hover:text-soft-beige'
+								}`}
 						>
 							<HeartIcon className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
 						</button>
@@ -106,11 +96,10 @@ export function EventCard({ event }: EventCardProps) {
 								e.preventDefault()
 								setIsBookmarked(!isBookmarked)
 							}}
-							className={`w-8 h-8 rounded-lg backdrop-blur-sm border border-soft-gray/20 flex items-center justify-center transition-all duration-200 ${
-								isBookmarked 
-									? 'bg-soft-gold text-deep-night' 
-									: 'bg-deep-night/60 text-soft-beige/60 hover:bg-deep-night/80 hover:text-soft-beige'
-							}`}
+							className={`w-8 h-8 rounded-lg backdrop-blur-sm border border-soft-gray/20 flex items-center justify-center transition-all duration-200 ${isBookmarked
+								? 'bg-soft-gold text-deep-night'
+								: 'bg-deep-night/60 text-soft-beige/60 hover:bg-deep-night/80 hover:text-soft-beige'
+								}`}
 						>
 							<BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
 						</button>
@@ -144,16 +133,16 @@ export function EventCard({ event }: EventCardProps) {
 				{/* Title */}
 
 				<Link href={`/events/${event.id}`}>
-				<div>
-					<h3 className="text-lg font-bold text-soft-beige group-hover:text-sunset-orange transition-colors duration-300 leading-tight line-clamp-2 mb-1">
-						{event.title}
-					</h3>
-					{event.description && (
-						<p className="text-soft-beige/60 text-sm leading-relaxed line-clamp-2">
-							{event.description}
-						</p>
-					)}
-				</div>
+					<div>
+						<h3 className="text-lg font-bold text-soft-beige group-hover:text-sunset-orange transition-colors duration-300 leading-tight line-clamp-2 mb-1">
+							{event.title}
+						</h3>
+						{event.description && (
+							<p className="text-soft-beige/60 text-sm leading-relaxed line-clamp-2">
+								{event.description}
+							</p>
+						)}
+					</div>
 				</Link>
 				{/* Event Details */}
 				<div className="space-y-2.5">
@@ -196,8 +185,8 @@ export function EventCard({ event }: EventCardProps) {
 								<UsersIcon className="w-3.5 h-3.5 text-sunset-orange" />
 							</div>
 							<div className="text-sm">
-								<span className="font-semibold text-soft-beige">{availableSeats}</span>
-								<span className="text-soft-beige/60">/{totalSeats}</span>
+								<span className="font-semibold text-soft-beige">{event.availableSeats}</span>
+								<span className="text-soft-beige/60">/{event.totalSeats}</span>
 							</div>
 						</div>
 						<div className="text-right">
@@ -225,19 +214,19 @@ export function EventCard({ event }: EventCardProps) {
 
 					{/* Progress Bar */}
 					<div className="w-full bg-soft-gray/30 rounded-full h-1.5">
-						<div 
+						<div
 							className="bg-gradient-to-r from-sunset-orange to-soft-gold h-1.5 rounded-full transition-all duration-300"
 							style={{ width: `${occupancyRate}%` }}
 						></div>
 					</div>
-					
+
 					<div className="flex justify-between items-center text-xs">
 						<span className="text-soft-beige/60">{Math.round(occupancyRate)}% ocupado</span>
-						<span className="text-soft-beige/60">{reservationCount} reservas</span>
+						<span className="text-soft-beige/60">{event.reservationCount} reservas</span>
 					</div>
 
 					{/* Price Information */}
-					{hasAvailableSeats && event.priceInfo?.lowestPrice && event.priceInfo.lowestPrice > 0 && (
+					{hasAvailableSeats && event.priceInfo.lowestPrice > 0 && (
 						<div className="pt-2 border-t border-soft-gray/20">
 							<div className="flex items-center justify-end">
 								<div>

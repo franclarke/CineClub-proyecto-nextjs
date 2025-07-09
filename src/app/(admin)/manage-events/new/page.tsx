@@ -312,12 +312,12 @@ export default function NewEventPage() {
                                         onClick={() => handleSelectMovie(movie)}
                                         className="flex items-center p-2 rounded-lg hover:bg-gray-700 cursor-pointer"
                                     >
-                                        <Image 
-                                            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} 
-                                            alt={movie.title} 
-                                            width={64} 
-                                            height={96} 
-                                            className="w-16 h-24 rounded-md mr-2 object-cover" 
+                                        <Image
+                                            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                                            alt={movie.title}
+                                            width={64}
+                                            height={96}
+                                            className="w-16 h-24 rounded-md mr-2 object-cover"
                                         />
                                         <div className="flex-1">
                                             <span className="text-white font-semibold">{movie.title}</span>
