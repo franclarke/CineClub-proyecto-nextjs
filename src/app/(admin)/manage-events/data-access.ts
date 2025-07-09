@@ -1,6 +1,34 @@
 'use server'
-
+import webpush from 'web-push'
 import { prisma } from "@/lib/prisma"
+
+webpush.setVapidDetails(
+    'mailto:tu@email.com',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY!
+)
+
+export async function notifyAllUsersAboutNewEvent(eventTitle: string) {
+    const subscriptions = await prisma.pushSubscription.findMany()
+    const payload = JSON.stringify({
+        title: '¡Nuevo evento disponible!',
+        body: `Se ha creado el evento: ${eventTitle}`,
+        icon: '/icon-192x192.png'
+    })
+    for (const subscription of subscriptions) {
+        try {
+            await webpush.sendNotification(
+                {
+                    endpoint: subscription.endpoint,
+                    keys: subscription.keys as { p256dh: string; auth: string }
+                },
+                payload
+            )
+        } catch (error) {
+            console.error('Error al enviar notificación:', error)
+        }
+    }
+}
 
 /**
  * Obtiene todos los eventos desde la base de datos.
@@ -54,6 +82,7 @@ export async function createEvent(form: {
                 category: form.category || null,
             },
         })
+        await notifyAllUsersAboutNewEvent(event.title)
         return { success: true, event }
     } catch (error) {
         return { success: false, error: (error as Error).message }
