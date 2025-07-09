@@ -10,6 +10,7 @@ import { FloatingCartButton } from "./components/cart/FloatingCartButton";
 import { Toaster } from 'react-hot-toast';
 import { RegisterSW } from "./register-sw";
 import { PushManager } from "./components/pushNotifications/PushManagerComponent";
+import { PushNotificationsInitializer } from "./(pushNotifications)/PushNotificationInitializer";
 
 
 const inter = Inter({
@@ -110,6 +111,7 @@ export default function RootLayout({
 							}}
 						>
 							<ConditionalNavigation />
+							<PushNotificationsInitializer />
 							{children}
 							<GlobalCartSidebar />
 							<FloatingCartButton />
