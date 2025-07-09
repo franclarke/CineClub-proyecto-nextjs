@@ -4,10 +4,17 @@ import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag } from 'lucide-react'
 import { useCart } from '@/lib/cart/cart-context'
+import { useAuth } from '@/app/hooks/use-auth'
 
 export function FloatingCartButton() {
 	const { state, toggleCart } = useCart()
+	const { isAuthenticated, isAdmin } = useAuth()
 	const hasItems = state.totalItems > 0
+
+	// Solo mostrar si el usuario está logueado y no es administrador
+	if (!isAuthenticated || isAdmin) {
+		return null
+	}
 
 	return (
 		<motion.button

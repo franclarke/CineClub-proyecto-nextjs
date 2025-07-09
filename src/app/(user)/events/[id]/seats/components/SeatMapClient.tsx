@@ -7,6 +7,7 @@ import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
 import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle } from 'lucide-react'
 import { formatFullDate, formatTime } from '@/lib/utils/date'
+import { BackButton } from '@/app/components/ui/back-button'
 
 type SeatWithReservation = Seat & {
 	reservation: (Reservation & {
@@ -317,6 +318,11 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-deep-night to-deep-night/90 animate-fade-in">
 			<div className="container mx-auto px-4 py-8">
+				{/* Back Button */}
+				<div className="mb-6">
+					<BackButton href={`/events/${event.id}`} label="Volver al evento" />
+				</div>
+				
 				{/* Header */}
 				<div className="text-center mb-12">
 					<h1 className="text-display text-5xl md:text-6xl font-bold text-soft-beige mb-4 tracking-tight">

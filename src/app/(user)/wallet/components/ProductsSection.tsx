@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 import { Order, OrderItem, Product, Payment } from '@prisma/client'
-import { ShoppingBagIcon, CalendarIcon, CheckCircleIcon, QrCodeIcon, InfoIcon, FilterIcon } from 'lucide-react'
+import { ShoppingBagIcon, CalendarIcon, CheckCircleIcon, QrCodeIcon, InfoIcon, FilterIcon, XIcon } from 'lucide-react'
 
 type OrderWithExtras = Order & {
 	items: (OrderItem & {
@@ -15,7 +15,99 @@ interface ProductsSectionProps {
 	searchQuery?: string
 }
 
+// QR Modal Component
+interface QRModalProps {
+	isOpen: boolean
+	onClose: () => void
+	productName: string
+	itemId: string
+	orderId: string
+}
+
+function QRModal({ isOpen, onClose, productName, itemId, orderId }: QRModalProps) {
+	const [qrError, setQrError] = useState(false)
+	
+	const generateQRData = useCallback(() => {
+		const qrData = {
+			type: 'product_redemption',
+			productName,
+			itemId,
+			orderId,
+			timestamp: new Date().toISOString(),
+			venue: 'CineClub Puff & Chill',
+			validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+		}
+		return encodeURIComponent(JSON.stringify(qrData))
+	}, [productName, itemId, orderId])
+
+	const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${generateQRData()}&bgcolor=1a1a1a&color=f5f5dc&margin=20&ecc=M&format=png`
+
+	if (!isOpen) return null
+
+	return (
+		<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+			<div className="bg-soft-beige/10 backdrop-blur-xl border border-soft-beige/20 rounded-3xl max-w-md w-full p-8 animate-scale-in">
+				<div className="flex items-center justify-between mb-6">
+					<h3 className="text-2xl font-bold text-soft-beige">Código QR</h3>
+					<button
+						onClick={onClose}
+						className="w-10 h-10 bg-soft-gray/20 hover:bg-soft-gray/30 rounded-xl flex items-center justify-center transition-all duration-200"
+						aria-label="Cerrar modal"
+					>
+						<XIcon className="w-5 h-5 text-soft-beige" />
+					</button>
+				</div>
+				
+				<div className="text-center">
+					<div className="bg-white p-6 rounded-2xl mb-6 shadow-lg">
+						{!qrError ? (
+							<img
+								src={qrUrl}
+								alt={`Código QR para ${productName}`}
+								className="w-full h-auto rounded-xl"
+								onError={() => setQrError(true)}
+							/>
+						) : (
+							<div className="w-full h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+								<div className="text-center">
+									<QrCodeIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+									<p className="text-gray-600 text-sm">Error al generar QR</p>
+								</div>
+							</div>
+						)}
+					</div>
+					
+					<div className="space-y-4">
+						<div>
+							<h4 className="text-lg font-semibold text-soft-beige mb-2">{productName}</h4>
+							<p className="text-soft-beige/60 text-sm">ID: {itemId.slice(-8)}</p>
+						</div>
+						
+						<div className="bg-gradient-to-r from-soft-gold/10 to-sunset-orange/10 border border-soft-gold/20 rounded-2xl p-4">
+							<div className="flex items-start gap-3">
+								<InfoIcon className="w-5 h-5 text-soft-gold flex-shrink-0 mt-0.5" />
+								<div className="text-left">
+									<p className="text-soft-beige/80 text-sm leading-relaxed">
+										Presenta este código en el kiosco del evento para canjear tu producto. 
+										Válido por 24 horas desde su generación.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	)
+}
+
 export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionProps) {
+	const [selectedQR, setSelectedQR] = useState<{
+		productName: string
+		itemId: string
+		orderId: string
+	} | null>(null)
+
 	// Memoized filtered orders for performance
 	const { ordersWithProducts, hasProducts } = useMemo(() => {
 		const withProducts = orders.filter(order => order.items.length > 0)
@@ -41,22 +133,19 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 	}, [orders, searchQuery])
 
 	// Optimized QR generation handler
-	const handleGenerateQR = useCallback((itemId: string, productName: string) => {
-		try {
-			// In a real app, this would generate an actual QR or call an API
-			const message = `Código QR generado para: ${productName}\nID: ${itemId}`
-			alert(message)
-		} catch (error) {
-			console.error('Error generating QR code:', error)
-			alert('Error al generar el código QR. Inténtalo nuevamente.')
-		}
+	const handleShowQR = useCallback((itemId: string, productName: string, orderId: string) => {
+		setSelectedQR({ productName, itemId, orderId })
+	}, [])
+
+	const handleCloseQR = useCallback(() => {
+		setSelectedQR(null)
 	}, [])
 
 	// Format currency helper
 	const formatCurrency = useCallback((amount: number) => {
 		return new Intl.NumberFormat('es-ES', {
 			style: 'currency',
-			currency: 'USD',
+			currency: 'ARS',
 			minimumFractionDigits: 2
 		}).format(amount)
 	}, [])
@@ -216,12 +305,12 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 												{/* Only show QR generation for paid orders */}
 												{order.status === 'paid' && (
 													<button
-														onClick={() => handleGenerateQR(item.id, item.product.name)}
+														onClick={() => handleShowQR(item.id, item.product.name, order.id)}
 														className="flex items-center gap-2 bg-gradient-to-r from-sunset-orange/20 to-soft-gold/20 text-sunset-orange px-4 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-sunset-orange/30 hover:to-soft-gold/30 border border-sunset-orange/30 hover:scale-[1.02]"
 														aria-label={`Generar código QR para ${item.product.name}`}
 													>
 														<QrCodeIcon className="w-4 h-4" />
-														<span>Generar QR</span>
+														<span>Ver QR</span>
 													</button>
 												)}
 											</div>
@@ -245,7 +334,7 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 												<>
 													<li>• Presenta el código QR en el kiosco del evento</li>
 													<li>• Los productos deben canjearse durante el evento</li>
-													<li>• Algunos productos tienen fecha de caducidad</li>
+													<li>• El código QR es válido por 24 horas desde su generación</li>
 												</>
 											) : (
 												<>
@@ -262,6 +351,17 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 					)
 				})}
 			</div>
+
+			{/* QR Modal */}
+			{selectedQR && (
+				<QRModal
+					isOpen={!!selectedQR}
+					onClose={handleCloseQR}
+					productName={selectedQR.productName}
+					itemId={selectedQR.itemId}
+					orderId={selectedQR.orderId}
+				/>
+			)}
 		</div>
 	)
 } 

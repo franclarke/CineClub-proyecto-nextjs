@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { fetchUsersByMembership } from './actions'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
+import { BackButton } from '@/app/components/ui/back-button'
 
 type UserWithMembership = {
     id: string
@@ -41,6 +42,11 @@ export default function UsersTable() {
 
     return (
         <div className="w-full max-w-4xl mx-auto pt-14">
+            {/* Back Button */}
+            <div className="px-8 mb-4">
+                <BackButton href="/" label="Volver al inicio" />
+            </div>
+            
             <div className="flex flex-col m-8 sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                 <h2 className="text-2xl font-bold text-white">Usuarios</h2>
                 <div className="flex gap-2 w-full sm:w-auto">

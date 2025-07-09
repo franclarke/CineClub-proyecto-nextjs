@@ -82,29 +82,32 @@ export function DashboardHome({ user }: DashboardHomeProps) {
 								<Link
 									key={action.href}
 									href={action.href}
-									className="group relative overflow-hidden bg-deep-night/95 backdrop-blur-2xl border border-soft-gray/20 rounded-3xl p-8 hover:border-soft-gray/30 transition-all duration-500 hover:transform hover:scale-105 shadow-2xl hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.8)] animate-fade-in"
+									className="group relative overflow-hidden bg-deep-night/95 backdrop-blur-2xl border border-soft-gray/20 rounded-3xl p-8 hover:border-soft-gray/30 transition-all duration-500 hover:transform hover:scale-105 shadow-2xl hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.8)] animate-fade-in min-h-[280px] flex flex-col"
 									style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
 								>
 									{/* Background Gradient */}
 									<div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
 									
-									<div className="relative z-10 flex flex-col items-center text-center space-y-6">
-										{/* Icon */}
-										<div className={`w-20 h-20 bg-gradient-to-br from-${action.color}/20 to-${action.color}/5 border border-${action.color}/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-											<IconComponent className={`w-10 h-10 text-${action.color}`} />
+									<div className="relative z-10 flex flex-col items-center text-center space-y-6 h-full justify-between">
+										{/* Content Container */}
+										<div className="flex flex-col items-center text-center space-y-6">
+											{/* Icon */}
+											<div className={`w-20 h-20 bg-gradient-to-br from-${action.color}/20 to-${action.color}/5 border border-${action.color}/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+												<IconComponent className={`w-10 h-10 text-${action.color}`} />
+											</div>
+
+											{/* Content */}
+											<div className="space-y-3">
+												<h3 className="text-2xl font-bold text-soft-beige group-hover:text-sunset-orange transition-colors duration-300">
+													{action.title}
+												</h3>
+												<p className="text-soft-beige/60 text-sm leading-relaxed font-medium">
+													{action.description}
+												</p>
+											</div>
 										</div>
 
-										{/* Content */}
-										<div className="space-y-3">
-											<h3 className="text-2xl font-bold text-soft-beige group-hover:text-sunset-orange transition-colors duration-300">
-												{action.title}
-											</h3>
-											<p className="text-soft-beige/60 text-sm leading-relaxed font-medium">
-												{action.description}
-											</p>
-										</div>
-
-										{/* Arrow Icon */}
+										{/* Arrow Icon - Always at bottom */}
 										<div className="w-10 h-10 bg-soft-gray/10 rounded-full flex items-center justify-center group-hover:bg-sunset-orange/20 transition-all duration-300">
 											<ArrowRightIcon className="w-5 h-5 text-soft-beige/40 group-hover:text-sunset-orange group-hover:translate-x-1 transition-all duration-300" />
 										</div>

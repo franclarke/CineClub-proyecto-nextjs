@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/lib/cart/cart-context'
+import { useAuth } from '@/app/hooks/use-auth'
 import { ProductCartItem, SeatCartItem } from '@/types/cart'
 import {
 	X,
@@ -29,8 +30,14 @@ import { useHydration } from '@/app/hooks/use-hydration'
 
 export function GlobalCartSidebar() {
 	const { state, toggleCart, getExpiredSeats } = useCart()
+	const { isAuthenticated, isAdmin } = useAuth()
 	const router = useRouter()
 	const expiredSeats = getExpiredSeats()
+
+	// Solo mostrar si el usuario está logueado y no es administrador
+	if (!isAuthenticated || isAdmin) {
+		return null
+	}
 
 	const handleCheckout = () => {
 		if (state.items.length > 0) {

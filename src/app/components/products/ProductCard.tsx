@@ -109,12 +109,12 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 									<Button
 										onClick={handleAddToCart}
 										disabled={isOutOfStock || isAdding}
-										className={`w-full py-2.5 font-medium transition-all duration-300 rounded-lg ${
+										className={`w-full py-3 font-medium transition-all duration-300 rounded-lg border ${
 											isOutOfStock
-												? 'bg-soft-gray/20 text-soft-gray cursor-not-allowed'
+												? 'bg-soft-gray/20 text-soft-gray cursor-not-allowed border-soft-gray/20'
 												: isAdding
-													? 'bg-soft-gold/80 text-deep-night'
-													: 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night hover:shadow-md hover:shadow-soft-gold/10'
+													? 'bg-soft-gold/80 text-deep-night border-soft-gold/80'
+													: 'bg-gradient-to-r from-sunset-orange to-soft-gold text-deep-night hover:shadow-lg hover:shadow-soft-gold/20 border-sunset-orange/50 hover:border-soft-gold'
 										}`}
 									>
 										{isAdding ? (
@@ -145,50 +145,53 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 									animate={{ opacity: 1, scale: 1 }}
 									exit={{ opacity: 0, scale: 0.95 }}
 									transition={{ duration: 0.2 }}
-									className="w-full flex items-center justify-between gap-3"
+									className="w-full"
 								>
-									<div className="flex items-center bg-soft-gray/10 rounded-lg overflow-hidden">
-										<Button
-											onClick={decrementQuantity}
-											className="w-8 h-8 p-0 bg-transparent hover:bg-soft-gray/20 text-soft-beige border-none rounded-none transition-colors duration-200"
-										>
-											<Minus className="w-3 h-3" />
-										</Button>
-										
-										<div className="px-3 min-w-[60px] text-center">
-											<motion.span 
-												key={currentQuantity}
-												initial={{ scale: 1.2 }}
-												animate={{ scale: 1 }}
-												className="text-soft-beige font-medium text-sm block"
+									<div className="flex items-center justify-between gap-3">
+										{/* Quantity Controls */}
+										<div className="flex items-center bg-soft-gray/10 border border-soft-gray/20 rounded-lg overflow-hidden">
+											<Button
+												onClick={decrementQuantity}
+												className="w-10 h-10 p-0 bg-transparent hover:bg-soft-gray/20 text-soft-beige border-none rounded-none transition-colors duration-200 flex items-center justify-center"
 											>
-												{currentQuantity}
-											</motion.span>
-											<span className="text-soft-beige/40 text-xs">
-												en carrito
-											</span>
+												<Minus className="w-4 h-4" />
+											</Button>
+											
+											<div className="px-4 min-w-[80px] text-center py-2 bg-soft-gray/5">
+												<motion.span 
+													key={currentQuantity}
+													initial={{ scale: 1.2 }}
+													animate={{ scale: 1 }}
+													className="text-soft-beige font-semibold text-base block"
+												>
+													{currentQuantity}
+												</motion.span>
+												<span className="text-soft-beige/50 text-xs leading-none">
+													en carrito
+												</span>
+											</div>
+											
+											<Button
+												onClick={incrementQuantity}
+												disabled={currentQuantity >= product.stock}
+												className="w-10 h-10 p-0 bg-transparent hover:bg-soft-gray/20 text-soft-beige border-none disabled:opacity-50 disabled:cursor-not-allowed rounded-none transition-colors duration-200 flex items-center justify-center"
+											>
+												<Plus className="w-4 h-4" />
+											</Button>
 										</div>
-										
-										<Button
-											onClick={incrementQuantity}
-											disabled={currentQuantity >= product.stock}
-											className="w-8 h-8 p-0 bg-transparent hover:bg-soft-gray/20 text-soft-beige border-none disabled:opacity-50 rounded-none transition-colors duration-200"
-										>
-											<Plus className="w-3 h-3" />
-										</Button>
-									</div>
 
-									{/* Subtotal */}
-									<div className="flex flex-col items-end text-right">
-										<span className="text-soft-beige/40 text-xs">Total:</span>
-										<motion.span 
-											key={product.price * currentQuantity}
-											initial={{ scale: 1.1 }}
-											animate={{ scale: 1 }}
-											className="text-soft-gold font-semibold text-sm"
-										>
-											${(product.price * currentQuantity).toFixed(2)}
-										</motion.span>
+										{/* Subtotal */}
+										<div className="flex flex-col items-end text-right min-w-[80px]">
+											<span className="text-soft-beige/50 text-xs leading-none">Total:</span>
+											<motion.span 
+												key={product.price * currentQuantity}
+												initial={{ scale: 1.1 }}
+												animate={{ scale: 1 }}
+												className="text-soft-gold font-bold text-lg leading-tight"
+											>
+												${(product.price * currentQuantity).toFixed(2)}
+											</motion.span>
+										</div>
 									</div>
 								</motion.div>
 							)}

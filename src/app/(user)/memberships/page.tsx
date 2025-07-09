@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { MembershipsSkeletonComponent } from './components/MembershipsSkeletonComponent'
 import { MembershipsDataAccess } from './components/MembershipsDataAccess'
+import { BackButton } from '@/app/components/ui/back-button'
 
 export const metadata: Metadata = {
 	title: 'Membresías | Puff & Chill',
@@ -15,6 +16,11 @@ export default async function MembershipsPage() {
 			{/* Header Section - Compact like /events */}
 			<section className="pt-28 pb-8 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-6xl mx-auto">
+					{/* Back Button */}
+					<div className="mb-6">
+						<BackButton href="/" />
+					</div>
+					
 					<div className="flex items-center justify-between">
 						{/* Left side - Title */}
 						<div className="space-y-2">

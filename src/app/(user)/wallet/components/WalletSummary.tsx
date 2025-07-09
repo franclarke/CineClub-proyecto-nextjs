@@ -29,8 +29,8 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 		const formatCurrency = (amount: number) => {
 			return new Intl.NumberFormat('es-ES', {
 				style: 'currency',
-				currency: 'USD',
-				minimumFractionDigits: 2
+				currency: 'ARS',
+				minimumFractionDigits: 0
 			}).format(amount)
 		}
 
@@ -66,7 +66,7 @@ export function WalletSummary({ summary }: WalletSummaryProps) {
 				label: 'Total Gastado',
 				value: formatCurrency(summary.totalSpent),
 				icon: DollarSignIcon,
-				color: 'text-green-400',
+				color: 'text-green-600',
 				bgColor: 'from-green-400/20 to-green-400/5',
 				borderColor: 'border-green-400/30',
 				status: summary.totalSpent > 0 ? 'active' : 'empty'

@@ -8,13 +8,13 @@ import {
 	MapPinIcon, 
 	ClockIcon, 
 	PlayIcon,
-	ChevronLeftIcon,
 	TagIcon
 } from 'lucide-react'
 import { TrailerPlayer } from './TrailerPlayer'
 import { formatFullDate, formatTime, formatMonthShort } from '@/lib/utils/date'
 import { parseISO } from 'date-fns'
 import { useCurrentDate } from '@/app/hooks/use-hydration'
+import { BackButton } from '@/app/components/ui/back-button'
 
 interface Seat {
 	id: string
@@ -108,13 +108,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			{/* Back Button */}
 			<div className="mb-8">
-				<Link 
-					href="/events"
-					className="inline-flex items-center space-x-2 text-soft-beige hover:text-sunset-orange transition-colors duration-200"
-				>
-					<ChevronLeftIcon className="w-5 h-5" />
-					<span>Volver a eventos</span>
-				</Link>
+				<BackButton href="/events" label="Volver a eventos" />
 			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -225,7 +219,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 				{/* Sidebar */}
 				<div className="space-y-6">
 					{/* Booking Card */}
-					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6 sticky top-24">
+					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6">
 						<h3 className="text-display text-xl text-soft-beige mb-4">
 							Reservar Asiento
 						</h3>
@@ -272,7 +266,7 @@ export function EventDetailClientComponent({ event }: EventDetailClientComponent
 					</div>
 
 					{/* Event Details */}
-					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6 sticky top-8">
+					<div className="bg-soft-gray/30 backdrop-blur-sm rounded-xl border border-soft-gray/20 p-6">
 						<h3 className="text-display text-xl text-soft-beige mb-4">
 							Detalles del Evento
 						</h3>

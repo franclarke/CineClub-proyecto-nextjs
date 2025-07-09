@@ -116,46 +116,48 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 	return (
 		<div className="w-full">
 			{/* Progress Indicator */}
-			<div className="mb-8">
-				<div className="flex items-center justify-center space-x-4">
-					<div className={`flex items-center space-x-2 ${currentStep === 1 ? 'text-orange-400' : currentStep > 1 ? 'text-green-400' : 'text-gray-500'}`}>
-						<div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep === 1 ? 'border-orange-400 bg-orange-400/20' : currentStep > 1 ? 'border-green-400 bg-green-400/20' : 'border-gray-500'}`}>
+			<div className="mb-6 md:mb-8">
+				<div className="flex items-center justify-center space-x-2 md:space-x-4">
+					<div className={`flex items-center space-x-1 md:space-x-2 ${currentStep === 1 ? 'text-orange-400' : currentStep > 1 ? 'text-green-400' : 'text-gray-500'}`}>
+						<div className={`w-6 h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center ${currentStep === 1 ? 'border-orange-400 bg-orange-400/20' : currentStep > 1 ? 'border-green-400 bg-green-400/20' : 'border-gray-500'}`}>
 							{currentStep > 1 ? (
-								<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+								<svg className="w-3 h-3 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
 									<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
 								</svg>
 							) : (
-								<span className="text-sm font-bold">1</span>
+								<span className="text-xs md:text-sm font-bold">1</span>
 							)}
 						</div>
-						<span className="text-sm font-medium">Información Personal</span>
+						<span className="text-xs md:text-sm font-medium hidden sm:inline">Información Personal</span>
+						<span className="text-xs font-medium sm:hidden">Datos</span>
 					</div>
 					
-					<div className={`w-8 h-0.5 ${currentStep > 1 ? 'bg-green-400' : 'bg-gray-500'}`} />
+					<div className={`w-4 md:w-8 h-0.5 ${currentStep > 1 ? 'bg-green-400' : 'bg-gray-500'}`} />
 					
-					<div className={`flex items-center space-x-2 ${currentStep === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
-						<div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${currentStep === 2 ? 'border-orange-400 bg-orange-400/20' : 'border-gray-500'}`}>
-							<span className="text-sm font-bold">2</span>
+					<div className={`flex items-center space-x-1 md:space-x-2 ${currentStep === 2 ? 'text-orange-400' : 'text-gray-500'}`}>
+						<div className={`w-6 h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center ${currentStep === 2 ? 'border-orange-400 bg-orange-400/20' : 'border-gray-500'}`}>
+							<span className="text-xs md:text-sm font-bold">2</span>
 						</div>
-						<span className="text-sm font-medium">Membresía</span>
+						<span className="text-xs md:text-sm font-medium hidden sm:inline">Membresía</span>
+						<span className="text-xs font-medium sm:hidden">Plan</span>
 					</div>
 				</div>
 			</div>
 
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
 				{/* Step 1: Personal Information */}
 				{currentStep === 1 && (
-					<div className="space-y-6">
-						<div className="text-center mb-8">
-							<h3 className="text-2xl font-semibold text-white mb-2">
+					<div className="space-y-4 md:space-y-6">
+						<div className="text-center mb-6 md:mb-8">
+							<h3 className="text-xl md:text-2xl font-semibold text-white mb-2">
 								Crear tu cuenta
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-400 text-sm md:text-base">
 								Ingresa tus datos para comenzar tu experiencia cinematográfica
 							</p>
 						</div>
 
-						<div className="space-y-5">
+						<div className="space-y-4 md:space-y-5">
 							<FormField<SignUpFormData>
 								label="Nombre completo"
 								name="name"
@@ -186,7 +188,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 								}
 							/>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 gap-4">
 								<FormField<SignUpFormData>
 									label="Contraseña"
 									name="password"
@@ -234,19 +236,19 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 
 				{/* Step 2: Membership Selection */}
 				{currentStep === 2 && (
-					<div className="space-y-6">
-						<div className="text-center mb-8">
-							<h3 className="text-2xl font-semibold text-white mb-2">
+					<div className="space-y-4 md:space-y-6">
+						<div className="text-center mb-6 md:mb-8">
+							<h3 className="text-xl md:text-2xl font-semibold text-white mb-2">
 								Elige tu membresía
 							</h3>
-							<p className="text-gray-400 mb-4">
+							<p className="text-gray-400 mb-4 text-sm md:text-base">
 								Selecciona el plan que mejor se adapte a tu estilo de vida cinematográfico
 							</p>
-							<div className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-400/30">
-								<svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+							<div className="inline-flex items-center space-x-2 px-3 md:px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-400/30">
+								<svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
 									<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
 								</svg>
-								<span className="text-sm text-blue-300">
+								<span className="text-xs md:text-sm text-blue-300">
 									Serás redirigido a MercadoPago para completar el pago
 								</span>
 							</div>
@@ -265,7 +267,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 								<div className="absolute inset-0 bg-red-500/20 rounded-lg blur-sm"></div>
 								<div className="relative p-4 rounded-lg bg-red-500/10 border border-red-500/30 backdrop-blur-sm">
 									<div className="flex items-center space-x-2">
-										<svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+										<svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
 											<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
 										</svg>
 										<p className="text-sm text-red-300 font-medium">{error}</p>
@@ -275,11 +277,11 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 						)}
 
 						{/* Navigation Buttons */}
-						<div className="flex space-x-4">
+						<div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
 							<Button
 								type="button"
 								onClick={prevStep}
-								className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3 px-6 rounded-lg transition-all duration-200"
+								className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3 px-6 rounded-lg transition-all duration-200 order-2 sm:order-1"
 								size="lg"
 							>
 								<svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,7 +293,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 							<Button
 								type="submit"
 								loading={isLoading}
-								className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02]"
+								className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02] order-1 sm:order-2"
 								size="lg"
 							>
 								{isLoading ? (
@@ -301,7 +303,8 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 									</div>
 								) : (
 									<>
-										Continuar al pago
+										<span className="hidden sm:inline">Continuar al pago</span>
+										<span className="sm:hidden">Pagar</span>
 										<svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
 										</svg>

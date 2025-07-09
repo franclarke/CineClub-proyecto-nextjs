@@ -27,10 +27,11 @@ const PUBLIC_PATHS = [
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
 	
-	// Ignorar archivos estáticos y rutas internas de Next.js
+	// Ignorar archivos estáticos, rutas internas de Next.js y rutas API
 	if (
 		pathname.startsWith('/_next') ||
 		pathname.startsWith('/static') ||
+		pathname.startsWith('/api') ||
 		pathname.includes('.') ||
 		pathname === '/favicon.ico'
 	) {
@@ -86,18 +87,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
 	matcher: [
-		// Rutas protegidas de usuarios
-		'/profile/:path*',
-		'/cart/:path*',
-		'/events/:path*',
-		'/checkout/:path*',
-		'/wallet/:path*',
-		'/memberships/:path*',
-		// Rutas de administrador
-		'/manage-users/:path*',
-		'/manage-events/:path*',
-		'/manage-products/:path*',
-		// Excluir archivos estáticos y API
-		'/((?!api|_next/static|_next/image|favicon.ico).*)'
+		// Incluir todas las rutas excepto las que empiezan con:
+		'/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)' 
 	]
 }
