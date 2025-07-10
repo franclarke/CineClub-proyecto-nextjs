@@ -5,7 +5,7 @@ import { getAllProducts, addProduct, deleteProduct, getProductById, updateProduc
 import ProductCard from './productCard'
 import { BackButton } from '@/app/components/ui/back-button'
 import { Button } from '@/app/components/ui/button'
-import { uploadProductImage, deleteProductImage } from '@/lib/supabase'
+import { uploadProductImage } from '@/lib/supabase'
 
 interface Product {
     id: string
