@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import { getAllProducts, addProduct, deleteProduct, getProductById, updateProduct } from '../data-access'
 import ProductCard from './productCard'
-import { ImageUpload } from './ImageUpload'
 import { BackButton } from '@/app/components/ui/back-button'
 import { Button } from '@/app/components/ui/button'
+import { uploadProductImage, deleteProductImage } from '@/lib/supabase'
 
 interface Product {
     id: string
@@ -14,6 +14,113 @@ interface Product {
     price: number
     stock: number
     imageUrl?: string
+}
+
+// Image Upload Component
+interface ImageUploadProps {
+    currentImageUrl?: string
+    onImageSelect: (file: File | null) => void
+    onError: (error: string) => void
+}
+
+function ImageUpload({ currentImageUrl, onImageSelect, onError }: ImageUploadProps) {
+    const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+    useEffect(() => {
+        setPreviewUrl(currentImageUrl || null)
+    }, [currentImageUrl])
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+        if (!allowedTypes.includes(file.type)) {
+            onError('Solo se permiten archivos JPG, PNG o WebP')
+            return
+        }
+
+        // Validate file size (max 5MB)
+        const maxSizeInBytes = 5 * 1024 * 1024
+        if (file.size > maxSizeInBytes) {
+            onError('El archivo no puede superar los 5MB')
+            return
+        }
+
+        setSelectedFile(file)
+        onImageSelect(file)
+        
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            setPreviewUrl(e.target?.result as string)
+        }
+        reader.readAsDataURL(file)
+    }
+
+    const handleRemove = () => {
+        setPreviewUrl(null)
+        setSelectedFile(null)
+        onImageSelect(null)
+        // Reset the file input
+        const fileInput = document.getElementById('image-upload') as HTMLInputElement
+        if (fileInput) {
+            fileInput.value = ''
+        }
+    }
+
+    return (
+        <div className="space-y-4">
+            <label className="block text-soft-beige/70 mb-2">Imagen del producto</label>
+            
+            {/* Image Preview or Upload Area */}
+            {previewUrl ? (
+                <div className="relative inline-block">
+                    <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-32 h-32 object-cover rounded-2xl border-2 border-soft-gray/20 shadow-lg"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleRemove}
+                        className="absolute -top-2 -right-2 w-8 h-8 bg-warm-red text-soft-beige rounded-full flex items-center justify-center text-sm hover:bg-warm-red/80 transition-colors shadow-lg"
+                    >
+                        ×
+                    </button>
+                    <div className="absolute inset-0 bg-black/20 rounded-2xl opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-soft-beige text-sm font-medium">Cambiar</span>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="image-upload"
+                    />
+                    <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center justify-center w-full h-32 bg-gradient-to-br from-sunset-orange/20 to-sunset-orange/10 border-2 border-dashed border-sunset-orange/40 rounded-2xl hover:from-sunset-orange/30 hover:to-sunset-orange/20 hover:border-sunset-orange/60 transition-all duration-300 group"
+                    >
+                        <svg className="w-8 h-8 text-sunset-orange/70 group-hover:text-sunset-orange mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className="text-soft-beige font-medium group-hover:text-sunset-orange/90 transition-colors">
+                            Seleccionar imagen
+                        </span>
+                        <span className="text-soft-beige/50 text-sm mt-1">
+                            o arrastra y suelta aquí
+                        </span>
+                    </label>
+                </div>
+            )}
+        </div>
+    )
 }
 
 export default function ProductsDashboard() {
@@ -27,6 +134,8 @@ export default function ProductsDashboard() {
     const [deleteSuccess, setDeleteSuccess] = useState(false)
     const [addSuccess, setAddSuccess] = useState(false)
     const [editSuccess, setEditSuccess] = useState(false)
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+    const [submitting, setSubmitting] = useState(false)
 
     // Ocultar mensajes de success automáticamente
     useEffect(() => {
@@ -84,6 +193,7 @@ export default function ProductsDashboard() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
+        setSubmitting(true)
         
         try {
             if (!form.name || !form.price || !form.stock) {
@@ -91,12 +201,29 @@ export default function ProductsDashboard() {
                 return
             }
 
+            let imageUrl = form.imageUrl
+
+            // Upload image if a new file is selected
+            if (selectedImageFile) {
+                const tempId = Date.now().toString()
+                const result = await uploadProductImage(selectedImageFile, tempId)
+                
+                if (result.error) {
+                    setError(result.error)
+                    return
+                }
+                
+                if (result.url) {
+                    imageUrl = result.url
+                }
+            }
+
             const productData = {
                 name: form.name,
                 description: form.description || undefined,
                 price: Number(form.price),
                 stock: Number(form.stock),
-                imageUrl: form.imageUrl || undefined
+                imageUrl: imageUrl || undefined
             }
 
             if (editId) {
@@ -111,11 +238,14 @@ export default function ProductsDashboard() {
 
             // Reset form
             setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
+            setSelectedImageFile(null)
             setEditId(null)
             setShowForm(false)
             fetchProducts()
         } catch (e) {
             setError(editId ? 'Error al actualizar el producto' : 'Error al agregar el producto')
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -142,6 +272,7 @@ export default function ProductsDashboard() {
                     stock: String(prod.stock),
                     imageUrl: prod.imageUrl || '',
                 })
+                setSelectedImageFile(null) // Reset selected file when editing
                 setEditId(id)
                 setShowForm(true)
             }
@@ -150,9 +281,9 @@ export default function ProductsDashboard() {
         }
     }
 
-    // Handle image upload
-    const handleImageUpload = (url: string) => {
-        setForm(prev => ({ ...prev, imageUrl: url }))
+    // Handle image selection
+    const handleImageSelect = (file: File | null) => {
+        setSelectedImageFile(file)
     }
 
     // Handle image upload error
@@ -163,6 +294,7 @@ export default function ProductsDashboard() {
     // Reset form
     const resetForm = () => {
         setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
+        setSelectedImageFile(null)
         setEditId(null)
         setShowForm(false)
         setError(null)
@@ -300,7 +432,7 @@ export default function ProductsDashboard() {
                             {/* Image Upload */}
                             <ImageUpload
                                 currentImageUrl={form.imageUrl}
-                                onImageUpload={handleImageUpload}
+                                onImageSelect={handleImageSelect}
                                 onError={handleImageError}
                             />
 
@@ -358,14 +490,23 @@ export default function ProductsDashboard() {
                                 <Button
                                     type="submit"
                                     className="flex-1"
+                                    disabled={submitting}
                                 >
-                                    {editId ? 'Guardar cambios' : 'Agregar producto'}
+                                    {submitting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-soft-beige border-t-transparent rounded-full animate-spin mr-2" />
+                                            {selectedImageFile ? 'Subiendo imagen...' : 'Guardando...'}
+                                        </>
+                                    ) : (
+                                        editId ? 'Guardar cambios' : 'Agregar producto'
+                                    )}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="secondary"
                                     className="flex-1"
                                     onClick={resetForm}
+                                    disabled={submitting}
                                 >
                                     Cancelar
                                 </Button>
