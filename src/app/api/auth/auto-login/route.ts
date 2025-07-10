@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 			const user = await prisma.user.findUnique({
 				where: { id: userId },
 				include: {
-					membershipTier: true
+					membership: true
 				}
 			})
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					membershipTier: user.membershipTier
+					membership: user.membership
 				}
 			})
 		}
