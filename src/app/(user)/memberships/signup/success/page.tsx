@@ -54,7 +54,7 @@ export default function SignupSuccessPage() {
 						orderId: 'free_signup',
 						userName: user.name,
 						userEmail: user.email,
-						membershipName: user.membershipTier.name,
+						membershipName: user.membership.name,
 						finalPrice: 0,
 						discountApplied: true
 					})
@@ -325,8 +325,8 @@ export default function SignupSuccessPage() {
 						<div className="flex items-center justify-center space-x-2">
 							<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
 							<span>
-								{successData.finalPrice === 0 && autoLogin 
-									? 'Redirigiendo automáticamente...' 
+								{successData.finalPrice === 0 && autoLogin
+									? 'Redirigiendo automáticamente...'
 									: 'Iniciando sesión...'
 								}
 							</span>
@@ -334,8 +334,8 @@ export default function SignupSuccessPage() {
 					) : (
 						<>
 							<span>
-								{successData.finalPrice === 0 && autoLogin 
-									? 'Redirigiendo en unos segundos...' 
+								{successData.finalPrice === 0 && autoLogin
+									? 'Redirigiendo en unos segundos...'
 									: 'Iniciar sesión y continuar'
 								}
 							</span>
