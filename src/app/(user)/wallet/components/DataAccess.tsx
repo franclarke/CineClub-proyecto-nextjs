@@ -41,11 +41,11 @@ export async function DataAccess() {
 			}
 		})
 
-		// Get user's paid orders for products section (only paid orders)
-		const paidOrders = await prisma.order.findMany({
+		// Get user's completed orders for products section (both paid and free orders)
+		const completedOrders = await prisma.order.findMany({
 			where: {
 				userId: session.user.id,
-				status: 'paid'
+				status: 'completed'
 			},
 			include: {
 				items: {
@@ -60,12 +60,12 @@ export async function DataAccess() {
 			}
 		})
 
-		// Get all orders (paid and pending) for history section
+		// Get all orders (completed and pending) for history section
 		const allOrders = await prisma.order.findMany({
 			where: {
 				userId: session.user.id,
 				status: {
-					in: ['paid', 'pending']
+					in: ['completed', 'pending']
 				}
 			},
 			include: {
@@ -103,11 +103,11 @@ export async function DataAccess() {
 			({ event }) => new Date(event.dateTime) <= now
 		)
 
-		// Calculate total spent - only from PAID orders
-		const totalSpent = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0)
+		// Calculate total spent - only from COMPLETED orders (both paid and free)
+		const totalSpent = completedOrders.reduce((sum, order) => sum + order.totalAmount, 0)
 		
-		// Calculate total products - only from PAID orders (available for redemption)
-		const totalProducts = paidOrders.reduce((sum, order) => 
+		// Calculate total products - only from COMPLETED orders (available for redemption)
+		const totalProducts = completedOrders.reduce((sum, order) => 
 			sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
 		)
 
@@ -126,7 +126,7 @@ export async function DataAccess() {
 		return (
 			<WalletClient
 				reservationsByEvent={reservationsByEvent}
-				paidOrders={paidOrders}
+				paidOrders={completedOrders}
 				allOrders={allOrders}
 				summary={summary}
 			/>
@@ -134,6 +134,7 @@ export async function DataAccess() {
 	} catch (error) {
 		console.error('Error fetching wallet data:', error)
 		// In production, you might want to handle this differently
-		notFound()
+		// Return a more specific error component instead of generic 404
+		throw new Error('Failed to load wallet data. Please try again later.')
 	}
 } 

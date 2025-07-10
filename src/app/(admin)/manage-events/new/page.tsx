@@ -279,7 +279,7 @@ export default function NewEventPage() {
 
             {/* Main Form */}
             <div className="max-w-4xl mx-auto px-6 pb-12">
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-8 admin-form">
                     {/* Error Message */}
                     {error && (
                         <GlassCard variant="glow" className="p-4 border-warm-red">
@@ -367,10 +367,15 @@ export default function NewEventPage() {
                                     value={form.category}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                                    style={{ 
+                                        backgroundColor: 'rgba(58, 58, 60, 0.1)',
+                                        color: 'var(--soft-beige)',
+                                        border: '1px solid rgba(58, 58, 60, 0.2)'
+                                    }}
                                 >
-                                    <option value="">Seleccionar categoría</option>
+                                    <option value="" style={{ backgroundColor: 'var(--deep-night)', color: 'var(--soft-beige)' }}>Seleccionar categoría</option>
                                     {CATEGORIES.map(category => (
-                                        <option key={category} value={category}>{category}</option>
+                                        <option key={category} value={category} style={{ backgroundColor: 'var(--deep-night)', color: 'var(--soft-beige)' }}>{category}</option>
                                     ))}
                                 </select>
                             </div>
@@ -438,10 +443,15 @@ export default function NewEventPage() {
                                         onChange={handleChange}
                                         required
                                         className="w-full pl-12 pr-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                                        style={{ 
+                                            backgroundColor: 'rgba(58, 58, 60, 0.1)',
+                                            color: 'var(--soft-beige)',
+                                            border: '1px solid rgba(58, 58, 60, 0.2)'
+                                        }}
                                     >
-                                        <option value="">Seleccionar ubicación</option>
+                                        <option value="" style={{ backgroundColor: 'var(--deep-night)', color: 'var(--soft-beige)' }}>Seleccionar ubicación</option>
                                         {LOCATIONS.map(location => (
-                                            <option key={location} value={location}>{location}</option>
+                                            <option key={location} value={location} style={{ backgroundColor: 'var(--deep-night)', color: 'var(--soft-beige)' }}>{location}</option>
                                         ))}
                                     </select>
                                 </div>

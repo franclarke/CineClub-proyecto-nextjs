@@ -32,8 +32,8 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 		setIsProcessing(true)
 		setError(null)
 
-		if (!data || !data.reservation || !data.reservation.id || !data.cartItems?.length) {
-			setError('No se puede procesar el pago sin una reserva válida y productos en el carrito.');
+		if (!data || !data.reservation || !data.reservation.id) {
+			setError('No se puede procesar el pago sin una reserva válida.');
 			setIsProcessing(false);
 			return;
 		}
@@ -44,7 +44,7 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					reservationId: data.reservation.id,
-					items: data.cartItems
+					items: data.cartItems || []
 				})
 			})
 
@@ -53,6 +53,13 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 
 			if (!response.ok) {
 				throw new Error(result.error || 'Error al procesar el pago')
+			}
+
+			// Verificar si es una orden gratuita
+			if (result.isFreeOrder) {
+				console.log('Orden gratuita detectada, redirigiendo a éxito')
+				window.location.href = result.redirectUrl
+				return
 			}
 
 			if (!result.initPoint) { // Nota: El backend envía 'initPoint', no 'init_point'
@@ -226,6 +233,11 @@ export function CheckoutClient({ data }: CheckoutClientProps) {
 						>
 							{isProcessing ? (
 								<div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+							) : data.total === 0 ? (
+								<>
+									<CheckCircle className="w-5 h-5" />
+									<span>Finalizar Reserva Gratuita</span>
+								</>
 							) : (
 								<>
 									<CreditCard className="w-5 h-5" />

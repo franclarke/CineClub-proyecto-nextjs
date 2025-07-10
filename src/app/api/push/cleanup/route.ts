@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
         })
 
     } catch (error) {
-        console.error('Error limpiando suscripciones push:', error)
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }

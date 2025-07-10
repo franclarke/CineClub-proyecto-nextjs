@@ -126,7 +126,62 @@ export async function POST(request: NextRequest) {
 			itemDescription += ` (${discountDescription})`
 		}
 
-		// Crear preferencia de MercadoPago para membresía
+		// Verificar si el precio final es $0 y procesar como membresía gratuita
+		if (finalPrice === 0) {
+			console.log('✓ Membresía gratuita detectada, procesando directamente')
+			
+			try {
+				// Actualizar la membresía del usuario directamente
+				await prisma.user.update({
+					where: { id: user.id },
+					data: {
+						membershipId: membership.id
+					}
+				})
+
+				// Actualizar la orden como completada
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						status: 'completed'
+					}
+				})
+
+				// Crear registro de pago simulado
+				await prisma.payment.create({
+					data: {
+						orderId: order.id,
+						amount: 0,
+						status: 'completed',
+						paymentDate: new Date(),
+						provider: 'Free',
+						providerRef: `FREE_MEMBERSHIP_${Date.now()}`
+					}
+				})
+
+				console.log('✓ Membresía gratuita activada para usuario:', user.id)
+
+				// Retornar URL de éxito para membresía gratuita
+				return NextResponse.json({
+					isFreeUpgrade: true,
+					orderId: order.id,
+					redirectUrl: successUrl,
+					originalPrice: originalPrice,
+					discountAmount: discountAmount,
+					finalPrice: finalPrice,
+					discountApplied: discountPercentage > 0,
+					message: 'Membresía actualizada exitosamente sin costo'
+				})
+
+			} catch (error) {
+				console.error('Error procesando membresía gratuita:', error)
+				return NextResponse.json({ 
+					error: 'Error procesando membresía gratuita' 
+				}, { status: 500 })
+			}
+		}
+
+		// Crear preferencia de MercadoPago para membresía (solo si finalPrice > 0)
 		const preferenceData: MPPreferenceData = {
 			items: [{
 				id: membership.id,

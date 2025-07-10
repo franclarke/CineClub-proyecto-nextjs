@@ -52,7 +52,58 @@ export async function POST(request: NextRequest) {
 			}
 		})
 
-		// Crear preferencia de MercadoPago
+		// Verificar si el precio es $0 y procesar como upgrade gratuito
+		if (targetTier.price === 0) {
+			console.log('✓ Upgrade gratuito detectado, procesando directamente')
+			
+			try {
+				// Actualizar la membresía del usuario directamente
+				await prisma.user.update({
+					where: { id: user.id },
+					data: {
+						membershipId: targetTier.id
+					}
+				})
+
+				// Actualizar la orden como completada
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						status: 'completed'
+					}
+				})
+
+				// Crear registro de pago simulado
+				await prisma.payment.create({
+					data: {
+						orderId: order.id,
+						amount: 0,
+						status: 'completed',
+						paymentDate: new Date(),
+						provider: 'Free',
+						providerRef: `FREE_UPGRADE_${Date.now()}`
+					}
+				})
+
+				console.log('✓ Upgrade gratuito completado para usuario:', user.id)
+
+				// Retornar URL de éxito para upgrade gratuito
+				return NextResponse.json({
+					isFreeUpgrade: true,
+					url: `${process.env.NEXTAUTH_URL}/memberships/payment/success?order_id=${order.id}`,
+					orderId: order.id,
+					message: 'Membresía actualizada exitosamente sin costo'
+				})
+
+			} catch (error) {
+				console.error('Error procesando upgrade gratuito:', error)
+				return NextResponse.json({ 
+					error: 'Error procesando upgrade gratuito' 
+				}, { status: 500 })
+			}
+		}
+
+		// Crear preferencia de MercadoPago (solo si targetTier.price > 0)
 		const preferenceData = {
 			items: [
 				{

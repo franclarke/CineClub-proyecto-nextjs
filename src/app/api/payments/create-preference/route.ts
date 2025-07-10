@@ -71,6 +71,151 @@ function calculateOrderTotals(items: CartItem[], discountPercentage: number = 0)
 	}
 }
 
+// Función para procesar una orden gratuita (total $0)
+async function processFreeOrder(order: any) {
+	try {
+		// Actualizar orden a completada
+		await prisma.order.update({
+			where: { id: order.id },
+			data: { status: 'completed' }
+		})
+
+		// Crear registro de pago simulado
+		await prisma.payment.create({
+			data: {
+				orderId: order.id,
+				amount: 0,
+				status: 'completed',
+				paymentDate: new Date(),
+				provider: 'Free',
+				providerRef: `FREE_${Date.now()}`
+			}
+		})
+
+		// Obtener orden completa con relaciones
+		const completeOrder = await prisma.order.findUnique({
+			where: { id: order.id },
+			include: {
+				items: {
+					include: {
+						product: true
+					}
+				},
+				reservations: true,
+				user: true
+			}
+		})
+
+		if (!completeOrder) {
+			throw new Error('Orden no encontrada después de actualizar')
+		}
+
+		// Procesar items de la orden
+		await processOrderItems(completeOrder)
+
+		return true
+	} catch (error) {
+		throw error
+	}
+}
+
+// Función para procesar items de la orden (reutilizada del webhook)
+async function processOrderItems(order: any) {
+	try {
+		// Si es una orden de signup, crear el usuario
+		if (order.type === 'signup' && order.metadata && typeof order.metadata === 'object') {
+			const metadata = order.metadata as { 
+				userData: { name: string; email: string; password: string }
+				membershipId: string
+			}
+
+			// Verificar si el usuario ya existe
+			const existingUser = await prisma.user.findUnique({
+				where: { email: metadata.userData.email }
+			})
+
+			if (existingUser) {
+				// Actualizar la orden con el userId existente
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: existingUser.id
+					}
+				})
+			} else {
+				// Crear el usuario con los datos almacenados
+				const newUser = await prisma.user.create({
+					data: {
+						name: metadata.userData.name,
+						email: metadata.userData.email,
+						password: metadata.userData.password,
+						membershipId: metadata.membershipId
+					}
+				})
+
+				// Actualizar la orden con el userId
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: newUser.id
+					}
+				})
+
+			}
+		}
+		// Si es una orden de membresía, actualizar la membresía del usuario
+		else if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
+			const metadata = order.metadata as { membershipTierId?: string }
+			const membershipId = metadata.membershipTierId
+
+			if (membershipId) {
+				await prisma.user.update({
+					where: { id: order.userId },
+					data: {
+						membershipId: membershipId
+					}
+				})
+
+			}
+		} else {
+			// Procesar productos - actualizar stock
+			for (const item of order.items) {
+				if (item.productId) {
+					await prisma.product.update({
+						where: { id: item.productId },
+						data: {
+							stock: {
+								decrement: item.quantity
+							}
+						}
+					})
+				}
+			}
+
+			// Procesar reservas - confirmar asientos
+			for (const reservation of order.reservations) {
+				await prisma.reservation.update({
+					where: { id: reservation.id },
+					data: {
+						status: 'confirmed'
+					}
+				})
+
+				// Marcar el asiento como reservado
+				await prisma.seat.update({
+					where: { id: reservation.seatId },
+					data: {
+						isReserved: true
+					}
+				})
+			}
+		}
+
+	} catch (error) {
+		throw error
+	}
+}
+
 // Función para crear preferencia de MercadoPago
 async function createMPPreference(data: MPPreferenceData) {
 	try {
@@ -104,31 +249,25 @@ async function createMPPreference(data: MPPreferenceData) {
 
 		return response
 	} catch (error) {
-		console.error('Error creating MercadoPago preference:', error)
 		throw error
 	}
 }
 
 export async function POST(request: NextRequest) {
 	try {
-		console.log('=== Create Preference API Called ===')
 		
 		// Paso 1: Verificar sesión
 		const session = await getServerSession(authOptions)
 		if (!session?.user?.email) {
-			console.log('No autorizado - Sin sesión')
 			return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 		}
 
-		console.log('✓ Usuario autenticado:', session.user.email)
 
 		// Paso 2: Parsear body
 		let body
 		try {
 			body = await request.json()
-			console.log('✓ Body parseado correctamente')
 		} catch (error) {
-			console.error('Error parseando body:', error)
 			return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
 		}
 
@@ -139,7 +278,6 @@ export async function POST(request: NextRequest) {
 		if (body.items && Array.isArray(body.items)) {
 			items = body.items
 			discountCode = body.discountCode
-			console.log('✓ Items recibidos:', items.length)
 		} else {
 			return NextResponse.json({ error: 'Items requeridos' }, { status: 400 })
 		}
@@ -157,9 +295,7 @@ export async function POST(request: NextRequest) {
 					membership: true
 				}
 			})
-			console.log('✓ Usuario encontrado en BD')
 		} catch (error) {
-			console.error('Error obteniendo usuario:', error)
 			return NextResponse.json({ error: 'Error obteniendo usuario' }, { status: 500 })
 		}
 
@@ -182,7 +318,6 @@ export async function POST(request: NextRequest) {
 					additionalDiscount = discount.percentage
 				}
 			} catch (error) {
-				console.error('Error obteniendo descuento:', error)
 				// Continuar sin descuento adicional
 			}
 		}
@@ -190,7 +325,6 @@ export async function POST(request: NextRequest) {
 		const totalDiscount = membershipDiscount + additionalDiscount
 		const totals = calculateOrderTotals(items, totalDiscount)
 
-		console.log('✓ Totales calculados:', totals)
 
 		// Paso 6: Separar tipos de items
 		const productItems = items.filter(item => item.type === 'product')
@@ -208,9 +342,7 @@ export async function POST(request: NextRequest) {
 						}, { status: 400 })
 					}
 				}
-				console.log('✓ Asientos disponibles')
 			} catch (error) {
-				console.error('Error verificando asientos:', error)
 				return NextResponse.json({ error: 'Error verificando disponibilidad' }, { status: 500 })
 			}
 		}
@@ -236,9 +368,7 @@ export async function POST(request: NextRequest) {
 					items: { include: { product: true } }
 				}
 			})
-			console.log('✓ Orden creada:', order.id)
 		} catch (error) {
-			console.error('Error creando orden:', error)
 			return NextResponse.json({ error: 'Error creando orden' }, { status: 500 })
 		}
 
@@ -248,9 +378,7 @@ export async function POST(request: NextRequest) {
 				where: { id: order.id },
 				data: { externalReference: order.id }
 			})
-			console.log('✓ External reference actualizado')
 		} catch (error) {
-			console.error('Error actualizando external reference:', error)
 			// Continuar, no es crítico
 		}
 
@@ -268,14 +396,39 @@ export async function POST(request: NextRequest) {
 						}
 					})
 				}
-				console.log('✓ Reservaciones creadas')
 			} catch (error) {
-				console.error('Error creando reservaciones:', error)
 				return NextResponse.json({ error: 'Error creando reservaciones' }, { status: 500 })
 			}
 		}
 
-		// Paso 11: Preparar datos para MercadoPago
+		// NUEVO: Verificar si el total es $0 y procesar como orden gratuita
+		if (totals.total === 0) {
+			
+			try {
+				await processFreeOrder(order)
+				
+				// Preparar URL de éxito
+				const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
+				const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+				const successUrl = `${cleanBaseUrl}/checkout/success?order_id=${order.id}`
+				
+				
+				// Retornar URL de éxito directamente
+				return NextResponse.json({
+					isFreeOrder: true,
+					orderId: order.id,
+					redirectUrl: successUrl,
+					message: 'Orden procesada exitosamente sin costo'
+				})
+				
+			} catch (error) {
+				return NextResponse.json({ 
+					error: 'Error procesando orden gratuita' 
+				}, { status: 500 })
+			}
+		}
+
+		// Paso 11: Preparar datos para MercadoPago (solo si total > 0)
 		const mpItems = convertCartItemsToMPItems(items)
 		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
 		const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
@@ -298,15 +451,12 @@ export async function POST(request: NextRequest) {
 			external_reference: order.id
 		}
 
-		console.log('✓ Datos de preferencia preparados')
 
 		// Paso 12: Crear preferencia de MercadoPago
 		let preference
 		try {
 			preference = await createMPPreference(preferenceData)
-			console.log('✓ Preferencia de MercadoPago creada:', preference.id)
 		} catch (error) {
-			console.error('Error creando preferencia de MercadoPago:', error)
 			return NextResponse.json({ 
 				error: 'Error creando preferencia de pago. Verifique configuración de MercadoPago.' 
 			}, { status: 500 })
@@ -323,9 +473,7 @@ export async function POST(request: NextRequest) {
 					providerRef: preference.id
 				}
 			})
-			console.log('✓ Registro de pago creado')
 		} catch (error) {
-			console.error('Error creando registro de pago:', error)
 			// Continuar, no es crítico para el flujo
 		}
 
@@ -337,16 +485,12 @@ export async function POST(request: NextRequest) {
 			sandboxInitPoint: preference.sandbox_init_point
 		}
 
-		console.log('✓ Respuesta preparada:', response)
 
 		return NextResponse.json(response)
 
 	} catch (error) {
-		console.error('Error general en create-preference:', error)
 		
 		if (error instanceof Error) {
-			console.error('Error details:', error.message)
-			console.error('Error stack:', error.stack)
 		}
 		
 		return NextResponse.json(

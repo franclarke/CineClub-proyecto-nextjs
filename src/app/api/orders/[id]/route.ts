@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const orderId = params.id
+		const { id: orderId } = await params
 
 		if (!orderId) {
 			return NextResponse.json({ error: 'ID de orden requerido' }, { status: 400 })
@@ -34,7 +34,7 @@ export async function GET(
 						seat: true
 					}
 				},
-				payments: true
+				payment: true
 			}
 		})
 
@@ -45,7 +45,6 @@ export async function GET(
 		return NextResponse.json(order)
 
 	} catch (error) {
-		console.error('Error obteniendo orden:', error)
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }

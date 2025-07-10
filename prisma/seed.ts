@@ -31,17 +31,13 @@ function getSupabaseImageUrl(imageName: string): string {
 	const supabaseUrl = SUPABASE_IMAGE_URLS[imageName as keyof typeof SUPABASE_IMAGE_URLS]
 	
 	if (supabaseUrl) {
-		console.log(`✅ Usando URL de Supabase para ${imageName}`)
 		return supabaseUrl
 	}
 	
-	console.warn(`⚠️  URL de Supabase no encontrada para ${imageName}, usando URL local`)
 	return `/products/${imageName}`
 }
 
 async function main() {
-	console.log('🌱 Iniciando seed de la base de datos...')
-
 	// Crear tipos de membresía
 	const memberships = await Promise.all([
 		prisma.membershipTier.upsert({
@@ -82,8 +78,6 @@ async function main() {
 		}),
 	])
 
-	console.log('✅ Membresías creadas:', memberships.map(m => m.name).join(', '))
-
 	// Crear usuario administrador
 	const adminPassword = await bcrypt.hash('admin123', 12)
 	const admin = await prisma.user.upsert({
@@ -97,8 +91,6 @@ async function main() {
 			isAdmin: true,
 		},
 	})
-
-	console.log('✅ Usuario administrador creado:', admin.email)
 
 	// Crear usuarios de prueba
 	const userPassword = await bcrypt.hash('user123', 12)
@@ -135,12 +127,7 @@ async function main() {
 		}),
 	])
 
-	console.log('✅ Usuarios de prueba creados:', users.map(u => u.email).join(', '))
-
 	// Crear productos para el kiosco - MENÚ PUFF & CHILL
-	console.log('📸 Configurando URLs de imágenes de Supabase para productos...')
-	
-	// Definir productos con sus imágenes
 	const productData = [
 		{
 			name: 'Rolls de jamón crudo con rúcula y crema de queso',
@@ -259,12 +246,8 @@ async function main() {
 	// Crear productos con URLs de Supabase
 	const products = []
 	for (const product of productData) {
-		console.log(`📸 Configurando ${product.imageName}...`)
-		
-		// Obtener URL de Supabase
 		const imageUrl = getSupabaseImageUrl(product.imageName)
 		
-		// Crear producto con la URL de Supabase
 		const createdProduct = await prisma.product.upsert({
 			where: { name: product.name },
 			update: {},
@@ -278,87 +261,22 @@ async function main() {
 		})
 		
 		products.push(createdProduct)
-		console.log(`✅ ${product.name} - ${imageUrl}`)
 	}
 
-	console.log('✅ Productos creados:', products.length, 'productos')
+	// Crear código de descuento FREE con 100% de descuento
+	const discount = await prisma.discount.upsert({
+		where: { code: 'FREE' },
+		update: {},
+		create: {
+			code: 'FREE',
+			description: 'Cupón gratuito con 100% de descuento',
+			percentage: 100.0,
+			validFrom: new Date(),
+			validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 año
+		},
+	})
 
-	// Crear códigos de descuento - AMPLIADO
-	const discounts = await Promise.all([
-		prisma.discount.upsert({
-			where: { code: 'WELCOME10' },
-			update: {},
-			create: {
-				code: 'WELCOME10',
-				description: 'Descuento de bienvenida para nuevos miembros',
-				percentage: 10.0,
-				validFrom: new Date(),
-				validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
-			},
-		}),
-		prisma.discount.upsert({
-			where: { code: 'PUFFXXL20' },
-			update: {},
-			create: {
-				code: 'PUFFXXL20',
-				description: 'Descuento exclusivo para miembros Puff XXL Estelar',
-				percentage: 20.0,
-				membershipTierId: memberships[2].id, // Solo para Puff XXL Estelar
-				validFrom: new Date(),
-				validUntil: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 días
-			},
-		}),
-		prisma.discount.upsert({
-			where: { code: 'REPOSERA15' },
-			update: {},
-			create: {
-				code: 'REPOSERA15',
-				description: 'Descuento especial para miembros Reposera Deluxe',
-				percentage: 15.0,
-				membershipTierId: memberships[1].id, // Solo para Reposera Deluxe
-				validFrom: new Date(),
-				validUntil: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), // 45 días
-			},
-		}),
-		prisma.discount.upsert({
-			where: { code: 'WEEKEND25' },
-			update: {},
-			create: {
-				code: 'WEEKEND25',
-				description: 'Descuento especial de fin de semana',
-				percentage: 25.0,
-				validFrom: new Date(),
-				validUntil: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 días
-			},
-		}),
-		prisma.discount.upsert({
-			where: { code: 'BANQUITO5' },
-			update: {},
-			create: {
-				code: 'BANQUITO5',
-				description: 'Descuento para miembros Banquito',
-				percentage: 5.0,
-				membershipTierId: memberships[0].id, // Solo para Banquito
-				validFrom: new Date(),
-				validUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 días
-			},
-		}),
-		prisma.discount.upsert({
-			where: { code: 'FIRSTBUY' },
-			update: {},
-			create: {
-				code: 'FIRSTBUY',
-				description: 'Descuento para primera compra',
-				percentage: 12.0,
-				validFrom: new Date(),
-				validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 año
-			},
-		}),
-	])
-
-	console.log('✅ Códigos de descuento creados:', discounts.map(d => d.code).join(', '))
-
-	// Crear eventos - AMPLIADO
+	// Crear eventos con fechas actuales
 	const events = await Promise.all([
 		prisma.event.upsert({
 			where: { title: 'Noche de Clásicos: Inception' },
@@ -366,12 +284,12 @@ async function main() {
 			create: {
 				title: 'Noche de Clásicos: Inception',
 				description: 'Una experiencia mental única con Christopher Nolan. Sumérgete en el mundo de los sueños con esta obra maestra del cine.',
-				dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // En 7 días
+				dateTime: new Date('2025-07-15T20:30:00.000Z'),
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Ciencia Ficción',
 				imdbId: 'tt1375666',
 				tmdbId: '27205',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', // Inception
+				imageUrl: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -380,12 +298,12 @@ async function main() {
 			create: {
 				title: 'Ciencia Ficción: Blade Runner 2049',
 				description: 'Una experiencia visual impresionante en el futuro distópico. Blade Runner 2049 te transportará a un mundo cyberpunk bajo las estrellas.',
-				dateTime: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000), // En 28 días
+				dateTime: new Date('2025-07-22T20:30:00.000Z'),
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Ciencia Ficción',
 				imdbId: 'tt1856101',
 				tmdbId: '335984',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg', // Blade Runner 2049
+				imageUrl: 'https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -394,12 +312,12 @@ async function main() {
 			create: {
 				title: 'Superhéroes: Spider-Man: No Way Home',
 				description: 'La película más épica del multiverso Spider-Man. Una noche llena de acción y nostalgia bajo el cielo nocturno.',
-				dateTime: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000), // En 35 días
+				dateTime: new Date('2025-07-29T20:30:00.000Z'),
 				location: 'Terraza Norte - Puff & Chill',
 				category: 'Superhéroes',
 				imdbId: 'tt10872600',
 				tmdbId: '634649',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg', // Spider-Man: No Way Home
+				imageUrl: 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -408,12 +326,12 @@ async function main() {
 			create: {
 				title: 'Terror Moderno: Get Out',
 				description: 'Horror psicológico y social de Jordan Peele. Una experiencia aterradora que te hará reflexionar sobre temas profundos.',
-				dateTime: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000), // En 42 días
+				dateTime: new Date('2025-08-05T20:30:00.000Z'),
 				location: 'Jardín Secreto - Puff & Chill',
 				category: 'Terror Moderno',
 				imdbId: 'tt5052448',
 				tmdbId: '419430',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg', // Get Out
+				imageUrl: 'https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -422,12 +340,12 @@ async function main() {
 			create: {
 				title: 'Acción Épica: Avengers: Endgame',
 				description: 'La batalla final del universo cinematográfico de Marvel. Una experiencia épica que cierra una década de aventuras superheroicas.',
-				dateTime: new Date(Date.now() + 56 * 24 * 60 * 60 * 1000), // En 56 días
+				dateTime: new Date('2025-08-12T20:30:00.000Z'),
 				location: 'Terraza Principal - Puff & Chill',
 				category: 'Acción Épica',
 				imdbId: 'tt4154796',
 				tmdbId: '299534',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg', // Avengers: Endgame
+				imageUrl: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -436,12 +354,12 @@ async function main() {
 			create: {
 				title: 'Drama: The Shawshank Redemption',
 				description: 'Una historia atemporal sobre esperanza y redención. Considerada una de las mejores películas de todos los tiempos.',
-				dateTime: new Date(Date.now() + 63 * 24 * 60 * 60 * 1000), // En 63 días
+				dateTime: new Date('2025-08-19T20:30:00.000Z'),
 				location: 'Terraza Norte - Puff & Chill',
 				category: 'Drama',
 				imdbId: 'tt0111161',
 				tmdbId: '278',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg', // The Shawshank Redemption
+				imageUrl: 'https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -450,12 +368,12 @@ async function main() {
 			create: {
 				title: 'Thriller: Joker',
 				description: 'La transformación de Arthur Fleck en el icónico villano. Una experiencia psicológicamente intensa con la actuación ganadora del Oscar de Joaquin Phoenix.',
-				dateTime: new Date(Date.now() + 70 * 24 * 60 * 60 * 1000), // En 70 días
+				dateTime: new Date('2025-08-26T20:30:00.000Z'),
 				location: 'Jardín Sur - Puff & Chill',
 				category: 'Thriller Psicológico',
 				imdbId: 'tt7286456',
 				tmdbId: '475557',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg', // Joker
+				imageUrl: 'https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -464,12 +382,12 @@ async function main() {
 			create: {
 				title: 'Drama Musical: La La Land',
 				description: 'Romance, música y sueños en Los Ángeles. Una experiencia mágica que combina perfectamente con una noche bajo las estrellas.',
-				dateTime: new Date(Date.now() + 77 * 24 * 60 * 60 * 1000), // En 77 días
+				dateTime: new Date('2025-09-02T20:30:00.000Z'),
 				location: 'Jardín Central - Puff & Chill',
 				category: 'Drama Musical',
 				imdbId: 'tt3783958',
 				tmdbId: '313369',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg', // La La Land
+				imageUrl: 'https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg',
 			},
 		}),
 		prisma.event.upsert({
@@ -478,17 +396,15 @@ async function main() {
 			create: {
 				title: 'Animación: El Viaje de Chihiro',
 				description: 'Una noche familiar con la obra maestra de Studio Ghibli. Magia, aventura y hermosos paisajes bajo el cielo nocturno.',
-				dateTime: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000), // En 42 días
+				dateTime: new Date('2025-09-09T20:30:00.000Z'),
 				location: 'Terraza Norte - Puff & Chill',
 				category: 'Animación Familiar',
 				imdbId: 'tt0245429',
 				tmdbId: '129',
-				imageUrl: 'https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg', // Spirited Away
+				imageUrl: 'https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg',
 			},
 		}),
 	])
-
-	console.log('✅ Eventos creados:', events.length, 'eventos')
 
 	// Crear asientos para todos los eventos con distribución de anfiteatro
 	let totalSeats = 0
@@ -534,9 +450,6 @@ async function main() {
 		})
 		totalSeats += seats.length
 	}
-
-	console.log('✅ Asientos creados:', totalSeats, 'asientos total')
-	console.log('🎭 Distribución anfiteatro: Puff XXL Estelar (6), Reposera Deluxe (10), Banquito (14) por evento')
 
 	// Crear algunas reservas de ejemplo
 	const inceptionEvent = events.find(e => e.title.includes('Inception'))
@@ -635,29 +548,25 @@ async function main() {
 				data: { isReserved: true }
 			})
 		}
-
-		console.log('✅ Reservas creadas:', reservationsCreated, 'reservas')
 	}
 
 	// Crear órdenes de ejemplo con items
-	const sampleProducts = products // Tomar todos los productos para las órdenes
-
 	const orders = await Promise.all([
 		// Orden 1 - Carlos
 		prisma.order.create({
 			data: {
 				userId: users[0].id,
-				status: 'paid',
+				status: 'completed',
 				totalAmount: 4200, // $1200 x 2 + $1800 x 1
 				items: {
 					create: [
 						{
-							productId: sampleProducts[5].id, // Palomitas clásicas
+							productId: products[5].id, // Palomitas clásicas
 							quantity: 2,
 							price: 1200,
 						},
 						{
-							productId: sampleProducts[14].id, // Limonada casera
+							productId: products[13].id, // Limonada casera
 							quantity: 1,
 							price: 1800,
 						},
@@ -669,22 +578,22 @@ async function main() {
 		prisma.order.create({
 			data: {
 				userId: users[1].id,
-				status: 'paid',
+				status: 'completed',
 				totalAmount: 6300, // $2500 + $1800 + $2000
 				items: {
 					create: [
 						{
-							productId: sampleProducts[3].id, // Nachos con Guacamole
+							productId: products[3].id, // Nachos con Guacamole
 							quantity: 1,
 							price: 2500,
 						},
 						{
-							productId: sampleProducts[8].id, // Cookies gourmet
+							productId: products[7].id, // Cookies gourmet
 							quantity: 1,
 							price: 1800,
 						},
 						{
-							productId: sampleProducts[15].id, // Jugo exprimido
+							productId: products[14].id, // Jugo exprimido
 							quantity: 1,
 							price: 2000,
 						},
@@ -701,17 +610,17 @@ async function main() {
 				items: {
 					create: [
 						{
-							productId: sampleProducts[4].id, // Mini empanadas gourmet
+							productId: products[4].id, // Mini empanadas gourmet
 							quantity: 1,
 							price: 2800,
 						},
 						{
-							productId: sampleProducts[10].id, // Barra de chocolate artesanal
+							productId: products[9].id, // Barra de chocolate artesanal
 							quantity: 1,
 							price: 2200,
 						},
 						{
-							productId: sampleProducts[0].id, // Rolls de jamón crudo
+							productId: products[0].id, // Rolls de jamón crudo
 							quantity: 1,
 							price: 3000,
 						},
@@ -719,115 +628,63 @@ async function main() {
 				}
 			}
 		}),
-		// Orden 4 - Carlos (segunda orden)
-		prisma.order.create({
-			data: {
-				userId: users[0].id,
-				status: 'paid',
-				totalAmount: 4000, // $2000 + $2000
-				items: {
-					create: [
-						{
-							productId: sampleProducts[11].id, // Cappuccino
-							quantity: 1,
-							price: 2000,
-						},
-						{
-							productId: sampleProducts[15].id, // Jugo exprimido
-							quantity: 1,
-							price: 2000,
-						},
-					]
-				}
-			}
-		}),
 	])
 
-	console.log('✅ Órdenes creadas:', orders.length, 'órdenes')
-
-	// Crear pagos para las órdenes pagadas
-	const paidOrders = orders.filter(order => order.status === 'paid')
+	// Crear pagos para las órdenes completadas
+	const completedOrders = orders.filter(order => order.status === 'completed')
 	const payments = await Promise.all(
-		paidOrders.map((order, index) => 
+		completedOrders.map((order, index) => 
 			prisma.payment.create({
 				data: {
 					orderId: order.id,
 					amount: order.totalAmount,
-					status: 'paid',
+					status: 'completed',
 					paymentDate: new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000), // Pagos en días pasados
-					provider: 'Mercado Pago',
-					providerRef: `MP_${Math.random().toString(36).substring(2, 15).toUpperCase()}`,
+					provider: order.totalAmount === 0 ? 'Free' : 'Mercado Pago',
+					providerRef: order.totalAmount === 0 ? 'FREE_ORDER' : `MP_${Math.random().toString(36).substring(2, 15).toUpperCase()}`,
 				}
 			})
 		)
 	)
 
-	console.log('✅ Pagos creados:', payments.length, 'pagos')
-
 	// Actualizar stock de productos vendidos
 	await prisma.product.update({
-		where: { id: sampleProducts[5].id }, // Palomitas clásicas
+		where: { id: products[5].id }, // Palomitas clásicas
 		data: { stock: { decrement: 2 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[14].id }, // Limonada casera
+		where: { id: products[13].id }, // Limonada casera
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[3].id }, // Nachos con Guacamole
+		where: { id: products[3].id }, // Nachos con Guacamole
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[8].id }, // Cookies gourmet
+		where: { id: products[7].id }, // Cookies gourmet
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[15].id }, // Jugo exprimido
+		where: { id: products[14].id }, // Jugo exprimido
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[4].id }, // Mini empanadas gourmet
+		where: { id: products[4].id }, // Mini empanadas gourmet
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[10].id }, // Barra de chocolate artesanal
+		where: { id: products[9].id }, // Barra de chocolate artesanal
 		data: { stock: { decrement: 1 } }
 	})
 	await prisma.product.update({
-		where: { id: sampleProducts[0].id }, // Rolls de jamón crudo
+		where: { id: products[0].id }, // Rolls de jamón crudo
 		data: { stock: { decrement: 1 } }
 	})
-	await prisma.product.update({
-		where: { id: sampleProducts[11].id }, // Cappuccino
-		data: { stock: { decrement: 1 } }
-	})
-	await prisma.product.update({
-		where: { id: sampleProducts[15].id }, // Jugo exprimido (segunda compra)
-		data: { stock: { decrement: 1 } }
-	})
-
-	console.log('✅ Stock de productos actualizado')
-
-	console.log('🎉 Seed completado exitosamente!')
-	console.log('\n📊 Resumen de datos creados:')
-	console.log(`💳 Pagos: ${payments.length}`)
-	console.log(`🎭 Distribución de asientos por evento:`)
-	console.log(`   • Puff XXL Estelar: 6 asientos (fila frontal VIP)`)
-	console.log(`   • Reposera Deluxe: 10 asientos (fila media)`)
-	console.log(`   • Banquito: 14 asientos (fila trasera)`)
-	console.log(`   • Total: 30 asientos por evento`)
-	console.log(`📸 Imágenes de productos: ${products.length} imágenes desde Supabase`)
-
-	console.log('\n📋 Credenciales de prueba:')
-	console.log('👤 Admin: admin@puffandchill.com / admin123')
-	console.log('👤 Usuario Banquito: carlos@test.com / user123')
-	console.log('👤 Usuario Reposera Deluxe: maria@test.com / user123')
-	console.log('👤 Usuario Puff XXL Estelar: ana@test.com / user123')
 }
 
 main()
 	.catch((e) => {
-		console.error('❌ Error durante el seed:', e)
+		console.error('Error durante el seed:', e)
 		process.exit(1)
 	})
 	.finally(async () => {

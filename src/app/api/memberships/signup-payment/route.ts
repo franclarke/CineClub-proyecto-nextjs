@@ -274,7 +274,66 @@ export async function POST(request: NextRequest) {
 			itemDescription += ` (${discountDescription})`
 		}
 
-		// Crear preferencia de MercadoPago
+		// Verificar si el precio final es $0 y procesar como membresía gratuita
+		if (finalPrice === 0) {
+			console.log('✓ Membresía gratuita detectada, procesando directamente')
+			
+			try {
+				// Crear el usuario directamente
+				const newUser = await prisma.user.create({
+					data: {
+						name: validatedUserData.name,
+						email: validatedUserData.email,
+						password: hashedPassword,
+						membershipId: membership.id
+					}
+				})
+
+				// Actualizar la orden con el userId y marcar como completada
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: newUser.id,
+						status: 'completed'
+					}
+				})
+
+				// Crear registro de pago simulado
+				await prisma.payment.create({
+					data: {
+						orderId: order.id,
+						amount: 0,
+						status: 'completed',
+						paymentDate: new Date(),
+						provider: 'Free',
+						providerRef: `FREE_SIGNUP_${Date.now()}`
+					}
+				})
+
+				console.log('✓ Usuario creado y membresía gratuita activada:', newUser.id)
+
+				// Retornar URL de éxito para membresía gratuita
+				return NextResponse.json({
+					isFreeSignup: true,
+					userId: newUser.id,
+					orderId: order.id,
+					redirectUrl: `${cleanBaseUrl}/memberships/signup/success?user_id=${newUser.id}&auto_login=true`,
+					originalPrice: originalPrice,
+					discountAmount: discountAmount,
+					finalPrice: finalPrice,
+					discountApplied: discountPercentage > 0,
+					message: 'Membresía activada exitosamente sin costo'
+				})
+
+			} catch (error) {
+				console.error('Error procesando membresía gratuita:', error)
+				return NextResponse.json({ 
+					error: 'Error procesando membresía gratuita' 
+				}, { status: 500 })
+			}
+		}
+
+		// Crear preferencia de MercadoPago (solo si finalPrice > 0)
 		const preferenceData: MPPreferenceData = {
 			items: [{
 				id: membership.id,

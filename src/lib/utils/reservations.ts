@@ -21,13 +21,10 @@ export async function cleanupExpiredReservations(eventId?: string, expirationMin
 			where: whereClause
 		})
 
-		if (deletedReservations.count > 0) {
-			console.log(`Limpieza automática: eliminadas ${deletedReservations.count} reservas expiradas${eventId ? ` para el evento ${eventId}` : ''}`)
-		}
+		// Cleanup completed
 
 		return deletedReservations.count
 	} catch (error) {
-		console.error('Error limpiando reservas expiradas:', error)
 		return 0
 	}
 }
@@ -73,7 +70,6 @@ export async function isSeatAvailable(seatId: string): Promise<boolean> {
 
 		return true // Asiento disponible
 	} catch (error) {
-		console.error('Error verificando disponibilidad del asiento:', error)
 		return false
 	}
 }
@@ -102,7 +98,6 @@ export async function getReservationTimeRemaining(reservationId: string): Promis
 
 		return Math.ceil((expirationTime.getTime() - now.getTime()) / (60 * 1000))
 	} catch (error) {
-		console.error('Error obteniendo tiempo restante de reserva:', error)
 		return null
 	}
 } 

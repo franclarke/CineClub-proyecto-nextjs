@@ -26,18 +26,10 @@ const checkSupabaseConfig = () => {
   const url = getSupabaseUrl()
   const key = getSupabaseKey()
   
-  // Debug logging
-  console.log('🔍 Verificando configuración de Supabase...')
-  console.log('📍 Environment:', typeof window !== 'undefined' ? 'client' : 'server')
-  console.log('🌐 URL configurada:', url ? `✅ ${url.substring(0, 30)}...` : '❌ No definida')
-  console.log('🔑 Key configurada:', key ? `✅ ${key.substring(0, 30)}...` : '❌ No definida')
-  
   const isValid = url && key && 
     url !== 'https://your-project.supabase.co' && 
     key !== 'your-anon-key-here' &&
     url.includes('supabase.co')
-    
-  console.log('✅ Configuración válida:', isValid ? '✅ Sí' : '❌ No')
   
   return isValid
 }
@@ -50,7 +42,7 @@ export const supabase = isSupabaseConfigured
   ? createClient(getSupabaseUrl()!, getSupabaseKey()!)
   : null
 
-console.log('🔌 Cliente Supabase:', supabase ? '✅ Creado correctamente' : '❌ No se pudo crear')
+// Supabase client initialized
 
 /**
  * Check if Supabase is properly configured
@@ -155,16 +147,43 @@ export async function uploadProductImage(file: File, productId: string): Promise
 }
 
 /**
+ * Extracts the file path from a Supabase storage URL
+ * @param imageUrl - The full Supabase storage URL
+ * @returns The file path to use with storage.remove()
+ */
+function extractFilePathFromSupabaseUrl(imageUrl: string): string {
+  // Handle different URL formats:
+  // 1. Full Supabase URL: https://project.supabase.co/storage/v1/object/public/bucket/filename
+  // 2. Relative path: products/filename
+  // 3. Just filename: filename
+  
+  if (imageUrl.includes('/storage/v1/object/public/products/')) {
+    // Extract everything after /products/
+    const match = imageUrl.match(/\/storage\/v1\/object\/public\/products\/(.+)/)
+    return match ? match[1] : imageUrl.split('/').pop() || imageUrl
+  }
+  
+  if (imageUrl.startsWith('products/')) {
+    // Remove the bucket prefix
+    return imageUrl.replace('products/', '')
+  }
+  
+  // If it's just a filename or unknown format, use the last part
+  return imageUrl.split('/').pop() || imageUrl
+}
+
+/**
  * Deletes an image from the products bucket
  * @param imageUrl - The full URL or path of the image to delete
  * @returns Promise with success status
  */
 export async function deleteProductImage(imageUrl: string): Promise<{ success: boolean; error?: string }> {
   try {
-    if (!imageUrl) return { success: true }
+    if (!imageUrl) {
+      return { success: true }
+    }
 
     if (!isSupabaseConfigured) {
-      console.warn('Supabase not configured, skipping image deletion')
       return { success: true } // Don't fail the product deletion
     }
 
@@ -172,21 +191,26 @@ export async function deleteProductImage(imageUrl: string): Promise<{ success: b
       return { success: false, error: 'Cliente de Supabase no disponible' }
     }
     
-    // Extract filename from URL
-    const urlParts = imageUrl.split('/')
-    const fileName = urlParts[urlParts.length - 1]
+    // Extract filename from URL using the improved function
+    const fileName = extractFilePathFromSupabaseUrl(imageUrl)
     
     const { error } = await supabase.storage
       .from('products')
       .remove([fileName])
 
     if (error) {
+      // Check if the error is because the file doesn't exist
+      if (error.message.includes('not found') || error.message.includes('does not exist')) {
+        return { success: true } // Consider it successful if file doesn't exist
+      }
+      
       return { success: false, error: error.message }
     }
 
     return { success: true }
   } catch (error) {
-    return { success: false, error: 'Error deleting image' }
+    const errorMessage = error instanceof Error ? error.message : 'Error deleting image'
+    return { success: false, error: errorMessage }
   }
 }
 
@@ -216,5 +240,68 @@ export async function updateProductImage(
     return await uploadProductImage(file, productId)
   } catch (error) {
     return { error: 'Error updating image' }
+  }
+} 
+
+/**
+ * Lists all files in the products bucket
+ * @returns Promise with list of files or error
+ */
+export async function listProductImages(): Promise<{ files?: any[]; error?: string }> {
+  try {
+    if (!isSupabaseConfigured) {
+      return { error: getSupabaseConfigError() }
+    }
+
+    if (!supabase) {
+      return { error: 'Cliente de Supabase no disponible' }
+    }
+
+    const { data, error } = await supabase.storage
+      .from('products')
+      .list('', {
+        limit: 100,
+        offset: 0
+      })
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    return { files: data }
+  } catch (error) {
+    return { error: 'Error listing images' }
+  }
+}
+
+/**
+ * Checks if a file exists in the products bucket
+ * @param fileName - The filename to check
+ * @returns Promise with existence status
+ */
+export async function checkFileExists(fileName: string): Promise<{ exists: boolean; error?: string }> {
+  try {
+    if (!isSupabaseConfigured) {
+      return { exists: false, error: getSupabaseConfigError() }
+    }
+
+    if (!supabase) {
+      return { exists: false, error: 'Cliente de Supabase no disponible' }
+    }
+
+    const { data, error } = await supabase.storage
+      .from('products')
+      .list('', {
+        search: fileName
+      })
+
+    if (error) {
+      return { exists: false, error: error.message }
+    }
+
+    const exists = data.some(file => file.name === fileName)
+    return { exists }
+  } catch (error) {
+    return { exists: false, error: 'Error checking file existence' }
   }
 } 

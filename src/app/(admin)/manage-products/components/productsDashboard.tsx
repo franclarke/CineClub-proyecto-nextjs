@@ -21,9 +21,10 @@ interface ImageUploadProps {
     currentImageUrl?: string
     onImageSelect: (file: File | null) => void
     onError: (error: string) => void
+    onImageRemove?: () => void
 }
 
-function ImageUpload({ currentImageUrl, onImageSelect, onError }: ImageUploadProps) {
+function ImageUpload({ currentImageUrl, onImageSelect, onError, onImageRemove }: ImageUploadProps) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
@@ -64,6 +65,10 @@ function ImageUpload({ currentImageUrl, onImageSelect, onError }: ImageUploadPro
         setPreviewUrl(null)
         setSelectedFile(null)
         onImageSelect(null)
+        // Call the image removal callback if provided
+        if (onImageRemove) {
+            onImageRemove()
+        }
         // Reset the file input
         const fileInput = document.getElementById('image-upload') as HTMLInputElement
         if (fileInput) {
@@ -136,6 +141,7 @@ export default function ProductsDashboard() {
     const [editSuccess, setEditSuccess] = useState(false)
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
     const [submitting, setSubmitting] = useState(false)
+    const [imageRemoved, setImageRemoved] = useState(false)
 
     // Ocultar mensajes de success automáticamente
     useEffect(() => {
@@ -201,10 +207,11 @@ export default function ProductsDashboard() {
                 return
             }
 
-            let imageUrl = form.imageUrl
+            let imageUrl: string | undefined = form.imageUrl
 
-            // Upload image if a new file is selected
+            // Determine the final image URL based on the current state
             if (selectedImageFile) {
+                // New image file selected - upload it
                 const tempId = Date.now().toString()
                 const result = await uploadProductImage(selectedImageFile, tempId)
                 
@@ -216,6 +223,9 @@ export default function ProductsDashboard() {
                 if (result.url) {
                     imageUrl = result.url
                 }
+            } else if (imageRemoved || form.imageUrl === '') {
+                // Image was explicitly removed or form has empty string
+                imageUrl = undefined
             }
 
             const productData = {
@@ -223,7 +233,7 @@ export default function ProductsDashboard() {
                 description: form.description || undefined,
                 price: Number(form.price),
                 stock: Number(form.stock),
-                imageUrl: imageUrl || undefined
+                imageUrl: imageUrl
             }
 
             if (editId) {
@@ -239,6 +249,7 @@ export default function ProductsDashboard() {
             // Reset form
             setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
             setSelectedImageFile(null)
+            setImageRemoved(false)
             setEditId(null)
             setShowForm(false)
             fetchProducts()
@@ -273,6 +284,7 @@ export default function ProductsDashboard() {
                     imageUrl: prod.imageUrl || '',
                 })
                 setSelectedImageFile(null) // Reset selected file when editing
+                setImageRemoved(false) // Reset image removed state when editing
                 setEditId(id)
                 setShowForm(true)
             }
@@ -284,6 +296,14 @@ export default function ProductsDashboard() {
     // Handle image selection
     const handleImageSelect = (file: File | null) => {
         setSelectedImageFile(file)
+        setImageRemoved(false) // Reset image removed state when selecting new file
+    }
+
+    // Handle image removal
+    const handleImageRemove = () => {
+        setImageRemoved(true)
+        setSelectedImageFile(null)
+        setForm({ ...form, imageUrl: '' })
     }
 
     // Handle image upload error
@@ -295,6 +315,7 @@ export default function ProductsDashboard() {
     const resetForm = () => {
         setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
         setSelectedImageFile(null)
+        setImageRemoved(false)
         setEditId(null)
         setShowForm(false)
         setError(null)
@@ -434,6 +455,7 @@ export default function ProductsDashboard() {
                                 currentImageUrl={form.imageUrl}
                                 onImageSelect={handleImageSelect}
                                 onError={handleImageError}
+                                onImageRemove={handleImageRemove}
                             />
 
                             <div>

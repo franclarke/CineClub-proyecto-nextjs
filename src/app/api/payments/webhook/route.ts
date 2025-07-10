@@ -6,7 +6,7 @@ import { Order, OrderItem, Reservation, User } from '@prisma/client'
 type OrderWithItems = Order & {
 	items: OrderItem[]
 	reservations: Reservation[]
-	user: User
+	user: User | null
 }
 
 export async function POST(request: NextRequest) {
@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
 					}
 				})
 
-				console.log(`Pago fallido: eliminadas ${deletedReservations.count} reservas pendientes para la orden ${order.id}`)
 			}
 
 			return NextResponse.json({ received: true })
@@ -114,7 +113,6 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ received: true })
 	} catch (error) {
-		console.error('Error procesando webhook:', error)
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }
@@ -158,7 +156,6 @@ async function processOrderItems(order: OrderWithItems) {
 			})
 
 			if (existingUser) {
-				console.log(`Usuario ${existingUser.id} ya existe, actualizando orden`)
 				// Actualizar la orden con el userId existente
 				await prisma.order.update({
 					where: { id: order.id },
@@ -185,7 +182,6 @@ async function processOrderItems(order: OrderWithItems) {
 					}
 				})
 
-				console.log(`Usuario ${newUser.id} creado exitosamente con membresía ${metadata.membershipId}`)
 			}
 		}
 		// Si es una orden de membresía, actualizar la membresía del usuario
@@ -193,7 +189,7 @@ async function processOrderItems(order: OrderWithItems) {
 			const metadata = order.metadata as { membershipTierId?: string }
 			const membershipId = metadata.membershipTierId
 
-			if (membershipId) {
+			if (membershipId && order.userId) {
 				await prisma.user.update({
 					where: { id: order.userId },
 					data: {
@@ -201,7 +197,6 @@ async function processOrderItems(order: OrderWithItems) {
 					}
 				})
 
-				console.log(`Membresía ${membershipId} activada para usuario ${order.userId}`)
 			}
 		} else {
 			// Procesar productos - actualizar stock
@@ -237,9 +232,7 @@ async function processOrderItems(order: OrderWithItems) {
 			}
 		}
 
-		console.log(`Orden ${order.id} procesada exitosamente: ${order.items.length} productos, ${order.reservations.length} reservas`)
 	} catch (error) {
-		console.error('Error procesando items de la orden:', error)
 		throw error
 	}
 }

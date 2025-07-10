@@ -108,72 +108,47 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 		}
 
 		try {
-			// Verificar si el precio final es 0
-			const { finalPrice } = getSelectedMembershipPrice()
-			
-			if (finalPrice === 0) {
-				// Si el precio es 0, crear el usuario directamente sin MercadoPago
-				const directSignupResponse = await fetch('/api/memberships/signup-payment', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						userData: data,
-						membershipId: selectedMembership,
-						discountCode: appliedDiscount ? discountCode : null,
-						skipPayment: true // Flag para indicar que se salte el pago
-					}),
-				})
+			// Llamar al endpoint de signup payment
+			const paymentResponse = await fetch('/api/memberships/signup-payment', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					userData: data,
+					membershipId: selectedMembership,
+					discountCode: appliedDiscount ? discountCode : null
+				}),
+			})
 
-				if (!directSignupResponse.ok) {
-					const errorData = await directSignupResponse.json()
-					setError(errorData.error || 'Error al crear la cuenta')
-					return
-				}
+			if (!paymentResponse.ok) {
+				const errorData = await paymentResponse.json()
+				setError(errorData.error || 'Error al procesar el registro')
+				return
+			}
 
-				const signupData = await directSignupResponse.json()
-				
-				// Redirigir a la página de éxito con auto-login
-				window.location.href = `/memberships/signup/success?user_id=${signupData.userId}&auto_login=true`
-				
+			const paymentData = await paymentResponse.json()
+
+			// Verificar si es una membresía gratuita
+			if (paymentData.isFreeSignup) {
+				// Membresía gratuita detectada, redirigiendo a éxito
+				window.location.href = paymentData.redirectUrl
+				return
+			}
+
+			// Si no es gratuita, redirigir a MercadoPago
+			if (paymentData.initPoint) {
+				// En desarrollo usar sandbox, en producción usar initPoint normal
+				const redirectUrl = process.env.NODE_ENV === 'development' 
+					? paymentData.sandboxInitPoint 
+					: paymentData.initPoint
+
+				window.location.href = redirectUrl
 			} else {
-				// Si el precio es mayor a 0, proceder con MercadoPago
-				const paymentResponse = await fetch('/api/memberships/signup-payment', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						userData: data,
-						membershipId: selectedMembership,
-						discountCode: appliedDiscount ? discountCode : null
-					}),
-				})
-
-				if (!paymentResponse.ok) {
-					const errorData = await paymentResponse.json()
-					setError(errorData.error || 'Error al procesar el pago')
-					return
-				}
-
-				const paymentData = await paymentResponse.json()
-
-				// Redirigir a MercadoPago
-				if (paymentData.initPoint) {
-					// En desarrollo usar sandbox, en producción usar initPoint normal
-					const redirectUrl = process.env.NODE_ENV === 'development' 
-						? paymentData.sandboxInitPoint 
-						: paymentData.initPoint
-
-					window.location.href = redirectUrl
-				} else {
-					setError('Error al generar el enlace de pago')
-				}
+				setError('Error al generar el enlace de pago')
 			}
 
 		} catch (error) {
-			console.error('Error en signup:', error)
 			setError('Error al procesar el registro')
 		} finally {
 			setIsLoading(false)

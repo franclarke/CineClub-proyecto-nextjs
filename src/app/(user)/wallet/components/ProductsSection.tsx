@@ -192,10 +192,10 @@ export function ProductsSection({ orders, searchQuery = '' }: ProductsSectionPro
 						<ShoppingBagIcon className="w-10 h-10 text-sunset-orange" />
 					</div>
 					<h3 className="text-2xl font-bold text-soft-beige mb-4">
-						No tienes productos pagados
+						No tienes productos disponibles
 					</h3>
 					<p className="text-soft-beige/60 mb-8 leading-relaxed">
-						Los productos que compres y sean pagados aparecerán aquí para su canje
+						Los productos que compres aparecerán aquí para su canje
 					</p>
 					<Link
 						href="/events"

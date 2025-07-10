@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
                 )
                 return { success: true, endpoint: subscription.endpoint }
             } catch (error) {
-                console.error('Error enviando notificación a:', subscription.endpoint, error)
                 
                 // Si la suscripción es inválida (410 o 403), la eliminamos
                 if ((error as any)?.statusCode === 410 || (error as any)?.statusCode === 403) {
@@ -86,9 +85,7 @@ export async function POST(req: NextRequest) {
                         await prisma.pushSubscription.delete({
                             where: { id: subscription.id }
                         })
-                        console.log('Suscripción inválida eliminada (VAPID mismatch o endpoint muerto):', subscription.endpoint)
                     } catch (deleteError) {
-                        console.error('Error eliminando suscripción inválida:', deleteError)
                     }
                 }
                 
@@ -110,7 +107,6 @@ export async function POST(req: NextRequest) {
         })
 
     } catch (error) {
-        console.error('Error en endpoint de notificaciones push:', error)
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }

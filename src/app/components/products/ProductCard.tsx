@@ -39,7 +39,6 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 				setIsAdding(false)
 			}, 800)
 		} catch (error) {
-			console.error('Error adding product to cart:', error)
 			setIsAdding(false)
 		}
 	}
