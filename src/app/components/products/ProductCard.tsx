@@ -39,7 +39,6 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 				setIsAdding(false)
 			}, 800)
 		} catch (error) {
-			console.error('Error adding product to cart:', error)
 			setIsAdding(false)
 		}
 	}
@@ -54,15 +53,13 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 		}
 	}
 
-	// Obtener la imagen del producto con fallback
+	// Obtener la imagen del producto desde Supabase o usar placeholder
 	const getProductImage = () => {
+		// Si hay una imageUrl y no hubo error de carga, usar la imagen de Supabase
 		if (product.imageUrl && !imageError) {
-			// Si la imagen no empieza con /, asumimos que está en /products/
-			const imagePath = product.imageUrl.startsWith('/') 
-				? product.imageUrl 
-				: `/products/${product.imageUrl}`
-			return imagePath
+			return product.imageUrl
 		}
+		// Fallback al placeholder
 		return '/placeholder-poster.jpg'
 	}
 
@@ -77,7 +74,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 			} ${className}`}
 		>
 			{/* Main container with horizontal layout */}
-			<div className="flex flex-col sm:flex-row h-auto sm:h-[220px] relative">
+			<div className="flex flex-col sm:flex-row h-auto sm:h-[220px] relative min-h-[250px]">
 				{/* Content Section - Left Side */}
 				<div className="flex-1 p-6 flex flex-col justify-between z-10 min-h-[200px] sm:min-h-0">
 					{/* Header with title */}
@@ -200,7 +197,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 				</div>
 
 				{/* Image Section - Right Side */}
-				<div className="relative w-full sm:w-[220px] h-[220px] sm:h-[220px] flex-shrink-0 order-first sm:order-last">
+				<div className="relative h-full w-full sm:w-[220px] flex-shrink-0 order-first sm:order-last">
 					{/* Gradient overlay from left for smooth transition */}
 					<div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent z-10 w-3/4 hidden sm:block" />
 					<div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10 sm:hidden" />
@@ -215,6 +212,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 							onError={() => setImageError(true)}
 							sizes="(max-width: 640px) 100vw, 220px"
 							priority={false}
+							unoptimized={!!product.imageUrl} // Don't optimize Supabase images since they're external
 						/>
 					</div>
 
@@ -227,6 +225,13 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 						>
 							<Check className="w-3 h-3" />
 						</motion.div>
+					)}
+					
+					{/* Stock indicator for low stock */}
+					{product.stock > 0 && product.stock <= 5 && (
+						<div className="absolute bottom-2 right-2 bg-sunset-orange/90 text-deep-night text-xs px-2 py-1 rounded-full font-semibold z-20">
+							¡Últimos {product.stock}!
+						</div>
 					)}
 				</div>
 			</div>

@@ -22,6 +22,10 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 	const [selectedMembership, setSelectedMembership] = useState<string>('')
 	const [membershipError, setMembershipError] = useState<string>('')
 	const [currentStep, setCurrentStep] = useState(1)
+	const [discountCode, setDiscountCode] = useState('')
+	const [isValidatingDiscount, setIsValidatingDiscount] = useState(false)
+	const [appliedDiscount, setAppliedDiscount] = useState<{ percentage: number; description: string } | null>(null)
+	const [discountError, setDiscountError] = useState('')
 
 	const {
 		register,
@@ -39,6 +43,58 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 
 	const prevStep = () => setCurrentStep(1)
 
+	const validateDiscountCode = async () => {
+		if (!discountCode.trim()) {
+			setAppliedDiscount(null)
+			setDiscountError('')
+			return
+		}
+
+		setIsValidatingDiscount(true)
+		setDiscountError('')
+
+		try {
+			const response = await fetch('/api/discounts/validate', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ 
+					code: discountCode.toUpperCase(),
+					membershipId: selectedMembership || null
+				})
+			})
+
+			if (!response.ok) {
+				const data = await response.json()
+				setDiscountError(data.error || 'Código de descuento inválido')
+				setAppliedDiscount(null)
+				return
+			}
+
+			const { discount } = await response.json()
+			setAppliedDiscount({
+				percentage: discount.percentage,
+				description: discount.description
+			})
+			setDiscountError('')
+		} catch (error) {
+			setDiscountError('Error al validar el código de descuento')
+			setAppliedDiscount(null)
+		} finally {
+			setIsValidatingDiscount(false)
+		}
+	}
+
+	const getSelectedMembershipPrice = () => {
+		const membership = memberships.find(m => m.id === selectedMembership)
+		if (!membership) return { originalPrice: 0, discountAmount: 0, finalPrice: 0 }
+		
+		const originalPrice = membership.price
+		const discountAmount = appliedDiscount ? originalPrice * (appliedDiscount.percentage / 100) : 0
+		const finalPrice = originalPrice - discountAmount
+
+		return { originalPrice, discountAmount, finalPrice }
+	}
+
 	const onSubmit = async (data: SignUpFormData) => {
 		setIsLoading(true)
 		setError('')
@@ -52,48 +108,35 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 		}
 
 		try {
-			const result = await signUpAction({
-				...data,
-				membershipId: selectedMembership,
-			})
-
-			if (!result.success) {
-				setError(result.error || 'Error al crear la cuenta')
-				return
-			}
-
-			// Iniciar sesión automáticamente después del registro
-			const signInResult = await signIn('credentials', {
-				email: data.email,
-				password: data.password,
-				redirect: false,
-			})
-
-			if (signInResult?.error) {
-				setError('Cuenta creada pero error al iniciar sesión')
-				return
-			}
-
-			// Crear preferencia de pago para la membresía seleccionada
-			const paymentResponse = await fetch('/api/memberships/payment', {
+			// Llamar al endpoint de signup payment
+			const paymentResponse = await fetch('/api/memberships/signup-payment', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
+					userData: data,
 					membershipId: selectedMembership,
+					discountCode: appliedDiscount ? discountCode : null
 				}),
 			})
 
 			if (!paymentResponse.ok) {
 				const errorData = await paymentResponse.json()
-				setError(errorData.error || 'Error al procesar el pago')
+				setError(errorData.error || 'Error al procesar el registro')
 				return
 			}
 
 			const paymentData = await paymentResponse.json()
 
-			// Redirigir a MercadoPago
+			// Verificar si es una membresía gratuita
+			if (paymentData.isFreeSignup) {
+				// Membresía gratuita detectada, redirigiendo a éxito
+				window.location.href = paymentData.redirectUrl
+				return
+			}
+
+			// Si no es gratuita, redirigir a MercadoPago
 			if (paymentData.initPoint) {
 				// En desarrollo usar sandbox, en producción usar initPoint normal
 				const redirectUrl = process.env.NODE_ENV === 'development' 
@@ -106,8 +149,7 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 			}
 
 		} catch (error) {
-			console.error('Error en signup:', error)
-			setError('Error al crear la cuenta')
+			setError('Error al procesar el registro')
 		} finally {
 			setIsLoading(false)
 		}
@@ -244,22 +286,122 @@ export function SignUpForm({ memberships }: SignUpFormProps) {
 							<p className="text-gray-400 mb-4 text-sm md:text-base">
 								Selecciona el plan que mejor se adapte a tu estilo de vida cinematográfico
 							</p>
-							<div className="inline-flex items-center space-x-2 px-3 md:px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-400/30">
-								<svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-									<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-								</svg>
-								<span className="text-xs md:text-sm text-blue-300">
-									Serás redirigido a MercadoPago para completar el pago
-								</span>
-							</div>
 						</div>
 
 						<MembershipSelector
 							memberships={memberships}
 							selectedId={selectedMembership}
-							onSelect={setSelectedMembership}
+							onSelect={(membershipId) => {
+								setSelectedMembership(membershipId)
+								// Revalidar código de descuento si está aplicado
+								if (appliedDiscount && discountCode) {
+									setTimeout(validateDiscountCode, 100)
+								}
+							}}
 							error={membershipError}
 						/>
+
+						{/* Discount Code Section */}
+						<div className="space-y-4">
+							<div className="bg-white/5 rounded-lg p-4 border border-white/10">
+								<h4 className="text-white font-medium mb-3 flex items-center">
+									<svg className="w-5 h-5 mr-2 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z" />
+									</svg>
+									¿Tienes un código de descuento?
+								</h4>
+								
+								{appliedDiscount ? (
+									<div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+										<div className="flex items-center justify-between">
+											<div className="flex items-center space-x-2">
+												<svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+													<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+												</svg>
+												<span className="text-green-300 font-medium">
+													{discountCode} - {appliedDiscount.percentage}% de descuento aplicado
+												</span>
+											</div>
+											<button
+												type="button"
+												onClick={() => {
+													setAppliedDiscount(null)
+													setDiscountCode('')
+													setDiscountError('')
+												}}
+												className="text-green-400/80 hover:text-green-400 text-sm underline"
+											>
+												Quitar
+											</button>
+										</div>
+									</div>
+								) : (
+									<div className="space-y-3">
+										<div className="flex space-x-2">
+											<input
+												type="text"
+												value={discountCode}
+												onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+												onBlur={validateDiscountCode}
+												placeholder="Ej: FREE"
+												className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-orange-400 focus:ring-orange-400/20 focus:outline-none"
+												disabled={isValidatingDiscount}
+											/>
+											<Button
+												type="button"
+												onClick={validateDiscountCode}
+												disabled={isValidatingDiscount || !discountCode.trim()}
+												className="px-4 py-2 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-lg hover:bg-orange-500/30 transition-colors duration-200 disabled:opacity-50"
+											>
+												{isValidatingDiscount ? (
+													<div className="w-5 h-5 border-2 border-orange-400/30 border-t-orange-400 rounded-full animate-spin"></div>
+												) : (
+													'Aplicar'
+												)}
+											</Button>
+										</div>
+										
+										{discountError && (
+											<p className="text-sm text-red-400">{discountError}</p>
+										)}
+									</div>
+								)}
+							</div>
+
+							{/* Price Summary */}
+							{selectedMembership && (
+								<div className="bg-white/5 rounded-lg p-4 border border-white/10">
+									<h4 className="text-white font-medium mb-3">Resumen de precios</h4>
+									<div className="space-y-2">
+										<div className="flex justify-between items-center">
+											<span className="text-gray-400">Precio original:</span>
+											<span className={`${appliedDiscount ? 'text-gray-400 line-through' : 'text-white font-medium'}`}>
+												${getSelectedMembershipPrice().originalPrice.toLocaleString('es-AR')}
+											</span>
+										</div>
+										
+										{appliedDiscount && (
+											<>
+												<div className="flex justify-between items-center">
+													<span className="text-green-400">Descuento ({appliedDiscount.percentage}%):</span>
+													<span className="text-green-400">
+														-${getSelectedMembershipPrice().discountAmount.toLocaleString('es-AR')}
+													</span>
+												</div>
+												<div className="border-t border-white/10 pt-2">
+													<div className="flex justify-between items-center">
+														<span className="text-white font-medium">Total a pagar:</span>
+														<span className="text-white font-bold text-lg">
+															${getSelectedMembershipPrice().finalPrice.toLocaleString('es-AR')}
+														</span>
+													</div>
+												</div>
+											</>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
 
 						{/* Error Display */}
 						{error && (

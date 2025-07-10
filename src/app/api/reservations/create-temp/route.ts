@@ -141,7 +141,6 @@ export async function POST(request: NextRequest) {
 				try {
 					await cleanupExpiredReservations(reservations.map(r => r.id))
 				} catch (error) {
-					console.error('Error cleaning up expired reservations:', error)
 				}
 			}, 10 * 60 * 1000) // 10 minutes
 
@@ -160,7 +159,6 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(result)
 
 	} catch (error) {
-		console.error('Error creating temporary reservations:', error)
 		
 		const message = error instanceof Error ? error.message : 'Internal server error'
 		const status = message.includes('not found') ? 404 : 
@@ -190,8 +188,6 @@ async function cleanupExpiredReservations(reservationIds: string[]) {
 			}
 		})
 		
-		console.log(`Cleaned up ${reservationIds.length} expired reservations`)
 	} catch (error) {
-		console.error('Error during cleanup:', error)
 	}
 } 

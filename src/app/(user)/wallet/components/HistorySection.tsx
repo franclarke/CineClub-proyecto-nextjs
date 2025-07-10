@@ -226,14 +226,14 @@ function OrderHistoryItem({ order, formatCurrency, transactionId }: OrderHistory
 				</div>
 				<div className={`
 					px-4 py-2 rounded-xl text-sm font-bold border
-					${order.status === 'paid' 
+					${order.status === 'completed' 
 						? 'bg-soft-gold/20 text-soft-gold border-soft-gold/30' 
 						: order.status === 'pending'
 						? 'bg-sunset-orange/20 text-sunset-orange border-sunset-orange/30'
 						: 'bg-red-500/20 text-red-400 border-red-500/30'
 					}
 				`}>
-					{order.status === 'paid' ? 'PAGADO' : 
+					{order.status === 'completed' ? 'COMPLETADO' : 
 					 order.status === 'pending' ? 'PENDIENTE' : 
 					 order.status.toUpperCase()}
 				</div>

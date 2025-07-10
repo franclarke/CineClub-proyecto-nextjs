@@ -24,7 +24,7 @@ export default async function SeatMapPage({ params }: SeatMapPageProps) {
 	}
 
 	return (
-		<main className="min-h-screen bg-deep-night pt-28 pb-12">
+		<main className="pt-20">
 			<DataAccess eventId={id} />
 		</main>
 	)

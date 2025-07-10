@@ -81,12 +81,4 @@ export async function getMembershipTiers() {
 		console.error('Error fetching membership tiers:', error)
 		return []
 	}
-}
-
-export async function redirectToDashboard() {
-	redirect('/')
-}
-
-export async function redirectToEvents() {
-	redirect('/events')
 } 

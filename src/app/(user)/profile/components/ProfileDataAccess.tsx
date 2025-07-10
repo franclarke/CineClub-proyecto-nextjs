@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth/next'
 import { notFound } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getMembershipTiers } from '@/lib/actions/auth'
 import { ProfileClientComponent } from './ProfileClientComponent'
 
 async function getUserProfile(email: string) {
@@ -34,11 +35,7 @@ async function getUserProfile(email: string) {
 	})
 }
 
-async function getMembershipTiers() {
-	return await prisma.membershipTier.findMany({
-		orderBy: { priority: 'asc' }
-	})
-}
+
 
 export async function ProfileDataAccess() {
 	const session = await getServerSession(authOptions)

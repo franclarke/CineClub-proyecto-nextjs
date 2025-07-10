@@ -242,27 +242,6 @@ export default function Navigation() {
 									)}
 								</div>
 								
-															{/* Enhanced Cart Button - Solo para usuarios no administradores */}
-							{!isAdmin && (
-								<button
-									onClick={toggleCart}
-									className="relative p-3 bg-gradient-to-br from-soft-gray/10 to-soft-gray/5 hover:from-sunset-orange/10 hover:to-soft-gold/10 rounded-xl transition-all duration-300 group border border-soft-gray/20 hover:border-sunset-orange/30 shadow-lg hover:shadow-xl"
-									aria-label="Carrito de compras"
-								>
-									<div className="relative">
-										<ShoppingCartIcon className="w-5 h-5 text-soft-beige group-hover:text-sunset-orange transition-all duration-300 group-hover:scale-110" />
-										{/* Efecto de brillo */}
-										<div className="absolute inset-0 bg-gradient-to-r from-transparent via-sunset-orange/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded blur-sm" />
-									</div>
-									{cartState.totalItems > 0 && (
-										<div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-sunset-orange via-soft-gold to-sunset-orange text-deep-night text-xs font-bold rounded-full flex items-center justify-center shadow-xl border-2 border-deep-night animate-bounce">
-											{cartState.totalItems > 9 ? '9+' : cartState.totalItems}
-										</div>
-									)}
-									{/* Indicador de actividad sutil */}
-									<div className="absolute bottom-0 right-0 w-2 h-2 bg-soft-gold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-								</button>
-							)}
 							</>
 						) : (
 							<>

@@ -85,8 +85,17 @@ export function ProfileClientComponent({ user, membershipTiers }: ProfileClientC
 			})
 
 			if (response.ok) {
-				const { url } = await response.json()
-				window.location.href = url
+				const data = await response.json()
+				
+				// Verificar si es un upgrade gratuito
+				if (data.isFreeUpgrade) {
+					console.log('Upgrade gratuito detectado, redirigiendo a éxito')
+					window.location.href = data.url
+					return
+				}
+				
+				// Si no es gratuito, redirigir a MercadoPago
+				window.location.href = data.url
 			}
 		} catch (error) {
 			console.error('Error upgrading membership:', error)

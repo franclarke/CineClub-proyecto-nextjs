@@ -290,8 +290,8 @@ export function CartProvider({ children, config = {} }: CartProviderProps) {
 				try {
 					const items = JSON.parse(savedCart) as CartItem[]
 					dispatch({ type: 'SYNC_WITH_SERVER', payload: { items } })
-				} catch (error) {
-					console.error('Error loading cart from localStorage:', error)
+						} catch (error) {
+			// Error loading cart from localStorage
 				}
 			}
 		}

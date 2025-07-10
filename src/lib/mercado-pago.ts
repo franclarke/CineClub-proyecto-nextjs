@@ -7,7 +7,7 @@ const accessToken = isProduction
 	? process.env.MP_ACCESS_TOKEN
 	: process.env.MP_TEST_ACCESS_TOKEN
 
-console.log('MercadoPago SDK Config - Access Token (first 5 chars):', accessToken?.substring(0, 5)); // <-- Agrega este log (no muestres el token completo por seguridad)
+// MercadoPago SDK configured
 
 if (!accessToken) {
 	const requiredToken = isProduction ? 'MP_ACCESS_TOKEN' : 'MP_TEST_ACCESS_TOKEN'
@@ -26,12 +26,12 @@ export const publicKey = isProduction
 	? process.env.MP_PUBLIC_KEY
 	: process.env.MP_TEST_PUBLIC_KEY
 
-console.log('MercadoPago SDK Config - Public Key (first 5 chars):', publicKey?.substring(0, 5)); // <-- Agrega este log
+// MercadoPago public key configured
 
 
 if (!publicKey) {
 	const requiredKey = isProduction ? 'MP_PUBLIC_KEY' : 'MP_TEST_PUBLIC_KEY'
-	console.warn(`Advertencia: La variable de entorno ${requiredKey} no está configurada. Es necesaria en el frontend.`)
+			// Environment variable not configured
 }
 
 const preference = new Preference(client)
@@ -117,13 +117,6 @@ export function convertCartItemsToMPItems(items: CartItem[]): MPItem[] {
 // Crear preferencia de pago
 export async function createPaymentPreference(data: MPPreferenceData) {
 	try {
-		console.log('Creating MercadoPago preference with data:', {
-			items: data.items,
-			back_urls: data.back_urls,
-			auto_return: data.auto_return,
-			notification_url: data.notification_url,
-		})
-
 		const response = await preference.create({
 			body: {
 				items: data.items,
@@ -142,10 +135,9 @@ export async function createPaymentPreference(data: MPPreferenceData) {
 			}
 		})
 
-		console.log('MercadoPago preference created successfully:', response.id)
 		return response
 	} catch (error) {
-		console.error('Error creating MercadoPago preference:', error)
+		// Error creating MercadoPago preference
 
 		// Proporcionar información más específica del error
 		if (error && typeof error === 'object' && 'message' in error) {
@@ -163,7 +155,6 @@ export async function getPaymentInfo(paymentId: string) {
 		const response = await payment.get({ id: paymentId })
 		return response
 	} catch (error) {
-		console.error('Error getting payment info:', error)
 		throw new Error('Error al obtener información del pago')
 	}
 }
@@ -197,7 +188,6 @@ export function validateMPWebhook(body: MPWebhookBody, headers: Headers): boolea
 	if (signature) {
 		// TODO: Validar firma usando el secreto de webhook de MercadoPago
 		// return validateSignature(body, signature)
-		console.log('Webhook signature received:', signature)
 	}
 
 	return true
@@ -235,7 +225,6 @@ export async function getPaymentStatus() {
 		// Por ahora retornamos un mock
 		return { status: 'pending' }
 	} catch (error) {
-		console.error('Error obteniendo estado del pago:', error)
 		throw new Error('Error verificando el pago')
 	}
 } 

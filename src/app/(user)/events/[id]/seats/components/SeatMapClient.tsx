@@ -5,7 +5,7 @@ import { useCart } from '@/lib/cart/cart-context'
 import { Event, Seat, Reservation, User, MembershipTier } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
 import { GlassCard } from '@/app/components/ui/glass-card'
-import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle } from 'lucide-react'
+import { Crown, Users, Calendar, MapPin, Sparkles, AlertCircle, ArrowLeft, Info } from 'lucide-react'
 import { formatFullDate, formatTime } from '@/lib/utils/date'
 import { BackButton } from '@/app/components/ui/back-button'
 
@@ -81,93 +81,82 @@ const AmphitheaterSeatMap = ({
 		const isPremiumTier = tier === 'Puff XXL Estelar';
 		const isVipTier = tier === 'Reposera Deluxe';
 
-		const baseClasses = "transition-all duration-200 flex items-center justify-center text-xs font-semibold rounded-lg relative border";
+		const baseClasses = "transition-all duration-200 ease-out flex items-center justify-center text-xs font-medium rounded-lg relative border cursor-pointer transform-gpu";
 
 		if (isReserved) {
-			return `${baseClasses} bg-neutral-600 text-neutral-400 cursor-not-allowed opacity-50 border-neutral-500`;
+			return `${baseClasses} bg-soft-gray/30 text-soft-gray/60 cursor-not-allowed border-soft-gray/20 opacity-60`;
 		} else if (!canSelect) {
-			return `${baseClasses} bg-neutral-700 text-neutral-500 cursor-not-allowed border-dashed border-neutral-600`;
+			return `${baseClasses} bg-soft-gray/10 text-soft-gray/40 cursor-not-allowed border-dashed border-soft-gray/20 opacity-50`;
 		} else if (isSelected) {
 			if (isPremiumTier) {
-				return `${baseClasses} bg-soft-gold text-deep-night shadow-lg shadow-soft-gold/50 border-soft-gold`;
+				return `${baseClasses} bg-soft-gold text-deep-night border-soft-gold shadow-lg shadow-soft-gold/30 scale-110 ring-2 ring-soft-gold/20`;
 			} else if (isVipTier) {
-				return `${baseClasses} bg-gray-300 text-deep-night shadow-lg shadow-gray-300/50 border-gray-300`;
+				return `${baseClasses} bg-soft-beige text-deep-night border-soft-beige shadow-lg shadow-soft-beige/30 scale-110 ring-2 ring-soft-beige/20`;
 			} else {
-				return `${baseClasses} bg-orange-400 text-deep-night shadow-lg shadow-orange-400/50 border-orange-400`;
+				return `${baseClasses} bg-sunset-orange text-deep-night border-sunset-orange shadow-lg shadow-sunset-orange/30 scale-110 ring-2 ring-sunset-orange/20`;
 			}
 		} else {
 			if (isPremiumTier) {
-				return `${baseClasses} bg-soft-gold/20 text-soft-gold hover:bg-soft-gold hover:text-deep-night hover:shadow-lg hover:shadow-soft-gold/30  cursor-pointer border-soft-gold/30 hover:border-soft-gold`;
+				return `${baseClasses} bg-soft-gold/20 text-soft-gold border-soft-gold/40 hover:bg-soft-gold/35 hover:border-soft-gold/60 hover:scale-105 hover:shadow-md hover:shadow-soft-gold/20`;
 			} else if (isVipTier) {
-				return `${baseClasses} bg-gray-300/20 text-gray-300 hover:bg-gray-300 hover:text-deep-night hover:shadow-lg hover:shadow-gray-300/30  cursor-pointer border-gray-300/30 hover:border-gray-300`;
+				return `${baseClasses} bg-soft-beige/20 text-soft-beige border-soft-beige/40 hover:bg-soft-beige/35 hover:border-soft-beige/60 hover:scale-105 hover:shadow-md hover:shadow-soft-beige/20`;
 			} else {
-				return `${baseClasses} bg-orange-400/20 text-orange-300 hover:bg-orange-400 hover:text-deep-night hover:shadow-lg hover:shadow-orange-400/30  cursor-pointer border-orange-400/30 hover:border-orange-400`;
+				return `${baseClasses} bg-sunset-orange/20 text-sunset-orange border-sunset-orange/40 hover:bg-sunset-orange/35 hover:border-sunset-orange/60 hover:scale-105 hover:shadow-md hover:shadow-sunset-orange/20`;
 			}
 		}
 	};
 
 	return (
-		<div className="relative w-full max-w-5xl mx-auto px-6">
-			{/* Screen/Stage area */}
-			<div className="mb-16 text-center">
-				<div className="w-full h-4 bg-gradient-to-r from-transparent via-soft-gold/60 to-transparent rounded-full mb-3" />
-				<div className="text-soft-gray text-sm uppercase tracking-wide font-medium">
-					🎬 Pantalla
-				</div>
+		<div className="w-full max-w-5xl mx-auto">
+			{/* Screen indicator */}
+			<div className="mb-12 md:mb-16 text-center">
+				<div className="w-full max-w-lg mx-auto h-4 bg-gradient-to-r from-transparent via-soft-gold/70 to-transparent rounded-full mb-6 shadow-lg shadow-soft-gold/20" />
+				<p className="text-soft-beige text-base font-bold tracking-wider">PANTALLA</p>
 			</div>
 
-			{/* Amphitheater rows */}
-			<div className="space-y-4">
+			{/* Amphitheater seating */}
+			<div className="space-y-3 md:space-y-4 mb-12">
 				{amphitheaterRows.map((row, rowIndex) => {
 					const isPremiumTier = row.tier === 'Puff XXL Estelar';
 					const isVipTier = row.tier === 'Reposera Deluxe';
-
-					// Calculate curve for amphitheater effect
 					const totalRows = amphitheaterRows.length;
-					const curveIntensity = (rowIndex / totalRows) * 20; // More curve towards the back
+					const curveOffset = (rowIndex / totalRows) * 20;
 
 					return (
-						<div key={`${row.tier}-${row.rowNumber}`} className="relative">
-							{/* Row label */}
-							<div className="absolute -left-20 top-1/2 transform -translate-y-1/2">
-								<div className={`text-xs font-medium px-2 py-1 rounded-md ${isPremiumTier ? 'bg-soft-gold/20 text-soft-gold border border-soft-gold/30' :
-									isVipTier ? 'bg-gray-400/20 text-gray-400 border border-gray-400/30' :
-										'bg-orange-400/20 text-orange-400 border border-orange-400/30'
-									}`}>
-									{row.tier} {row.rowNumber}
+						<div key={`${row.tier}-${row.rowNumber}`} className="relative py-1">
+							{/* Row identifier */}
+							<div className="absolute -left-14 md:-left-18 top-1/2 transform -translate-y-1/2 hidden sm:block">
+								<div className={`text-sm px-3 py-2 rounded-lg font-bold shadow-md ${
+									isPremiumTier ? 'bg-soft-gold/25 text-soft-gold border border-soft-gold/50' :
+									isVipTier ? 'bg-soft-beige/25 text-soft-beige border border-soft-beige/50' :
+									'bg-sunset-orange/25 text-sunset-orange border border-sunset-orange/50'
+								}`}>
+									{row.rowNumber}
 								</div>
 							</div>
 
-							{/* Seats in row */}
+							{/* Seat row */}
 							<div
-								className="flex justify-center items-center gap-2"
+								className="flex justify-center items-center gap-1.5 md:gap-2"
 								style={{
-									transform: `perspective(1000px) rotateX(${curveIntensity / 4}deg)`,
-									marginLeft: `${curveIntensity}px`,
-									marginRight: `${curveIntensity}px`
+									marginLeft: `${curveOffset}px`,
+									marginRight: `${curveOffset}px`
 								}}
 							>
 								{row.seats.map((seat) => {
 									const isReserved = !!seat.reservation;
 									const canSelect = canUserSelectSeat(seat, currentUserMembership).allowed;
+									const seatSize = isPremiumTier ? 'w-8 h-8 md:w-10 md:h-10' : isVipTier ? 'w-7 h-7 md:w-9 md:h-9' : 'w-6 h-6 md:w-8 md:h-8';
 
 									return (
 										<div
 											key={seat.id}
-											className={getSeatClasses(seat, row.tier)}
-											style={{
-												width: isPremiumTier ? '2.75rem' : isVipTier ? '2.5rem' : '2.25rem',
-												height: isPremiumTier ? '2.75rem' : isVipTier ? '2.5rem' : '2.25rem',
-											}}
+											className={`${getSeatClasses(seat, row.tier)} ${seatSize} text-xs`}
 											onClick={() => !isReserved && canSelect && onSeatSelect(seat.id)}
 										>
-											{seat.seatNumber}
-
-											{/* Premium seat indicator */}
+											<span className="text-xs font-medium">{seat.seatNumber}</span>
 											{isPremiumTier && !isReserved && (
-												<div className="absolute -top-1 -right-1 text-soft-gold animate-pulse">
-													<Sparkles size={10} />
-												</div>
+												<Sparkles className="absolute -top-1 -right-1 w-2.5 h-2.5 text-soft-gold animate-pulse" />
 											)}
 										</div>
 									);
@@ -178,18 +167,11 @@ const AmphitheaterSeatMap = ({
 				})}
 			</div>
 
-			{/* Distance indicators */}
-			<div className="mt-8 space-y-2">
-				<div className="flex justify-center">
-					<div className="text-xs text-soft-gray space-x-6">
-						<span>← Más cerca de la pantalla</span>
-						<span>Más lejos de la pantalla →</span>
-					</div>
-				</div>
-				<div className="text-center">
-					<p className="text-xs text-soft-gray/60">
-						Los números en los asientos son únicos (1-30). Las etiquetas de fila indican el nivel y la fila dentro de ese nivel.
-					</p>
+			{/* Stage distance indicator */}
+			<div className="text-center">
+				<div className="text-sm text-soft-beige/80 space-x-8 font-semibold">
+					<span>← Más cerca de la pantalla</span>
+					<span>Más lejos de la pantalla →</span>
 				</div>
 			</div>
 		</div>
@@ -225,7 +207,7 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 			)
 	)
 
-	// Group seats by tier for circular arrangement
+	// Group seats by tier
 	const seatsByTier = useMemo(() => {
 		const grouped = optimisticSeats.reduce((acc, seat) => {
 			if (!acc[seat.tier]) {
@@ -235,7 +217,6 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 			return acc
 		}, {} as Record<string, SeatWithReservation[]>)
 
-		// Sort tiers by priority (Puff XXL Estelar: 1, Reposera Deluxe: 2, Banquito: 3)
 		const tierOrder = { 'Puff XXL Estelar': 1, 'Reposera Deluxe': 2, 'Banquito': 3 }
 		return Object.entries(grouped).sort(([a], [b]) =>
 			(tierOrder[a as keyof typeof tierOrder] || 999) -
@@ -250,7 +231,6 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 		)
 
 		const totalPrice = selectedSeatData.reduce((total, seat) => {
-			// Price based on tier - Premium tiers cost more
 			const tierPrices = { 'Puff XXL Estelar': 50, 'Reposera Deluxe': 35, 'Banquito': 25 };
 			return total + (tierPrices[seat.tier as keyof typeof tierPrices] || 25);
 		}, 0);
@@ -272,7 +252,6 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 		const seat = optimisticSeats.find(s => s.id === seatId)
 		if (!seat || seat.reservation) return
 
-		// Check if user's membership allows this tier
 		const canSelectTier = canUserSelectSeat(seat, currentUser.membership)
 		if (!canSelectTier.allowed) {
 			alert(canSelectTier.reason)
@@ -292,21 +271,16 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 		setIsProcessing(true)
 
 		try {
-			// Agregar asientos al carrito global
 			selectedSeats.forEach(seatId => {
 				const seat = optimisticSeats.find(s => s.id === seatId)
 				if (seat) {
-					const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutos
+					const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 					addSeat(event, seat, expiresAt)
 				}
 			})
 
-			// Limpiar selección local
 			setSelectedSeats([])
-
-			// Abrir carrito para checkout
 			toggleCart()
-
 			setIsProcessing(false)
 		} catch (error) {
 			console.error('Error:', error)
@@ -316,252 +290,145 @@ export function SeatMapClient({ event, currentUser }: SeatMapClientProps) {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-deep-night to-deep-night/90 animate-fade-in">
-			<div className="container mx-auto px-4 py-8">
-				{/* Back Button */}
-				<div className="mb-6">
-					<BackButton href={`/events/${event.id}`} label="Volver al evento" />
-				</div>
-				
+		<div className="min-h-screen bg-deep-night">
+			<div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
 				{/* Header */}
-				<div className="text-center mb-12">
-					<h1 className="text-display text-5xl md:text-6xl font-bold text-soft-beige mb-4 tracking-tight">
-						Seleccionar Asientos
-					</h1>
-					<p className="text-xl text-soft-gray max-w-3xl mx-auto">
-						Elige tu lugar perfecto para <span className="text-sunset-orange font-semibold">{event.title}</span>
-					</p>
+				<div className="mb-6 md:mb-8">
+					<BackButton href={`/events/${event.id}`} />
+					<div className="mt-4 md:mt-6 text-center">
+						<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-soft-beige mb-3">
+							Seleccionar Asientos
+						</h1>
+						<p className="text-base md:text-lg text-soft-beige/90 font-medium">
+							{event.title}
+						</p>
+						<p className="text-sm md:text-base text-soft-beige/70 mt-1">
+							{formatFullDate(event.dateTime)}
+						</p>
+					</div>
 				</div>
 
-				<div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-					{/* Seat Map */}
-					<div className="xl:col-span-3">
-						<GlassCard variant="default" className="p-8 min-h-[600px]">
-							{/* Title */}
-							<h2 className="text-2xl font-semibold text-soft-beige text-center mb-8">
-								Mapa de Asientos - Vista Anfiteatro
-							</h2>
-
-							{/* Amphitheater Seat Map */}
+				<div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
+					{/* Main seat map */}
+					<div className="lg:col-span-3 space-y-8">
+						<div className="bg-deep-night/60 backdrop-blur-sm border border-soft-gray/10 rounded-2xl p-6 md:p-10">
 							<AmphitheaterSeatMap
 								seatsByTier={seatsByTier}
 								selectedSeats={selectedSeats}
 								currentUserMembership={currentUser.membership}
 								onSeatSelect={handleSeatSelect}
 							/>
+						</div>
 
-							{/* Legend */}
-							<div className="mt-12 bg-deep-night/40 rounded-xl p-6 border border-soft-gray/20">
-								<h4 className="text-soft-beige font-medium mb-6 text-center text-lg">
-									Información de Asientos
-								</h4>
-
-								{/* Tier Legend */}
-								<div className="grid grid-cols-3 gap-6 mb-8">
-									<div className="text-center">
-										<div className="w-10 h-10 mx-auto mb-3 bg-soft-gold/20 text-soft-gold border border-soft-gold/30 rounded-lg flex items-center justify-center text-sm font-bold">
-											G
-										</div>
-										<div className="text-sm font-medium text-soft-gold">Puff XXL Estelar</div>
-										<div className="text-xs text-soft-gray">$50 por asiento</div>
-									</div>
-									<div className="text-center">
-										<div className="w-10 h-10 mx-auto mb-3 bg-gray-300/20 text-gray-300 border border-gray-300/30 rounded-lg flex items-center justify-center text-sm font-bold">
-											R
-										</div>
-										<div className="text-sm font-medium text-gray-300">Reposera Deluxe</div>
-										<div className="text-xs text-soft-gray">$35 por asiento</div>
-									</div>
-									<div className="text-center">
-										<div className="w-10 h-10 mx-auto mb-3 bg-orange-400/20 text-orange-300 border border-orange-400/30 rounded-lg flex items-center justify-center text-sm font-bold">
-											B
-										</div>
-										<div className="text-sm font-medium text-orange-300">Banquito</div>
-										<div className="text-xs text-soft-gray">$25 por asiento</div>
-									</div>
+						{/* Compact floating legend */}
+						<div className="flex justify-center">
+							<div className="inline-flex flex-wrap items-center justify-center gap-4 md:gap-6 lg:gap-8 bg-deep-night/90 backdrop-blur-md border border-soft-gray/30 rounded-full px-6 md:px-8 py-4 shadow-xl">
+								{/* Tier types */}
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 bg-soft-gold rounded-full border border-soft-gold/50"></div>
+									<span className="text-sm font-semibold text-soft-gold hidden sm:inline">Puff XXL ($50)</span>
+									<span className="text-sm font-semibold text-soft-gold sm:hidden">$50</span>
 								</div>
-
-								{/* Status Legend */}
-								<div className="grid grid-cols-2 gap-4 mb-6">
-									{[
-										{ name: 'Disponible', color: 'bg-soft-gray/20 text-soft-gray border border-soft-gray/30', icon: '○' },
-										{ name: 'Seleccionado', color: 'bg-soft-gold text-deep-night border border-soft-gold', icon: '●' },
-										{ name: 'Reservado', color: 'bg-neutral-600 text-neutral-400 opacity-50 border border-neutral-500', icon: '✕' },
-										{ name: 'No disponible', color: 'bg-neutral-700 text-neutral-500 border border-dashed border-neutral-600', icon: '◐' }
-									].map((status) => (
-										<div key={status.name} className="flex items-center gap-3">
-											<div className={`w-6 h-6 rounded-lg ${status.color} flex items-center justify-center text-xs`}>
-												{status.icon}
-											</div>
-											<span className="text-sm text-soft-gray">{status.name}</span>
-										</div>
-									))}
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 bg-soft-beige rounded-full border border-soft-beige/50"></div>
+									<span className="text-sm font-semibold text-soft-beige hidden sm:inline">Reposera ($35)</span>
+									<span className="text-sm font-semibold text-soft-beige sm:hidden">$35</span>
 								</div>
-
-								{/* Membership Access Info */}
-								<div className="bg-gradient-to-r from-sunset-orange/10 to-transparent p-4 rounded-lg border-l-2 border-sunset-orange">
-									<div className="flex items-start gap-3">
-										<AlertCircle size={16} className="text-sunset-orange mt-0.5 flex-shrink-0" />
-										<div className="space-y-2">
-											<p className="text-sm text-soft-beige font-medium">
-												Tu Membresía {currentUser.membership.name}
-											</p>
-											<p className="text-xs text-soft-gray">
-												Puedes reservar: {getTierAccessText(currentUser.membership)}
-											</p>
-											{currentUser.membership.priority > 1 && (
-												<p className="text-xs text-sunset-orange/80">
-													💡 Tip: Actualiza tu membresía para acceder a mejores asientos
-												</p>
-											)}
-										</div>
-									</div>
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 bg-sunset-orange rounded-full border border-sunset-orange/50"></div>
+									<span className="text-sm font-semibold text-sunset-orange hidden sm:inline">Banquito ($25)</span>
+									<span className="text-sm font-semibold text-sunset-orange sm:hidden">$25</span>
+								</div>
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 bg-soft-gray rounded-full border border-soft-gray/50"></div>
+									<span className="text-sm font-semibold text-soft-beige/80">Ocupado</span>
 								</div>
 							</div>
-						</GlassCard>
+						</div>
 					</div>
 
 					{/* Sidebar */}
-					<div className="space-y-6">
-						{/* Event Info */}
-						<GlassCard variant="subtle" className="overflow-hidden">
-							<div className="relative h-40 bg-gradient-to-br from-sunset-orange/20 to-warm-red/20">
-								<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-								<div className="absolute inset-0 p-6 flex flex-col justify-end">
-									<h2 className="text-2xl font-bold text-soft-beige mb-1">{event.title}</h2>
-									<p className="text-sm text-soft-gray">{formatFullDate(event.dateTime)}</p>
-								</div>
-								<div className="absolute top-4 right-4 text-4xl opacity-60">🎬</div>
+					<div className="space-y-6 lg:space-y-8">
+						{/* Event info - Enhanced visibility */}
+						<div className="bg-deep-night/40 backdrop-blur-sm border border-soft-gray/20 rounded-xl p-5 space-y-4">
+							<div className="flex items-center gap-3">
+								<Calendar className="w-5 h-5 text-sunset-orange" />
+								<h3 className="text-lg font-bold text-soft-beige">Evento</h3>
 							</div>
-
-							<div className="p-6 space-y-4">
-								<div className="flex items-center gap-3">
-									<Calendar size={18} className="text-sunset-orange" />
-									<div>
-										<p className="text-sm font-medium text-soft-beige">{formatFullDate(event.dateTime)}</p>
-										<p className="text-xs text-soft-gray">{formatTime(event.dateTime)}</p>
-									</div>
+							<div className="space-y-3">
+								<div>
+									<p className="text-base font-semibold text-soft-beige">{event.title}</p>
+									<p className="text-sm text-soft-beige/80 font-medium">{formatFullDate(event.dateTime)} • {formatTime(event.dateTime)}</p>
 								</div>
-
 								{event.location && (
-									<div className="flex items-center gap-3">
-										<MapPin size={18} className="text-sunset-orange" />
-										<div>
-											<p className="text-sm text-soft-beige">{event.location}</p>
-										</div>
+									<div className="flex items-center gap-2">
+										<MapPin className="w-4 h-4 text-sunset-orange/80" />
+										<p className="text-sm text-soft-beige/80 font-medium">{event.location}</p>
 									</div>
 								)}
-
-								<div className="flex items-center gap-3">
-									<Users size={18} className="text-sunset-orange" />
-									<div>
-										<p className="text-sm text-soft-beige">Capacidad: {event.seats.length} asientos</p>
-										<p className="text-xs text-soft-gray">{getAvailableSeatsCount(event.seats)} disponibles</p>
-									</div>
-								</div>
-							</div>
-						</GlassCard>
-
-						{/* Selection Summary */}
-						<GlassCard variant="subtle" className="overflow-hidden">
-							{/* Header with gradient background */}
-							<div className="relative h-16 bg-gradient-to-br from-sunset-orange/20 to-warm-red/20">
-								<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-								<div className="absolute inset-0 p-4 flex items-center">
-									<h3 className="text-xl font-semibold text-soft-beige">Resumen de Selección</h3>
-								</div>
-							</div>
-
-							<div className="p-6">
-								{selectionInfo.count > 0 ? (
-									<div className="space-y-4">
-										{/* Selected seats count */}
-										<div className="flex justify-between items-center p-3 bg-deep-night/20 rounded-lg">
-											<span className="text-soft-gray text-sm">Asientos seleccionados</span>
-											<span className="text-soft-beige font-semibold text-lg">{selectionInfo.count}</span>
-										</div>
-
-										{/* Tier breakdown */}
-										<div className="space-y-2">
-											{Object.entries(selectionInfo.tierBreakdown).map(([tier, count]) => (
-												<div key={tier} className="flex justify-between items-center px-3 py-2">
-													<div className="flex items-center gap-3">
-														<div className={`w-2.5 h-2.5 rounded-full ${tier === 'Puff XXL Estelar' ? 'bg-soft-gold' :
-															tier === 'Reposera Deluxe' ? 'bg-gray-400' :
-																'bg-orange-400'
-															}`}></div>
-														<span className="text-soft-gray text-sm">{tier}</span>
-													</div>
-													<div className="flex items-center gap-2">
-														<span className="text-soft-beige text-sm">{count} x ${
-															tier === 'Puff XXL Estelar' ? '50' : tier === 'Reposera Deluxe' ? '35' : '25'
-														}</span>
-													</div>
-												</div>
-											))}
-										</div>
-
-										<div className="h-px bg-white/10" />
-
-										{/* Total */}
-										<div className="flex justify-between items-center p-3 bg-gradient-to-r from-soft-gold/10 to-transparent rounded-lg">
-											<span className="text-soft-beige font-semibold">Total</span>
-											<span className="text-soft-gold font-bold text-xl">${selectionInfo.totalPrice.toFixed(2)}</span>
-										</div>
-
-										{/* Action button */}
-										<Button
-											onClick={handleProceedToCheckout}
-											disabled={isProcessing}
-											className="w-full bg-gradient-to-r from-sunset-orange to-warm-red hover:from-sunset-orange/90 hover:to-warm-red/90 text-white font-semibold py-3 rounded-xl transition-all transform hover:scale-[1.02]"
-										>
-											{isProcessing ? 'Agregando...' : 'Agregar al Carrito'}
-										</Button>
-									</div>
-								) : (
-									<div className="text-center py-6">
-										<div className="w-14 h-14 mx-auto mb-3 bg-soft-gray/10 rounded-full flex items-center justify-center">
-											<svg className="w-7 h-7 text-soft-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 102 0v-6M21 19a2 2 0 11-4 0 2 2 0 014 0z" />
-											</svg>
-										</div>
-										<p className="text-soft-gray font-medium text-sm mb-1">No has seleccionado ningún asiento</p>
-										<p className="text-xs text-soft-gray/70">Selecciona los asientos que deseas reservar</p>
-									</div>
-								)}
-							</div>
-						</GlassCard>
-
-						{/* Membership Info */}
-						<GlassCard variant="subtle" className="p-6">
-							<div className="flex items-center gap-4">
-								<div className={`flex items-center justify-center w-12 h-12 rounded-xl ${currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20' :
-									currentUser.membership.name === 'Reposera Deluxe' ? 'bg-gray-400/20' :
-										'bg-orange-400/20'
-									}`}>
-									<Crown className={`h-6 w-6 ${currentUser.membership.name === 'Puff XXL Estelar' ? 'text-soft-gold' :
-										currentUser.membership.name === 'Reposera Deluxe' ? 'text-gray-400' :
-											'text-orange-400'
-										}`} />
-								</div>
-								<div className="flex-1">
-									<div className="flex items-center gap-3 mb-1">
-										<p className="font-semibold text-soft-beige">
-											Membresía {currentUser.membership.name}
-										</p>
-										<div className={`px-2 py-1 rounded-full text-xs font-medium ${currentUser.membership.name === 'Puff XXL Estelar' ? 'bg-soft-gold/20 text-soft-gold' :
-											currentUser.membership.name === 'Reposera Deluxe' ? 'bg-gray-400/20 text-gray-400' :
-												'bg-orange-400/20 text-orange-400'
-											}`}>
-											Activa
-										</div>
-									</div>
-									<p className="text-xs text-soft-gray">
-										Prioridad de reserva activada
+								<div className="flex items-center gap-2">
+									<Users className="w-4 h-4 text-sunset-orange/80" />
+									<p className="text-sm text-soft-beige/80 font-medium">
+										{getAvailableSeatsCount(event.seats)} de {event.seats.length} disponibles
 									</p>
 								</div>
 							</div>
-						</GlassCard>
+						</div>
+
+						{/* Selection summary - Highlighted */}
+						<div className="bg-deep-night/60 backdrop-blur-sm border border-soft-gray/20 rounded-xl p-5 lg:p-6 shadow-lg">
+							<h3 className="text-xl font-bold text-soft-beige mb-6">Resumen</h3>
+							
+							{selectionInfo.count > 0 ? (
+								<div className="space-y-5">
+									<div className="space-y-3">
+										{Object.entries(selectionInfo.tierBreakdown).map(([tier, count]) => (
+											<div key={tier} className="flex justify-between items-center py-2">
+												<span className="text-sm font-medium text-soft-gray truncate">{tier}</span>
+												<span className="text-sm font-semibold text-soft-beige">{count}</span>
+											</div>
+										))}
+									</div>
+									<div className="border-t border-soft-gray/20 pt-4">
+										<div className="flex justify-between items-center mb-5">
+											<span className="text-lg font-bold text-soft-beige">Total</span>
+											<span className="text-xl font-bold text-soft-gold">${selectionInfo.totalPrice}</span>
+										</div>
+										<Button
+											onClick={handleProceedToCheckout}
+											disabled={isProcessing}
+											className="w-full bg-gradient-to-r from-sunset-orange to-soft-gold hover:shadow-lg transition-all duration-200"
+										>
+											{isProcessing ? 'Procesando...' : 'Agregar al Carrito'}
+										</Button>
+									</div>
+								</div>
+							) : (
+								<div className="text-center py-8 lg:py-10">
+									<div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-sunset-orange/10 to-soft-gold/10 rounded-full flex items-center justify-center animate-pulse">
+										<div className="w-8 h-8 bg-gradient-to-br from-sunset-orange/20 to-soft-gold/20 rounded-full flex items-center justify-center">
+											<Sparkles className="w-4 h-4 text-sunset-orange" />
+										</div>
+									</div>
+									<p className="text-base font-semibold text-soft-beige mb-2">¡Elige tus asientos!</p>
+									<p className="text-sm text-soft-gray/80">Selecciona los mejores lugares para disfrutar del evento</p>
+								</div>
+							)}
+						</div>
+
+						{/* Membership info - Enhanced visibility */}
+						<div className="bg-deep-night/40 backdrop-blur-sm border border-soft-gray/20 rounded-xl p-5 space-y-4">
+							<div className="flex items-center gap-3">
+								<Crown className="w-5 h-5 text-soft-gold" />
+								<h3 className="text-lg font-bold text-soft-beige">Membresía</h3>
+							</div>
+							<div className="space-y-2">
+								<p className="text-base font-semibold text-soft-beige">{currentUser.membership.name}</p>
+								<p className="text-sm text-soft-beige/80 font-medium">
+									Acceso: {getTierAccessText(currentUser.membership)}
+								</p>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -578,8 +445,6 @@ function canUserSelectSeat(seat: SeatWithReservation, userMembership: Membership
 	const seatTierPriority = getTierPriority(seat.tier)
 	const userTierPriority = userMembership.priority
 
-	// User can only select seats of their tier or lower priority tiers
-	// Lower priority number = higher tier (Gold=1, Silver=2, Bronze=3)
 	if (userTierPriority > seatTierPriority) {
 		const upgradeMessage = userMembership.name === 'Banquito' && seat.tier === 'Reposera Deluxe'
 			? 'Actualiza a membresía Reposera Deluxe o Puff XXL Estelar para acceder a estos asientos premium.'
@@ -605,10 +470,10 @@ function getTierPriority(tier: string): number {
 
 function getTierAccessText(membership: MembershipTier): string {
 	switch (membership.priority) {
-		case 1: return 'Todos los niveles (Puff XXL Estelar, Reposera Deluxe y Banquito)'; // Puff XXL Estelar puede acceder a todos
-		case 2: return 'Reposera Deluxe y Banquito'; // Reposera Deluxe puede acceder a Reposera Deluxe y Banquito
-		case 3: return 'Solo Banquito'; // Banquito solo puede acceder a Banquito
-		default: return 'Solo Banquito'; // Por defecto solo Banquito
+		case 1: return 'Todos los niveles';
+		case 2: return 'Reposera Deluxe y Banquito';
+		case 3: return 'Solo Banquito';
+		default: return 'Solo Banquito';
 	}
 }
 

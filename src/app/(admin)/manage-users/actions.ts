@@ -1,5 +1,5 @@
 'use server'
-import { getAllUsers, getBanquitoUsers, getReposeraDeluxeUsers, getPuffXXLEstelarUsers, getUserById, editUserById } from './data-access'
+import { getAllUsers, getBanquitoUsers, getReposeraDeluxeUsers, getPuffXXLEstelarUsers, getUserById, editUserById, getMembershipOptions } from './data-access'
 
 export async function fetchUsersByMembership(membership: string) {
     if (membership === 'banquito') return await getBanquitoUsers()
@@ -16,4 +16,9 @@ export async function fetchUserByIdClient(id: string) {
 // Nueva función para editar un usuario por ID
 export async function editUserByIdClient(id: string, data: any) {
     return await editUserById(id, data)
+}
+
+// Nueva función para obtener las opciones de membresía
+export async function fetchMembershipOptions() {
+    return await getMembershipOptions()
 }

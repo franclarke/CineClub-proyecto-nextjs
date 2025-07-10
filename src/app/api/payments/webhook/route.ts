@@ -6,7 +6,7 @@ import { Order, OrderItem, Reservation, User } from '@prisma/client'
 type OrderWithItems = Order & {
 	items: OrderItem[]
 	reservations: Reservation[]
-	user: User
+	user: User | null
 }
 
 export async function POST(request: NextRequest) {
@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
 					}
 				})
 
-				console.log(`Pago fallido: eliminadas ${deletedReservations.count} reservas pendientes para la orden ${order.id}`)
 			}
 
 			return NextResponse.json({ received: true })
@@ -114,7 +113,6 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ received: true })
 	} catch (error) {
-		console.error('Error procesando webhook:', error)
 		return NextResponse.json(
 			{ error: 'Error interno del servidor' },
 			{ status: 500 }
@@ -145,12 +143,53 @@ function mapMPStatusToOurStatus(mpStatus: string): string {
 // Procesar items de la orden aprobada
 async function processOrderItems(order: OrderWithItems) {
 	try {
+		// Si es una orden de signup, crear el usuario
+		if (order.type === 'signup' && order.metadata && typeof order.metadata === 'object') {
+			const metadata = order.metadata as { 
+				userData: { name: string; email: string; password: string }
+				membershipId: string
+			}
+
+			// Verificar si el usuario ya existe
+			const existingUser = await prisma.user.findUnique({
+				where: { email: metadata.userData.email }
+			})
+
+			if (existingUser) {
+				// Actualizar la orden con el userId existente
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: existingUser.id
+					}
+				})
+			} else {
+				// Crear el usuario con los datos almacenados
+				const newUser = await prisma.user.create({
+					data: {
+						name: metadata.userData.name,
+						email: metadata.userData.email,
+						password: metadata.userData.password,
+						membershipId: metadata.membershipId
+					}
+				})
+
+				// Actualizar la orden con el userId
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: newUser.id
+					}
+				})
+
+			}
+		}
 		// Si es una orden de membresía, actualizar la membresía del usuario
-		if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
+		else if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
 			const metadata = order.metadata as { membershipTierId?: string }
 			const membershipId = metadata.membershipTierId
 
-			if (membershipId) {
+			if (membershipId && order.userId) {
 				await prisma.user.update({
 					where: { id: order.userId },
 					data: {
@@ -158,7 +197,6 @@ async function processOrderItems(order: OrderWithItems) {
 					}
 				})
 
-				console.log(`Membresía ${membershipId} activada para usuario ${order.userId}`)
 			}
 		} else {
 			// Procesar productos - actualizar stock
@@ -194,9 +232,7 @@ async function processOrderItems(order: OrderWithItems) {
 			}
 		}
 
-		console.log(`Orden ${order.id} procesada exitosamente: ${order.items.length} productos, ${order.reservations.length} reservas`)
 	} catch (error) {
-		console.error('Error procesando items de la orden:', error)
 		throw error
 	}
 }

@@ -78,7 +78,6 @@ export async function getMembershipTiers() {
 
 		return tiers
 	} catch (error) {
-		console.error('Error fetching membership tiers:', error)
 		return []
 	}
 }

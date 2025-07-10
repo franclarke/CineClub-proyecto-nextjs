@@ -506,16 +506,117 @@ body {
 	background: rgba(255, 255, 255, 0.2);
 }
 
-/* Gradient text */
+/* Select dropdown styling for admin UI */
+select {
+	background-color: rgba(58, 58, 60, 0.1);
+	color: var(--soft-beige);
+	border: 1px solid rgba(58, 58, 60, 0.2);
+}
+
+select:focus {
+	outline: none;
+	border-color: var(--sunset-orange);
+	box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.2);
+}
+
+/* Option styling for better contrast */
+select option {
+	background-color: var(--deep-night);
+	color: var(--soft-beige);
+	padding: 8px 12px;
+	font-size: 14px;
+	font-weight: 400;
+	border: none;
+}
+
+select option:hover,
+select option:focus {
+	background-color: var(--soft-gray);
+	color: var(--soft-beige);
+}
+
+select option:checked {
+	background-color: var(--sunset-orange);
+	color: var(--deep-night);
+	font-weight: 600;
+}
+
+/* Webkit specific styling for better cross-browser support */
+select::-webkit-scrollbar {
+	width: 8px;
+}
+
+select::-webkit-scrollbar-track {
+	background: var(--deep-night);
+}
+
+select::-webkit-scrollbar-thumb {
+	background: var(--soft-gray);
+	border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+	background: var(--sunset-orange);
+}
+
+/* Admin form specific styling */
+.admin-form select {
+	background-color: rgba(58, 58, 60, 0.1);
+	color: var(--soft-beige);
+	border: 1px solid rgba(58, 58, 60, 0.2);
+	border-radius: 0.75rem;
+	padding: 0.75rem 1rem;
+	font-size: 1rem;
+	transition: all 0.2s ease-in-out;
+}
+
+.admin-form select:focus {
+	outline: none;
+	border-color: var(--sunset-orange);
+	box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.2);
+}
+
+.admin-form select option {
+	background-color: var(--deep-night);
+	color: var(--soft-beige);
+	padding: 12px 16px;
+	font-size: 1rem;
+	line-height: 1.5;
+	border: none;
+}
+
+.admin-form select option:hover {
+	background-color: var(--soft-gray);
+	color: var(--soft-beige);
+}
+
+.admin-form select option:checked {
+	background-color: var(--sunset-orange);
+	color: var(--deep-night);
+	font-weight: 600;
+}
+
+/* Dark theme select styling */
+@media (prefers-color-scheme: dark) {
+	select {
+		background-color: rgba(58, 58, 60, 0.1);
+		color: var(--soft-beige);
+		border-color: rgba(58, 58, 60, 0.2);
+	}
+	
+	select option {
+		background-color: var(--deep-night);
+		color: var(--soft-beige);
+	}
+}
+
 .gradient-text {
-	background: linear-gradient(to right, #F59E0B, #FCD34D);
+	background: linear-gradient(135deg, #E07B39 0%, #D9B365 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
-	text-fill-color: transparent;
 }
 
-/* Gradient backgrounds */
 .gradient-sunset-gold {
-	background: linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%);
+	background: linear-gradient(135deg, #E07B39 0%, #D9B365 100%);
 }

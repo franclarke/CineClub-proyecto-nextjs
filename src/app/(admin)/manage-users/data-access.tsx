@@ -146,3 +146,18 @@ export async function fetchUserByIdClient(userId: string) {
         throw error
     }
 }
+
+/**
+ * Gets all available membership tiers for dropdown selection
+ */
+export async function getMembershipOptions() {
+    try {
+        const memberships = await prisma.membershipTier.findMany({
+            orderBy: { priority: 'desc' }, // Highest priority first
+        })
+        return memberships
+    } catch (error) {
+        console.error('Error fetching memberships:', error)
+        throw error
+    }
+}

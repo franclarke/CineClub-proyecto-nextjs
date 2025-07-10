@@ -85,12 +85,12 @@ model Product {
 
 model Order {
   id                String        @id @default(uuid())
-  user              User          @relation(fields: [userId], references: [id])
-  userId            String
+  user              User?         @relation(fields: [userId], references: [id])
+  userId            String?
   items             OrderItem[]
   reservations      Reservation[]
   status            String        @default("cart") // 'cart', 'pending', 'paid', 'cancelled'
-  type              String        @default("cart") // 'cart', 'membership', 'event'
+  type              String        @default("cart") // 'cart', 'membership', 'event', 'signup'
   totalAmount       Float
   externalReference String?       @unique // Reference for payment provider (e.g. MercadoPago)
   metadata          Json? // Additional data for specific order types

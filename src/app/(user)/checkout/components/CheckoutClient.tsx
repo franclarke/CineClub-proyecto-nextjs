@@ -176,6 +176,14 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 			const data = await response.json()
 			console.log('Respuesta de create-preference:', data)
 
+			// Verificar si es una orden gratuita
+			if (data.isFreeOrder) {
+				console.log('Orden gratuita detectada, redirigiendo a éxito')
+				clearCart()
+				window.location.href = data.redirectUrl
+				return
+			}
+
 			const { initPoint, sandboxInitPoint } = data
 
 			// Usar sandbox en desarrollo, initPoint en producción
@@ -510,6 +518,12 @@ export function CheckoutClient({ user }: CheckoutClientProps) {
 							<>
 								<Loader2 className="w-6 h-6 animate-spin" />
 								<span>Procesando...</span>
+							</>
+						) : total === 0 ? (
+							<>
+								<CheckCircle className="w-5 h-5" />
+								<span>Finalizar Orden Gratuita</span>
+								<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
 							</>
 						) : (
 							<>

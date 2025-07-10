@@ -10,7 +10,7 @@ export default function EventsPage() {
     const [deleteMode, setDeleteMode] = useState(false)
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 pt-8">
+        <div className="min-h-screen bg-deep-night pt-24">
             <div className="container mx-auto px-2 sm:px-4 py-8">
                 <div className="text-center mb-4">
                     <div className="max-w-6xl mx-auto">
@@ -20,25 +20,25 @@ export default function EventsPage() {
                         </div>
                         
                         {/* Header del admin */}
-                        <div className="bg-gray-800/50 backdrop-blur-md border border-gray-700 rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <div className="card-modern p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div className="flex items-center gap-3 justify-center">
-                                <Home className="h-7 w-7 text-orange-500" />
-                                <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-white text-center sm:text-left">
+                                <Home className="h-7 w-7 text-sunset-orange" />
+                                <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-soft-beige text-center sm:text-left">
                                     Gestionar Eventos
                                 </h1>
                             </div>
                             <div className="flex gap-2 justify-end w-full sm:w-auto">
                                 <Link href="/manage-events/new" className="flex-1 sm:flex-initial">
-                                    <button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-5 rounded transition shadow hidden xs:inline-block">
+                                    <button className="w-full sm:w-auto btn-primary py-2 px-5 rounded transition-base shadow-soft hidden xs:inline-block">
                                         Añadir Nuevo Evento
                                     </button>
-                                    <button className="bg-orange-600 hover:bg-orange-700 text-white rounded-full p-2 transition shadow xs:hidden flex items-center justify-center" title="Añadir Nuevo Evento">
+                                    <button className="btn-primary rounded-full p-2 transition-base shadow-soft xs:hidden flex items-center justify-center" title="Añadir Nuevo Evento">
                                         <Plus className="w-6 h-6" />
                                     </button>
                                 </Link>
                                 {/* Botón de tacho de basura */}
                                 <button
-                                    className={`bg-orange-600 hover:bg-orange-700 text-white rounded-full p-2 transition shadow flex items-center justify-center ${deleteMode ? 'ring-2 ring-orange-400' : ''}`}
+                                    className={`btn-primary rounded-full p-2 transition-base shadow-soft flex items-center justify-center ${deleteMode ? 'ring-2 ring-sunset-orange' : ''}`}
                                     title="Eliminar Evento"
                                     onClick={() => setDeleteMode(!deleteMode)}
                                 >
@@ -49,7 +49,7 @@ export default function EventsPage() {
                     </div>
                 </div>
                 {/* Contenido de eventos */}
-                <Suspense fallback={<div className="text-white">Cargando eventos...</div>}>
+                <Suspense fallback={<div className="text-soft-beige">Cargando eventos...</div>}>
                     <EventsList deleteMode={deleteMode} />
                 </Suspense>
             </div>
