@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Users, Film, Search, X, Clock, Tag } from 'lucide-react'
 import { createEvent } from '../data-access'
+import { Button } from '@/app/components/ui/button'
+import { GlassCard } from '@/app/components/ui/glass-card'
 
 const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
 
@@ -17,7 +19,28 @@ type TMDbMovie = {
     vote_average: number
 }
 
+const CATEGORIES = [
+    'Acción',
+    'Aventura', 
+    'Ciencia ficción',
+    'Superhéroes',
+    'Terror',
+    'Comedia',
+    'Drama',
+    'Romance',
+    'Suspenso',
+    'Animación',
+    'Documental',
+    'Musical'
+]
 
+const LOCATIONS = [
+    'Terraza Principal',
+    'Jardín Norte', 
+    'Patio Sur',
+    'Azotea Premium',
+    'Área Familiar'
+]
 
 export default function NewEventPage() {
     const [form, setForm] = useState({
@@ -27,14 +50,19 @@ export default function NewEventPage() {
         location: '',
         imdbId: '',
         tmdbId: '',
-        category: '',
+        category: ''
+    })
+    const [seatDistribution, setSeatDistribution] = useState({
+        puffXXLEstelar: 6,
+        reposeraDeluxe: 10,
+        banquito: 14
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [notificationSent, setNotificationSent] = useState(false)
+    const [distributionError, setDistributionError] = useState<string | null>(null)
     const [selectedMovie, setSelectedMovie] = useState<TMDbMovie | null>(null)
-    const [imageFile, setImageFile] = useState<File | null>(null)
-    const [imagePreview, setImagePreview] = useState<string | null>(null)
 
     // Modal y búsqueda
     const [modalOpen, setModalOpen] = useState(false)
@@ -44,14 +72,26 @@ export default function NewEventPage() {
     const [totalPages, setTotalPages] = useState(1)
     const [searching, setSearching] = useState(false)
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    const handleDistributionChange = (membershipType: keyof typeof seatDistribution, value: number) => {
+        const newDistribution = { ...seatDistribution, [membershipType]: value }
+        setSeatDistribution(newDistribution)
+        
+        // Validar que la suma sea exactamente 30
+        const total = Object.values(newDistribution).reduce((sum, val) => sum + val, 0)
+        if (total !== 30) {
+            setDistributionError(`La suma actual es ${total}. Debe ser exactamente 30 asientos.`)
+        } else {
+            setDistributionError(null)
+        }
     }
 
     // Obtiene películas populares de TMDb
     const fetchPopularMovies = async (pageNum = 1) => {
         setSearching(true)
-
         try {
             const res = await fetch(
                 `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbApiKey}&page=${pageNum}`
@@ -69,7 +109,6 @@ export default function NewEventPage() {
         setSearching(false)
     }
 
-    // Abre el modal y muestra películas populares
     const openModal = async () => {
         setModalOpen(true)
         setSearch('')
@@ -79,24 +118,17 @@ export default function NewEventPage() {
         await fetchPopularMovies(1)
     }
 
-    // Cierra el modal
     const closeModal = () => {
         setModalOpen(false)
     }
 
-    // Busca películas en TMDb
     const handleSearch = async (pageNum = 1) => {
         if (!search.trim()) return
         setSearching(true)
-        console.log('Buscando películas:', search, 'Página:', pageNum)
         const res = await fetch(
             `https://api.themoviedb.org/3/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(search)}&page=${pageNum}`
         )
         const data = await res.json()
-        console.log('Resultados de búsqueda:', data)
-        if (!Array.isArray(data.results)) {
-            console.error('Error en la respuesta de TMDb:', data)
-        }
         if (pageNum === 1) {
             setTotalPages(data.total_pages)
         }
@@ -105,17 +137,13 @@ export default function NewEventPage() {
         setSearching(false)
     }
 
-    // Selecciona película y cierra modal
     const handleSelectMovie = async (movie: TMDbMovie) => {
         setSelectedMovie(movie)
-        console.log('Película seleccionada:', movie)
-        // Intentar obtener el imdb_id, pero no mostrar error si no existe
         try {
             const res = await fetch(
                 `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${tmdbApiKey}`
             )
             const data = await res.json()
-            console.log('Detalles de la película seleccionada:', data)
             setForm(prev => ({ ...prev, imdbId: data.imdb_id || '' }))
         } catch (err) {
             console.log('No se pudo obtener imdb_id:', err)
@@ -124,50 +152,50 @@ export default function NewEventPage() {
         setModalOpen(false)
     }
 
-    // Maneja la selección de imagen y muestra preview
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            setImageFile(file)
-            setImagePreview(URL.createObjectURL(file))
-        } else {
-            setImageFile(null)
-            setImagePreview(null)
-        }
-    }
 
-    // Modifica handleSubmit para subir la imagen después de crear el evento
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError(null)
         setSuccess(false)
 
-        // Validar que haya una película seleccionada
         if (!selectedMovie) {
             setError('Debes seleccionar una película antes de crear el evento.')
             setLoading(false)
             return
         }
 
+        // Validar distribución de asientos
+        const total = Object.values(seatDistribution).reduce((sum, val) => sum + val, 0)
+        if (total !== 30) {
+            setError(`La distribución de asientos debe sumar exactamente 30. Suma actual: ${total}`)
+            setLoading(false)
+            return
+        }
+
         try {
-            // El título del evento será el nombre de la película seleccionada
+            // Obtener imagen de TMDB automáticamente
+            const imageUrl = selectedMovie.poster_path 
+                ? `https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`
+                : null
+
             const result = await createEvent({
                 ...form,
                 title: selectedMovie.title,
                 tmdbId: selectedMovie.id.toString(),
+                imageUrl,
+                seatDistribution
             })
 
             if (!result.success) throw new Error(result.error || 'Error al crear el evento')
 
-            // Si hay imagen, sube la imagen y actualiza el evento
-            if (imageFile) {
-                // Aquí deberías subir la imagen y obtener la URL pública
-                // const imageUrl = await uploadImage(imageFile)
-                // await updateEventImage(result.event.id, imageUrl)
-            }
-
+            // Mostrar mensaje de éxito incluyendo notificación enviada
             setSuccess(true)
+            setNotificationSent(result.notificationSent || false)
+            if (result.notificationSent) {
+                console.log('✅ Notificación push enviada automáticamente a todos los usuarios suscritos')
+            }
             setForm({
                 title: '',
                 description: '',
@@ -175,11 +203,15 @@ export default function NewEventPage() {
                 location: '',
                 imdbId: '',
                 tmdbId: '',
-                category: '',
+                category: ''
+            })
+            setSeatDistribution({
+                puffXXLEstelar: 6,
+                reposeraDeluxe: 10,
+                banquito: 14
             })
             setSelectedMovie(null)
-            setImageFile(null)
-            setImagePreview(null)
+            setDistributionError(null)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido')
         } finally {
@@ -188,148 +220,449 @@ export default function NewEventPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 flex items-center justify-center relative">
-
-            {success && (
-                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center w-full max-w-lg pointer-events-none">
-                    <div className="flex flex-col items-center gap-2 bg-green-500/90 backdrop-blur-md text-white px-6 py-4 rounded-xl shadow-lg border border-green-300/80 mb-2 pointer-events-auto animate-fade-in">
-                        <div className="flex items-center gap-2">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-lg">¡Evento creado correctamente!</span>
-                            <Link
-                                href="/manage-events"
-                                className="hover:underline cursor-pointer text-white"
-                            >
-                                Ver Eventos
-                            </Link>
-                        </div>
+        <div className="min-h-screen bg-gradient-to-br from-deep-night via-soft-gray/30 to-deep-night">
+            {/* Header */}
+            <div className="pt-28 pb-8 px-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center mb-6">
+                        <Link
+                            href="/manage-events"
+                            className="flex items-center gap-2 text-soft-beige/70 hover:text-sunset-orange transition-colors mr-6"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                            <span>Volver a Eventos</span>
+                        </Link>
+                    </div>
+                    
+                    <div className="text-center mb-8">
+                        <h1 className="text-display text-4xl md:text-5xl text-soft-beige mb-4">
+                            Crear Nuevo Evento
+                        </h1>
+                        <p className="text-soft-beige/70 text-lg">
+                            Añade una nueva experiencia cinematográfica bajo las estrellas
+                        </p>
                     </div>
                 </div>
-            )
-            }
-            <form
-                onSubmit={handleSubmit}
-                className="bg-gray-800/80 p-8 rounded-lg shadow-lg max-w-lg w-full space-y-4 border border-gray-700"
-            >
+            </div>
 
-                <h1 className="text-2xl font-bold text-white mb-4">Añadir Nuevo Evento</h1>
-                {/* Botón para abrir el modal de búsqueda */}
-                <div>
-                    <Link
-                        href="/manage-events"
-                        className="absolute left-4 top-20 flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors"
-                    >
-                        <ArrowLeft className="w-8 h-8" />
-                    </Link>
-                    <button
-                        type="button"
-                        onClick={openModal}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded transition mb-2"
-                    >
-                        {selectedMovie ? 'Cambiar Película' : 'Buscar Película'}
-                    </button>
-                    {selectedMovie && (
-                        <div className="mt-2 p-2 rounded bg-gray-700">
-                            <strong className="text-white">Seleccionado:</strong> {selectedMovie.title}
+            {/* Success Message */}
+            {success && (
+                <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+                    <GlassCard variant="glow" className="p-4 border-dark-olive">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-3 text-dark-olive">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span className="font-medium">¡Evento creado correctamente!</span>
+                                <span className="text-soft-beige/70">|</span>
+                                <Link
+                                    href="/manage-events"
+                                    className="hover:underline text-sunset-orange font-medium"
+                                >
+                                    Ver Eventos
+                                </Link>
+                            </div>
+                            {notificationSent && (
+                                <div className="flex items-center gap-2 text-sunset-orange text-sm">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-5 5v-5z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                                    </svg>
+                                    <span>Notificación push enviada a todos los usuarios</span>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </GlassCard>
                 </div>
-                <textarea
-                    name="description"
-                    placeholder="Descripción"
-                    value={form.description}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
-                />
-                <input
-                    type="datetime-local"
-                    name="dateTime"
-                    placeholder="Fecha y hora"
-                    value={form.dateTime}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
-                />
-                <input
-                    type="text"
-                    name="location"
-                    placeholder="Ubicación"
-                    value={form.location}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
-                />
-                <input
-                    type="text"
-                    name="category"
-                    placeholder="Categoría (opcional)"
-                    value={form.category}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
-                />
+            )}
 
+            {/* Main Form */}
+            <div className="max-w-4xl mx-auto px-6 pb-12">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Error Message */}
+                    {error && (
+                        <GlassCard variant="glow" className="p-4 border-warm-red">
+                            <div className="flex items-center gap-3 text-warm-red">
+                                <X className="w-5 h-5" />
+                                <span>{error}</span>
+                            </div>
+                        </GlassCard>
+                    )}
 
+                    {/* Información de la Película */}
+                    <GlassCard className="p-6">
+                        <div className="flex items-center mb-6">
+                            <div className="w-12 h-12 bg-sunset-orange/20 rounded-lg flex items-center justify-center mr-4">
+                                <Film className="w-6 h-6 text-sunset-orange" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-soft-beige">
+                                    Selección de Película
+                                </h3>
+                                <p className="text-soft-beige/70 text-sm">
+                                    Busca y selecciona la película para el evento
+                                </p>
+                            </div>
+                        </div>
 
-                {/* Modal de búsqueda */}
-                {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
-                            <button
-                                onClick={closeModal}
-                                className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl"
-                                aria-label="Cerrar"
+                        <div className="space-y-4">
+                            <Button
+                                type="button"
+                                onClick={openModal}
+                                variant="primary"
+                                className="w-full flex items-center gap-2"
                             >
-                                ×
-                            </button>
-                            <h2 className="text-xl font-bold text-white mb-4">Buscar Película</h2>
-                            <div className="flex gap-2 mb-4">
+                                <Search className="w-4 h-4" />
+                                {selectedMovie ? 'Cambiar Película' : 'Buscar Película'}
+                            </Button>
+
+                            {selectedMovie && (
+                                <div className="p-4 rounded-xl bg-sunset-orange/10 border border-sunset-orange/20">
+                                    <div className="flex items-center gap-4">
+                                        {selectedMovie.poster_path && (
+                                            <Image 
+                                                src={`https://image.tmdb.org/t/p/w92${selectedMovie.poster_path}`} 
+                                                alt={selectedMovie.title} 
+                                                width={48} 
+                                                height={72} 
+                                                className="w-12 h-18 rounded object-cover" 
+                                            />
+                                        )}
+                                        <div>
+                                            <p className="font-medium text-soft-beige">{selectedMovie.title}</p>
+                                            <p className="text-sm text-soft-beige/70">
+                                                {selectedMovie.release_date?.slice(0, 4)} • ⭐ {selectedMovie.vote_average.toFixed(1)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </GlassCard>
+
+                    {/* Información Básica */}
+                    <GlassCard className="p-6">
+                        <div className="flex items-center mb-6">
+                            <div className="w-12 h-12 bg-sunset-orange/20 rounded-lg flex items-center justify-center mr-4">
+                                <Tag className="w-6 h-6 text-sunset-orange" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-soft-beige">
+                                    Información Básica
+                                </h3>
+                                <p className="text-soft-beige/70 text-sm">
+                                    Detalles descriptivos del evento
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Categoría
+                                </label>
+                                <select
+                                    name="category"
+                                    value={form.category}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                                >
+                                    <option value="">Seleccionar categoría</option>
+                                    {CATEGORIES.map(category => (
+                                        <option key={category} value={category}>{category}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Descripción
+                                </label>
+                                <textarea
+                                    name="description"
+                                    placeholder="Describe la experiencia del evento..."
+                                    value={form.description}
+                                    onChange={handleChange}
+                                    required
+                                    rows={4}
+                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base placeholder:text-soft-beige/50 resize-none"
+                                />
+                            </div>
+                        </div>
+                    </GlassCard>
+
+                    {/* Detalles Logísticos */}
+                    <GlassCard className="p-6">
+                        <div className="flex items-center mb-6">
+                            <div className="w-12 h-12 bg-sunset-orange/20 rounded-lg flex items-center justify-center mr-4">
+                                <Calendar className="w-6 h-6 text-sunset-orange" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-soft-beige">
+                                    Detalles Logísticos
+                                </h3>
+                                <p className="text-soft-beige/70 text-sm">
+                                    Fecha, hora y ubicación del evento
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Fecha y Hora
+                                </label>
+                                <div className="relative">
+                                    <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/50" />
+                                    <input
+                                        type="datetime-local"
+                                        name="dateTime"
+                                        value={form.dateTime}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Ubicación
+                                </label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/50" />
+                                    <select
+                                        name="location"
+                                        value={form.location}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                                    >
+                                        <option value="">Seleccionar ubicación</option>
+                                        {LOCATIONS.map(location => (
+                                            <option key={location} value={location}>{location}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </GlassCard>
+
+                    {/* Distribución de Asientos */}
+                    <GlassCard className="p-6">
+                        <div className="flex items-center mb-6">
+                            <div className="w-12 h-12 bg-sunset-orange/20 rounded-lg flex items-center justify-center mr-4">
+                                <Users className="w-6 h-6 text-sunset-orange" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-soft-beige">
+                                    Distribución de Asientos
+                                </h3>
+                                <p className="text-soft-beige/70 text-sm">
+                                    Configuración de asientos por tipo de membresía (Total: 30 asientos)
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Error de distribución */}
+                        {distributionError && (
+                            <div className="mb-4 p-3 rounded-xl bg-warm-red/10 border border-warm-red/20">
+                                <div className="flex items-center gap-2 text-warm-red text-sm">
+                                    <X className="w-4 h-4" />
+                                    <span>{distributionError}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid gap-6 md:grid-cols-3">
+                            {/* Puff XXL Estelar */}
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Puff XXL Estelar
+                                    <span className="text-xs text-soft-beige/50 block">Premium - Fila frontal</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={seatDistribution.puffXXLEstelar}
+                                    onChange={(e) => handleDistributionChange('puffXXLEstelar', parseInt(e.target.value) || 0)}
+                                    min="0"
+                                    max="30"
+                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base text-center font-medium"
+                                />
+                            </div>
+
+                            {/* Reposera Deluxe */}
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Reposera Deluxe
+                                    <span className="text-xs text-soft-beige/50 block">Intermedio - Fila media</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={seatDistribution.reposeraDeluxe}
+                                    onChange={(e) => handleDistributionChange('reposeraDeluxe', parseInt(e.target.value) || 0)}
+                                    min="0"
+                                    max="30"
+                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base text-center font-medium"
+                                />
+                            </div>
+
+                            {/* Banquito */}
+                            <div>
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Banquito
+                                    <span className="text-xs text-soft-beige/50 block">Básico - Fila trasera</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={seatDistribution.banquito}
+                                    onChange={(e) => handleDistributionChange('banquito', parseInt(e.target.value) || 0)}
+                                    min="0"
+                                    max="30"
+                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base text-center font-medium"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Suma total */}
+                        <div className="mt-4 p-4 rounded-xl bg-sunset-orange/10 border border-sunset-orange/20">
+                            <div className="flex justify-between items-center">
+                                <span className="text-soft-beige font-medium">Total de asientos:</span>
+                                <span className={`text-xl font-bold ${
+                                    Object.values(seatDistribution).reduce((sum, val) => sum + val, 0) === 30 
+                                        ? 'text-dark-olive' 
+                                        : 'text-warm-red'
+                                }`}>
+                                    {Object.values(seatDistribution).reduce((sum, val) => sum + val, 0)} / 30
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Vista previa de imagen automática */}
+                        {selectedMovie && selectedMovie.poster_path && (
+                            <div className="mt-6">
+                                <label className="block text-soft-beige/70 font-medium mb-2">
+                                    Imagen del Evento (desde TMDB)
+                                </label>
+                                <div className="w-32 h-48 rounded-xl overflow-hidden border border-soft-gray/20">
+                                    <Image 
+                                        src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
+                                        alt={selectedMovie.title}
+                                        width={128}
+                                        height={192}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <p className="text-xs text-soft-beige/50 mt-2">
+                                    Esta imagen se usará automáticamente para el evento
+                                </p>
+                            </div>
+                        )}
+                    </GlassCard>
+
+                    {/* Submit Button */}
+                    <div className="flex justify-end pt-4">
+                        <Button
+                            type="submit"
+                            disabled={loading || !selectedMovie || Object.values(seatDistribution).reduce((sum, val) => sum + val, 0) !== 30}
+                            loading={loading}
+                            size="lg"
+                            className="min-w-[200px]"
+                        >
+                            {loading ? 'Creando Evento...' : 'Crear Evento'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+
+            {/* Movie Search Modal */}
+            {modalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <GlassCard className="w-full max-w-4xl max-h-[80vh] mx-4 p-6 overflow-hidden">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-semibold text-soft-beige">Buscar Película</h2>
+                            <Button
+                                type="button"
+                                onClick={closeModal}
+                                variant="outline"
+                                size="sm"
+                                className="p-2"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+
+                        <div className="flex gap-3 mb-6">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/50" />
                                 <input
                                     type="text"
-                                    placeholder="Nombre de la película"
+                                    placeholder="Nombre de la película..."
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && handleSearch(1)}
-                                    className="flex-1 p-2 rounded bg-gray-900 text-white border border-gray-700"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base placeholder:text-soft-beige/50"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => handleSearch(1)}
-                                    className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded transition"
-                                    disabled={searching}
-                                >
-                                    Buscar
-                                </button>
                             </div>
-                            <div className="max-h-72 overflow-y-auto">
-                                {searching && <div className="text-white">Buscando...</div>}
-                                {!searching && results.length === 0 && <div className="text-gray-400">No hay resultados.</div>}
+                            <Button
+                                type="button"
+                                onClick={() => handleSearch(1)}
+                                disabled={searching}
+                                loading={searching}
+                            >
+                                Buscar
+                            </Button>
+                        </div>
+
+                        <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                            {searching && (
+                                <div className="text-center py-8">
+                                    <div className="w-8 h-8 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                                    <p className="text-soft-beige/70">Buscando películas...</p>
+                                </div>
+                            )}
+                            
+                            {!searching && results.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-soft-beige/70">No se encontraron resultados</p>
+                                </div>
+                            )}
+                            
+                            <div className="grid gap-3">
                                 {results.map(movie => (
                                     <div
                                         key={movie.id}
                                         onClick={() => handleSelectMovie(movie)}
-                                        className="flex items-center p-2 rounded-lg hover:bg-gray-700 cursor-pointer"
+                                        className="flex items-center gap-4 p-4 rounded-xl hover:bg-soft-gray/10 cursor-pointer transition-all group border border-transparent hover:border-sunset-orange/20"
                                     >
                                         <Image 
                                             src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} 
                                             alt={movie.title} 
-                                            width={64} 
-                                            height={96} 
-                                            className="w-16 h-24 rounded-md mr-2 object-cover" 
+                                            width={48} 
+                                            height={72} 
+                                            className="w-12 h-18 rounded object-cover" 
                                         />
                                         <div className="flex-1">
-                                            <span className="text-white font-semibold">{movie.title}</span>
-                                            <br />
-                                            <span className="text-gray-400 text-sm">{movie.release_date?.slice(0, 4)}</span>
+                                            <h3 className="font-medium text-soft-beige group-hover:text-sunset-orange transition-colors">
+                                                {movie.title}
+                                            </h3>
+                                            <p className="text-sm text-soft-beige/70 mb-1">
+                                                {movie.release_date?.slice(0, 4)} • ⭐ {movie.vote_average.toFixed(1)}
+                                            </p>
+                                            <p className="text-xs text-soft-beige/60 line-clamp-2">
+                                                {movie.overview}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            {/* Paginado */}
-                            <div className="flex justify-between items-center mt-4">
-                                <button
+                        </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-between items-center mt-6 pt-4 border-t border-soft-gray/20">
+                                <Button
                                     type="button"
                                     onClick={() => {
                                         if (search.trim()) {
@@ -339,12 +672,17 @@ export default function NewEventPage() {
                                         }
                                     }}
                                     disabled={page <= 1 || searching}
-                                    className="bg-gray-700 text-white hover:bg-gray-800 transition-all dration-200 px-3 py-1 rounded disabled:opacity-50"
+                                    variant="outline"
+                                    size="sm"
                                 >
                                     Anterior
-                                </button>
-                                <span className="text-white">{page} / {totalPages}</span>
-                                <button
+                                </Button>
+                                
+                                <span className="text-soft-beige/70">
+                                    Página {page} de {totalPages}
+                                </span>
+                                
+                                <Button
                                     type="button"
                                     onClick={() => {
                                         if (search.trim()) {
@@ -354,49 +692,16 @@ export default function NewEventPage() {
                                         }
                                     }}
                                     disabled={page >= totalPages || searching}
-                                    className="bg-gray-700 text-white hover:bg-gray-800  transition-all dration-200 px-3 py-1 rounded disabled:opacity-50"
+                                    variant="outline"
+                                    size="sm"
                                 >
                                     Siguiente
-                                </button>
+                                </Button>
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Selector de imagen con mejor UI */}
-                <div className="flex flex-col items-center mb-4">
-                    <label className="block text-white font-semibold mb-2">Imagen del evento (opcional)</label>
-                    <label
-                        htmlFor="event-image"
-                        className="w-40 h-40 flex flex-col items-center justify-center border-2 border-dashed border-gray-500 rounded-lg cursor-pointer bg-gray-900 hover:border-orange-500 transition-all"
-                    >
-                        {imagePreview ? (
-                            <Image src={imagePreview} alt="Preview" width={160} height={160} className="w-full h-full object-cover rounded-lg" />
-                        ) : (
-                            <span className="text-gray-400 text-center">
-                                Seleccionar Imagen<br />
-                                <span className="text-xs text-gray-500">(JPG, PNG, etc.)</span>
-                            </span>
                         )}
-                    </label>
-                    <input
-                        id="event-image"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageChange}
-                    />
+                    </GlassCard>
                 </div>
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded transition"
-                >
-                    {loading ? 'Guardando...' : 'Añadir Evento'}
-                </button>
-                {error && <div className="text-red-500 text-sm">{error}</div>}
-            </form>
-        </div >
+            )}
+        </div>
     )
 }

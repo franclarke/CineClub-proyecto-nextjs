@@ -39,37 +39,4 @@ export function useCurrentDate() {
   return currentDate
 }
 
-/**
- * Hook para verificar si una fecha es pasada de forma segura
- * @param dateString - Fecha a verificar
- * @returns boolean o null si no está hidratado
- */
-export function useIsPastDate(dateString: string) {
-  const currentDate = useCurrentDate()
-  
-  if (!currentDate) return null
-  
-  return new Date(dateString) < currentDate
-}
-
-/**
- * Hook para formatear fechas de forma consistente
- * @param dateString - Fecha a formatear
- * @returns Objeto con formatos de fecha o null si no está hidratado
- */
-export function useDateFormatter(dateString: string) {
-  const isHydrated = useHydration()
-  
-  if (!isHydrated) return null
-  
-  const date = new Date(dateString)
-  
-  return {
-    isValid: !isNaN(date.getTime()),
-    toLocaleDateString: (options?: Intl.DateTimeFormatOptions) => 
-      date.toLocaleDateString('es-ES', options),
-    toLocaleTimeString: (options?: Intl.DateTimeFormatOptions) => 
-      date.toLocaleTimeString('es-ES', options),
-    valueOf: () => date.valueOf()
-  }
-} 
+ 

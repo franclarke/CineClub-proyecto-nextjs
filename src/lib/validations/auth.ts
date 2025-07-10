@@ -35,5 +35,4 @@ export const membershipSchema = z.object({
 })
 
 export type SignInFormData = z.infer<typeof signInSchema>
-export type SignUpFormData = z.infer<typeof signUpSchema>
-export type MembershipFormData = z.infer<typeof membershipSchema> 
+export type SignUpFormData = z.infer<typeof signUpSchema> 

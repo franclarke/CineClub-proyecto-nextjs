@@ -24,25 +24,65 @@ export function PushNotificationsInitializer() {
             console.error('VAPID public key no definida. Verifica tu .env y el nombre de la variable.')
             return
         }
+        
         if ('serviceWorker' in navigator && 'PushManager' in window) {
-            const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-            Notification.requestPermission().then(permission => {
-                if (permission === 'granted') {
-                    navigator.serviceWorker.ready.then(registration => {
-                        registration.pushManager.subscribe({
-                            userVisibleOnly: true,
-                            applicationServerKey
-                        }).then(subscription => {
-                            // Envía la suscripción a tu backend aquí
-                            fetch('/api/push/subscribe', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(subscription)
+            const initializePushNotifications = async () => {
+                try {
+                    const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                    
+                    // Pedir permisos de notificación
+                    const permission = await Notification.requestPermission()
+                    console.log('Permiso de notificaciones:', permission)
+                    
+                    if (permission === 'granted') {
+                        const registration = await navigator.serviceWorker.ready
+                        
+                        // Verificar si ya existe una suscripción
+                        let subscription = await registration.pushManager.getSubscription()
+                        
+                        if (subscription) {
+                            console.log('Suscripción existente encontrada')
+                            // Verificar si usa las claves VAPID correctas comparando la applicationServerKey
+                            // Si hay dudas, renovar la suscripción
+                            try {
+                                await subscription.unsubscribe()
+                                console.log('Suscripción anterior eliminada para renovar')
+                                subscription = null
+                            } catch (error) {
+                                console.error('Error eliminando suscripción anterior:', error)
+                            }
+                        }
+                        
+                        // Crear nueva suscripción si no existe o se eliminó la anterior
+                        if (!subscription) {
+                            subscription = await registration.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey
                             })
+                            console.log('Nueva suscripción creada')
+                        }
+                        
+                        // Enviar suscripción al backend
+                        const response = await fetch('/api/push/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(subscription)
                         })
-                    })
+                        
+                        if (response.ok) {
+                            console.log('Suscripción enviada al servidor exitosamente')
+                        } else {
+                            console.error('Error enviando suscripción al servidor:', response.status)
+                        }
+                    } else {
+                        console.log('Permisos de notificación denegados')
+                    }
+                } catch (error) {
+                    console.error('Error inicializando push notifications:', error)
                 }
-            })
+            }
+            
+            initializePushNotifications()
         }
     }, [])
 

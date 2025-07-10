@@ -145,8 +145,51 @@ function mapMPStatusToOurStatus(mpStatus: string): string {
 // Procesar items de la orden aprobada
 async function processOrderItems(order: OrderWithItems) {
 	try {
+		// Si es una orden de signup, crear el usuario
+		if (order.type === 'signup' && order.metadata && typeof order.metadata === 'object') {
+			const metadata = order.metadata as { 
+				userData: { name: string; email: string; password: string }
+				membershipId: string
+			}
+
+			// Verificar si el usuario ya existe
+			const existingUser = await prisma.user.findUnique({
+				where: { email: metadata.userData.email }
+			})
+
+			if (existingUser) {
+				console.log(`Usuario ${existingUser.id} ya existe, actualizando orden`)
+				// Actualizar la orden con el userId existente
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: existingUser.id
+					}
+				})
+			} else {
+				// Crear el usuario con los datos almacenados
+				const newUser = await prisma.user.create({
+					data: {
+						name: metadata.userData.name,
+						email: metadata.userData.email,
+						password: metadata.userData.password,
+						membershipId: metadata.membershipId
+					}
+				})
+
+				// Actualizar la orden con el userId
+				await prisma.order.update({
+					where: { id: order.id },
+					data: {
+						userId: newUser.id
+					}
+				})
+
+				console.log(`Usuario ${newUser.id} creado exitosamente con membresía ${metadata.membershipId}`)
+			}
+		}
 		// Si es una orden de membresía, actualizar la membresía del usuario
-		if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
+		else if (order.type === 'membership' && order.metadata && typeof order.metadata === 'object') {
 			const metadata = order.metadata as { membershipTierId?: string }
 			const membershipId = metadata.membershipTierId
 

@@ -8,14 +8,42 @@ webpush.setVapidDetails(
     process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY!
 )
 
-export async function notifyAllUsersAboutNewEvent(eventTitle: string) {
+export async function notifyAllUsersAboutNewEvent(event: {
+    title: string;
+    dateTime: Date;
+    location: string;
+}) {
     const subscriptions = await prisma.pushSubscription.findMany()
-    const payload = JSON.stringify({
-        title: '¡Nuevo evento disponible!',
-        body: `Se ha creado el evento: ${eventTitle}`,
-        icon: '/icon-192x192.png'
+    
+    if (subscriptions.length === 0) {
+        console.log('No hay usuarios suscritos a notificaciones push')
+        return
+    }
+    
+    // Formatear la fecha para mostrar en español
+    const eventDate = new Date(event.dateTime)
+    const formattedDate = eventDate.toLocaleDateString('es-AR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     })
-    for (const subscription of subscriptions) {
+    const formattedTime = eventDate.toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    })
+    
+    const payload = JSON.stringify({
+        title: `🎬 Nueva película: ${event.title}`,
+        body: `${formattedDate} a las ${formattedTime} en ${event.location}. ¡Reservá tu lugar ahora!`,
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-192x192.png',
+        data: {
+            url: '/events'
+        }
+    })
+    
+    const sendPromises = subscriptions.map(async (subscription) => {
         try {
             await webpush.sendNotification(
                 {
@@ -24,10 +52,28 @@ export async function notifyAllUsersAboutNewEvent(eventTitle: string) {
                 },
                 payload
             )
+            return { success: true }
         } catch (error) {
             console.error('Error al enviar notificación:', error)
+            
+            // Si la suscripción es inválida, la eliminamos
+            if ((error as any)?.statusCode === 410 || (error as any)?.statusCode === 403) {
+                try {
+                    await prisma.pushSubscription.delete({
+                        where: { id: subscription.id }
+                    })
+                    console.log('Suscripción inválida eliminada:', subscription.endpoint)
+                } catch (deleteError) {
+                    console.error('Error eliminando suscripción inválida:', deleteError)
+                }
+            }
+            return { success: false }
         }
-    }
+    })
+    
+    const results = await Promise.all(sendPromises)
+    const successCount = results.filter(r => r.success).length
+    console.log(`Notificaciones push enviadas: ${successCount}/${subscriptions.length}`)
 }
 
 /**
@@ -112,7 +158,7 @@ export async function getEventById(id: string) {
 }
 
 /**
- * Crea un nuevo evento en la base de datos.
+ * Crea un nuevo evento en la base de datos y sus asientos automáticamente.
  */
 export async function createEvent(form: {
     title: string
@@ -122,8 +168,21 @@ export async function createEvent(form: {
     imdbId?: string
     tmdbId?: string
     category?: string
+    imageUrl?: string | null
+    seatDistribution: {
+        puffXXLEstelar: number
+        reposeraDeluxe: number
+        banquito: number
+    }
 }) {
     try {
+        // Validar que la distribución sume exactamente 30
+        const total = Object.values(form.seatDistribution).reduce((sum, val) => sum + val, 0)
+        if (total !== 30) {
+            throw new Error(`La distribución de asientos debe sumar 30. Suma actual: ${total}`)
+        }
+
+        // Crear el evento
         const event = await prisma.event.create({
             data: {
                 title: form.title,
@@ -133,11 +192,64 @@ export async function createEvent(form: {
                 imdbId: form.imdbId || null,
                 tmdbId: form.tmdbId || null,
                 category: form.category || null,
+                imageUrl: form.imageUrl || null,
             },
         })
-        await notifyAllUsersAboutNewEvent(event.title)
-        return { success: true, event }
+        
+        // Crear asientos automáticamente basados en la distribución
+        const seats = []
+        let seatNumber = 1
+        
+        // Asientos Puff XXL Estelar (fila frontal VIP)
+        for (let i = 0; i < form.seatDistribution.puffXXLEstelar; i++) {
+            seats.push({
+                eventId: event.id,
+                seatNumber: seatNumber++,
+                tier: 'Puff XXL Estelar',
+            })
+        }
+        
+        // Asientos Reposera Deluxe (fila media)
+        for (let i = 0; i < form.seatDistribution.reposeraDeluxe; i++) {
+            seats.push({
+                eventId: event.id,
+                seatNumber: seatNumber++,
+                tier: 'Reposera Deluxe',
+            })
+        }
+        
+        // Asientos Banquito (fila trasera)
+        for (let i = 0; i < form.seatDistribution.banquito; i++) {
+            seats.push({
+                eventId: event.id,
+                seatNumber: seatNumber++,
+                tier: 'Banquito',
+            })
+        }
+
+        // Crear todos los asientos en la base de datos
+        await prisma.seat.createMany({
+            data: seats,
+            skipDuplicates: true,
+        })
+
+        console.log(`✅ Evento creado con ${seats.length} asientos:`, {
+            'Puff XXL Estelar': form.seatDistribution.puffXXLEstelar,
+            'Reposera Deluxe': form.seatDistribution.reposeraDeluxe,
+            'Banquito': form.seatDistribution.banquito
+        })
+        
+        // Enviar notificación push automáticamente
+        console.log('Enviando notificación push para el nuevo evento:', event.title)
+        await notifyAllUsersAboutNewEvent({
+            title: event.title,
+            dateTime: event.dateTime,
+            location: event.location
+        })
+        
+        return { success: true, event, notificationSent: true, seatsCreated: seats.length }
     } catch (error) {
+        console.error('Error al crear evento:', error)
         return { success: false, error: (error as Error).message }
     }
 }
@@ -155,3 +267,218 @@ export async function createEvent(form: {
 //         return { success: false, error: (error as Error).message }
 //     }
 // }
+
+/**
+ * Obtiene un evento por su ID con información detallada de asientos.
+ */
+export async function getEventWithSeats(id: string) {
+    try {
+        const event = await prisma.event.findUnique({
+            where: { id },
+            include: {
+                seats: {
+                    select: {
+                        id: true,
+                        tier: true,
+                        isReserved: true,
+                        seatNumber: true,
+                    }
+                },
+                _count: {
+                    select: { reservations: true },
+                },
+            },
+        })
+
+        if (!event) {
+            return { success: false, error: 'Evento no encontrado' }
+        }
+
+        // Calculate seat distribution
+        const seatDistribution = {
+            puffXXLEstelar: event.seats.filter(seat => seat.tier === 'Puff XXL Estelar').length,
+            reposeraDeluxe: event.seats.filter(seat => seat.tier === 'Reposera Deluxe').length,
+            banquito: event.seats.filter(seat => seat.tier === 'Banquito').length,
+        }
+
+        return { 
+            success: true, 
+            event: {
+                ...event,
+                seatDistribution
+            }
+        }
+    } catch (error) {
+        console.error('Error al obtener evento:', error)
+        return { success: false, error: (error as Error).message }
+    }
+}
+
+/**
+ * Actualiza un evento existente en la base de datos y regenera sus asientos si es necesario.
+ */
+export async function updateEvent(id: string, form: {
+    title: string
+    description: string
+    dateTime: string
+    location: string
+    imdbId?: string
+    tmdbId?: string
+    category?: string
+    imageUrl?: string | null
+    seatDistribution: {
+        puffXXLEstelar: number
+        reposeraDeluxe: number
+        banquito: number
+    }
+}) {
+    try {
+        // Validar que la distribución sume exactamente 30
+        const total = Object.values(form.seatDistribution).reduce((sum, val) => sum + val, 0)
+        if (total !== 30) {
+            throw new Error(`La distribución de asientos debe sumar 30. Suma actual: ${total}`)
+        }
+
+        // Verificar si el evento existe
+        const existingEvent = await prisma.event.findUnique({
+            where: { id },
+            include: {
+                seats: {
+                    where: { isReserved: true }
+                }
+            }
+        })
+
+        if (!existingEvent) {
+            throw new Error('Evento no encontrado')
+        }
+
+        // Verificar si hay reservas activas antes de modificar asientos
+        const hasReservations = existingEvent.seats.length > 0
+        if (hasReservations) {
+            console.warn('⚠️ Evento tiene reservas activas. Se actualizará la información pero no la distribución de asientos.')
+        }
+
+        // Actualizar el evento
+        const updatedEvent = await prisma.event.update({
+            where: { id },
+            data: {
+                title: form.title,
+                description: form.description,
+                dateTime: new Date(form.dateTime),
+                location: form.location,
+                imdbId: form.imdbId || null,
+                tmdbId: form.tmdbId || null,
+                category: form.category || null,
+                imageUrl: form.imageUrl || null,
+            },
+        })
+        
+        // Solo regenerar asientos si no hay reservas activas
+        let seatsUpdated = false
+        if (!hasReservations) {
+            // Eliminar asientos existentes
+            await prisma.seat.deleteMany({
+                where: { eventId: id }
+            })
+
+            // Crear nuevos asientos basados en la distribución actualizada
+            const seats = []
+            let seatNumber = 1
+            
+            // Asientos Puff XXL Estelar (fila frontal VIP)
+            for (let i = 0; i < form.seatDistribution.puffXXLEstelar; i++) {
+                seats.push({
+                    eventId: id,
+                    seatNumber: seatNumber++,
+                    tier: 'Puff XXL Estelar',
+                })
+            }
+            
+            // Asientos Reposera Deluxe (fila media)
+            for (let i = 0; i < form.seatDistribution.reposeraDeluxe; i++) {
+                seats.push({
+                    eventId: id,
+                    seatNumber: seatNumber++,
+                    tier: 'Reposera Deluxe',
+                })
+            }
+            
+            // Asientos Banquito (fila trasera)
+            for (let i = 0; i < form.seatDistribution.banquito; i++) {
+                seats.push({
+                    eventId: id,
+                    seatNumber: seatNumber++,
+                    tier: 'Banquito',
+                })
+            }
+
+            // Crear todos los asientos en la base de datos
+            await prisma.seat.createMany({
+                data: seats,
+                skipDuplicates: true,
+            })
+
+            seatsUpdated = true
+            console.log(`✅ Asientos regenerados para evento ${updatedEvent.title}:`, {
+                'Puff XXL Estelar': form.seatDistribution.puffXXLEstelar,
+                'Reposera Deluxe': form.seatDistribution.reposeraDeluxe,
+                'Banquito': form.seatDistribution.banquito
+            })
+        }
+        
+        return { 
+            success: true, 
+            event: updatedEvent, 
+            seatsUpdated,
+            hasReservations 
+        }
+    } catch (error) {
+        console.error('Error al actualizar evento:', error)
+        return { success: false, error: (error as Error).message }
+    }
+}
+
+/**
+ * Elimina un evento y todos sus datos relacionados (asientos, reservas).
+ */
+export async function deleteEvent(id: string) {
+    try {
+        // Verificar si el evento existe
+        const existingEvent = await prisma.event.findUnique({
+            where: { id },
+            include: {
+                reservations: true,
+                seats: true
+            }
+        })
+
+        if (!existingEvent) {
+            return { success: false, error: 'Evento no encontrado' }
+        }
+
+        // Usar una transacción para eliminar todo de forma segura
+        await prisma.$transaction(async (tx) => {
+            // 1. Eliminar reservas primero (debido a foreign keys)
+            await tx.reservation.deleteMany({
+                where: { eventId: id }
+            })
+
+            // 2. Eliminar asientos
+            await tx.seat.deleteMany({
+                where: { eventId: id }
+            })
+
+            // 3. Eliminar el evento
+            await tx.event.delete({
+                where: { id }
+            })
+        })
+
+        console.log(`✅ Evento eliminado correctamente: ${existingEvent.title}`)
+        return { success: true }
+    } catch (error) {
+        console.error('Error al eliminar evento:', error)
+        return { success: false, error: (error as Error).message }
+    }
+}

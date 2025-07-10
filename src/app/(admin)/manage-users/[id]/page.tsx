@@ -4,7 +4,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     const { id } = await params
 
     return (
-        <div className="min-h-screen bg-deep-night">
+        <div className="min-h-screen bg-deep-night pt-8">
             <UserInfo userId={id} />
         </div>
     )

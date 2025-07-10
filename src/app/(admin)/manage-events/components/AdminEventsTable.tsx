@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { Button } from '@/app/components/ui/button'
-import { Search, Calendar, MapPin, Users, Edit2, Trash2, Filter } from 'lucide-react'
+import { Search, Calendar, MapPin, Users, Edit2, Trash2, Filter, X, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import React from 'react' // Added missing import for React
 
 interface Event {
     id: string
@@ -28,6 +29,8 @@ export default function AdminEventsTable({ events, deleteMode, onEventDeleted }:
     const [search, setSearch] = useState('')
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'sold-out' | 'upcoming'>('all')
     const [sortBy, setSortBy] = useState<'date' | 'title' | 'reservations'>('date')
+    const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null)
+    const [deleting, setDeleting] = useState<string | null>(null)
 
     // Helper function to get event status
     const getEventStatus = (event: Event) => {
@@ -78,23 +81,39 @@ export default function AdminEventsTable({ events, deleteMode, onEventDeleted }:
             }
         })
 
-    const handleDelete = async (eventId: string) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar este evento?')) return
+    const handleDeleteClick = (eventId: string) => {
+        setConfirmingDelete(eventId)
+    }
+
+    const handleDeleteConfirm = async (eventId: string) => {
+        setDeleting(eventId)
         
         try {
             const response = await fetch(`/api/events/${eventId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
             })
             
             if (response.ok) {
+                // Llamar al callback para actualizar la lista
                 onEventDeleted?.()
             } else {
-                alert('Error al eliminar el evento')
+                const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+                alert(`Error al eliminar el evento: ${errorData.error || 'Error desconocido'}`)
             }
         } catch (error) {
             console.error('Error deleting event:', error)
-            alert('Error al eliminar el evento')
+            alert('Error de conexión al eliminar el evento. Inténtalo de nuevo.')
+        } finally {
+            setDeleting(null)
+            setConfirmingDelete(null)
         }
+    }
+
+    const handleDeleteCancel = () => {
+        setConfirmingDelete(null)
     }
 
     return (
@@ -185,100 +204,150 @@ export default function AdminEventsTable({ events, deleteMode, onEventDeleted }:
                                     const occupancyPercentage = event.totalSeats > 0 
                                         ? Math.round(((event.totalSeats - event.availableSeats) / event.totalSeats) * 100)
                                         : 0
+                                    const isConfirming = confirmingDelete === event.id
+                                    const isDeleting = deleting === event.id
 
                                     return (
-                                        <tr
-                                            key={event.id}
-                                            className="hover:bg-soft-gray/5 transition-colors"
-                                        >
-                                            {/* Event Info */}
-                                            <td className="py-4 px-6 border-b border-soft-gray/10">
-                                                <div>
-                                                    <h3 className="font-semibold text-soft-beige line-clamp-1">
-                                                        {event.title}
-                                                    </h3>
-                                                    {event.category && (
-                                                        <span className="text-xs text-sunset-orange">
-                                                            {event.category}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
+                                        <React.Fragment key={event.id}>
+                                            <tr className="hover:bg-soft-gray/5 transition-colors">
+                                                {/* Event Info */}
+                                                <td className="py-4 px-6 border-b border-soft-gray/10">
+                                                    <div>
+                                                        <h3 className="font-semibold text-soft-beige line-clamp-1">
+                                                            {event.title}
+                                                        </h3>
+                                                        {event.category && (
+                                                            <span className="text-xs text-sunset-orange">
+                                                                {event.category}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
 
-                                            {/* Date and Location */}
-                                            <td className="py-4 px-6 border-b border-soft-gray/10">
-                                                <div className="text-sm">
-                                                    <div className="text-soft-beige font-medium">
-                                                        {formatDate(event.dateTime)}
+                                                {/* Date and Location */}
+                                                <td className="py-4 px-6 border-b border-soft-gray/10">
+                                                    <div className="text-sm">
+                                                        <div className="text-soft-beige font-medium">
+                                                            {formatDate(event.dateTime)}
+                                                        </div>
+                                                        <div className="text-soft-beige/70">
+                                                            {event.location}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-soft-beige/70">
-                                                        {event.location}
-                                                    </div>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            {/* Occupancy */}
-                                            <td className="py-4 px-6 border-b border-soft-gray/10">
-                                                <div className="text-sm">
-                                                    <div className="text-soft-beige font-medium">
-                                                        {event.totalSeats - event.availableSeats}/{event.totalSeats}
+                                                {/* Occupancy */}
+                                                <td className="py-4 px-6 border-b border-soft-gray/10">
+                                                    <div className="text-sm">
+                                                        <div className="text-soft-beige font-medium">
+                                                            {event.totalSeats - event.availableSeats}/{event.totalSeats}
+                                                        </div>
+                                                        <div className="w-full bg-soft-gray/20 rounded-full h-2 mt-1">
+                                                            <div 
+                                                                className="bg-sunset-orange h-2 rounded-full transition-all"
+                                                                style={{ width: `${occupancyPercentage}%` }}
+                                                            />
+                                                        </div>
+                                                        <div className="text-xs text-soft-beige/70 mt-1">
+                                                            {occupancyPercentage}% ocupado
+                                                        </div>
                                                     </div>
-                                                    <div className="w-full bg-soft-gray/20 rounded-full h-2 mt-1">
-                                                        <div 
-                                                            className="bg-sunset-orange h-2 rounded-full transition-all"
-                                                            style={{ width: `${occupancyPercentage}%` }}
-                                                        />
-                                                    </div>
-                                                    <div className="text-xs text-soft-beige/70 mt-1">
-                                                        {occupancyPercentage}% ocupado
-                                                    </div>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            {/* Status */}
-                                            <td className="py-4 px-6 border-b border-soft-gray/10">
-                                                <span className={`
-                                                    px-3 py-1 rounded-full text-xs font-semibold border inline-block
-                                                    ${status === 'sold-out' ? 'bg-warm-red/20 text-warm-red border-warm-red/30' :
-                                                      status === 'upcoming' ? 'bg-sunset-orange/20 text-sunset-orange border-sunset-orange/30' :
-                                                      status === 'active' ? 'bg-dark-olive/20 text-dark-olive border-dark-olive/30' :
-                                                      'bg-soft-gray/20 text-soft-gray border-soft-gray/30'}
-                                                `}>
-                                                    {status === 'sold-out' ? 'Agotado' :
-                                                     status === 'upcoming' ? 'Próximo' :
-                                                     status === 'active' ? 'Activo' : 'Pasado'}
-                                                </span>
-                                            </td>
+                                                {/* Status */}
+                                                <td className="py-4 px-6 border-b border-soft-gray/10">
+                                                    <span className={`
+                                                        px-3 py-1 rounded-full text-xs font-semibold border inline-block
+                                                        ${status === 'sold-out' ? 'bg-warm-red/20 text-warm-red border-warm-red/30' :
+                                                          status === 'upcoming' ? 'bg-sunset-orange/20 text-sunset-orange border-sunset-orange/30' :
+                                                          status === 'active' ? 'bg-dark-olive/20 text-dark-olive border-dark-olive/30' :
+                                                          'bg-soft-gray/20 text-soft-gray border-soft-gray/30'}
+                                                    `}>
+                                                        {status === 'sold-out' ? 'Agotado' :
+                                                         status === 'upcoming' ? 'Próximo' :
+                                                         status === 'active' ? 'Activo' : 'Pasado'}
+                                                    </span>
+                                                </td>
 
-                                            {/* Actions */}
-                                            <td className="py-4 px-6 border-b border-soft-gray/10">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <Button
-                                                        asChild
-                                                        variant="secondary"
-                                                        size="sm"
-                                                        className="flex items-center gap-1"
-                                                    >
-                                                        <Link href={`/manage-events/edit/${event.id}`}>
-                                                            <Edit2 className="w-4 h-4" />
-                                                            Editar
-                                                        </Link>
-                                                    </Button>
-                                                    
-                                                    {deleteMode && (
+                                                {/* Actions */}
+                                                <td className="py-4 px-6 border-b border-soft-gray/10">
+                                                    <div className="flex items-center justify-center gap-2">
                                                         <Button
-                                                            onClick={() => handleDelete(event.id)}
-                                                            variant="outline"
+                                                            asChild
+                                                            variant="secondary"
                                                             size="sm"
-                                                            className="flex items-center gap-1 border-warm-red text-warm-red hover:bg-warm-red/10"
+                                                            className="flex items-center gap-1"
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            Eliminar
+                                                            <Link href={`/manage-events/edit/${event.id}`}>
+                                                                <Edit2 className="w-4 h-4" />
+                                                                Editar
+                                                            </Link>
                                                         </Button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                        
+                                                        {deleteMode && !isConfirming && (
+                                                            <Button
+                                                                onClick={() => handleDeleteClick(event.id)}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="flex items-center gap-1 border-warm-red text-warm-red hover:bg-warm-red/10"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                                Eliminar
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            
+                                            {/* Confirmation Row */}
+                                            {isConfirming && (
+                                                <tr className="animate-fade-in">
+                                                    <td colSpan={5} className="border-b border-soft-gray/10 p-0">
+                                                        <div className="bg-warm-red/5 border-l-4 border-warm-red/30 p-6 transition-all duration-300">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <AlertTriangle className="w-6 h-6 text-warm-red" />
+                                                                    <div>
+                                                                        <h4 className="font-semibold text-soft-beige mb-1">
+                                                                            ¿Eliminar evento "{event.title}"?
+                                                                        </h4>
+                                                                        <p className="text-sm text-soft-beige/70">
+                                                                            Esta acción eliminará todas las reservas y asientos asociados y no se puede deshacer.
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button
+                                                                        onClick={handleDeleteCancel}
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={isDeleting}
+                                                                    >
+                                                                        Cancelar
+                                                                    </Button>
+                                                                    <Button
+                                                                        onClick={() => handleDeleteConfirm(event.id)}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        disabled={isDeleting}
+                                                                        className="border-warm-red text-warm-red hover:bg-warm-red/10"
+                                                                    >
+                                                                        {isDeleting ? (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="w-4 h-4 border-2 border-warm-red border-t-transparent rounded-full animate-spin" />
+                                                                                <span>Eliminando...</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            'Eliminar'
+                                                                        )}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
                                     )
                                 })
                             )}

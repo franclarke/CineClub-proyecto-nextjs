@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getMembershipTiers } from '@/lib/actions/auth'
 import { MembershipsClientComponent } from './MembershipsClientComponent'
 
 async function getUserMembership(email: string) {
@@ -33,11 +34,7 @@ async function getUserMembership(email: string) {
 	}
 }
 
-async function getMembershipTiers() {
-	return await prisma.membershipTier.findMany({
-		orderBy: { priority: 'asc' }
-	})
-}
+
 
 export async function MembershipsDataAccess() {
 	const session = await getServerSession(authOptions)

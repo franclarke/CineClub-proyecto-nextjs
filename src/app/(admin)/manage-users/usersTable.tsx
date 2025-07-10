@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { fetchUsersByMembership } from './actions'
 import Link from 'next/link'
-import { Search, Edit2 } from 'lucide-react'
+import { Search, Edit2, Shield } from 'lucide-react'
 import { BackButton } from '@/app/components/ui/back-button'
 import { Button } from '@/app/components/ui/button'
 
@@ -10,6 +10,7 @@ type UserWithMembership = {
     id: string
     name: string | null
     email: string
+    isAdmin: boolean
     membership: {
         name: string
     } | null
@@ -131,6 +132,14 @@ export default function UsersTable() {
                                                 <div className="text-soft-beige font-medium">
                                                     {user.name || 'Sin nombre'}
                                                 </div>
+                                                {user.isAdmin && (
+                                                    <div className="mt-1">
+                                                        <span className="px-2 py-1 bg-sunset-orange/20 text-sunset-orange border border-sunset-orange/30 rounded-full text-xs font-semibold inline-flex items-center gap-1">
+                                                            <Shield className="w-3 h-3" />
+                                                            Admin
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="py-4 px-6 border-b border-soft-gray/10 text-soft-beige/90">
                                                 {user.email}

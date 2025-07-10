@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { getAllProducts, addProduct, deleteProduct, getProductById } from '../data-access'
+import { getAllProducts, addProduct, deleteProduct, getProductById, updateProduct } from '../data-access'
 import ProductCard from './productCard'
+import { ImageUpload } from './ImageUpload'
 import { BackButton } from '@/app/components/ui/back-button'
 import { Button } from '@/app/components/ui/button'
 
@@ -25,21 +26,36 @@ export default function ProductsDashboard() {
     const [search, setSearch] = useState('')
     const [deleteSuccess, setDeleteSuccess] = useState(false)
     const [addSuccess, setAddSuccess] = useState(false)
+    const [editSuccess, setEditSuccess] = useState(false)
 
-    // Ocultar mensaje de success automáticamente
+    // Ocultar mensajes de success automáticamente
     useEffect(() => {
         if (deleteSuccess) {
-            const timer = setTimeout(() => setDeleteSuccess(false), 2000)
+            const timer = setTimeout(() => setDeleteSuccess(false), 3000)
             return () => clearTimeout(timer)
         }
     }, [deleteSuccess])
 
     useEffect(() => {
         if (addSuccess) {
-            const timer = setTimeout(() => setAddSuccess(false), 2000)
+            const timer = setTimeout(() => setAddSuccess(false), 3000)
             return () => clearTimeout(timer)
         }
     }, [addSuccess])
+
+    useEffect(() => {
+        if (editSuccess) {
+            const timer = setTimeout(() => setEditSuccess(false), 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [editSuccess])
+
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => setError(null), 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [error])
 
     // Fetch all products
     const fetchProducts = async () => {
@@ -53,7 +69,6 @@ export default function ProductsDashboard() {
                     imageUrl: prod.imageUrl ?? undefined,
                 }))
             )
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al cargar productos')
         } finally {
@@ -69,31 +84,38 @@ export default function ProductsDashboard() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
+        
         try {
             if (!form.name || !form.price || !form.stock) {
                 setError('Completa todos los campos obligatorios')
                 return
             }
+
+            const productData = {
+                name: form.name,
+                description: form.description || undefined,
+                price: Number(form.price),
+                stock: Number(form.stock),
+                imageUrl: form.imageUrl || undefined
+            }
+
             if (editId) {
                 // Editar producto
-                // await updateProduct(editId, { ...form, price: Number(form.price), stock: Number(form.stock), imageUrl: form.imageUrl })
-                setError('Función de edición no implementada')
+                await updateProduct(editId, productData)
+                setEditSuccess(true)
             } else {
-                await addProduct({
-                    name: form.name,
-                    description: form.description,
-                    price: Number(form.price),
-                    stock: Number(form.stock),
-
-                })
+                // Agregar producto
+                await addProduct(productData)
+                setAddSuccess(true)
             }
+
+            // Reset form
             setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
             setEditId(null)
             setShowForm(false)
             fetchProducts()
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            setError('Error al guardar el producto')
+            setError(editId ? 'Error al actualizar el producto' : 'Error al agregar el producto')
         }
     }
 
@@ -103,7 +125,6 @@ export default function ProductsDashboard() {
             await deleteProduct(id)
             setDeleteSuccess(true)
             fetchProducts()
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al eliminar el producto')
         }
@@ -119,15 +140,32 @@ export default function ProductsDashboard() {
                     description: prod.description || '',
                     price: String(prod.price),
                     stock: String(prod.stock),
-                    imageUrl: '',
+                    imageUrl: prod.imageUrl || '',
                 })
                 setEditId(id)
                 setShowForm(true)
             }
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             setError('Error al cargar el producto')
         }
+    }
+
+    // Handle image upload
+    const handleImageUpload = (url: string) => {
+        setForm(prev => ({ ...prev, imageUrl: url }))
+    }
+
+    // Handle image upload error
+    const handleImageError = (errorMessage: string) => {
+        setError(errorMessage)
+    }
+
+    // Reset form
+    const resetForm = () => {
+        setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
+        setEditId(null)
+        setShowForm(false)
+        setError(null)
     }
 
     // Filtrado por nombre
@@ -170,9 +208,8 @@ export default function ProductsDashboard() {
                     </div>
                     <Button
                         onClick={() => {
+                            resetForm()
                             setShowForm(true)
-                            setEditId(null)
-                            setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
                         }}
                         className="flex items-center gap-2"
                     >
@@ -193,13 +230,14 @@ export default function ProductsDashboard() {
                             ${deleteSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
                         `}
                     >
-                        <div className="flex items-center gap-2 bg-dark-olive text-soft-beige px-6 py-3 rounded-2xl shadow-soft border border-dark-olive/40 font-semibold text-base">
+                        <div className="flex items-center gap-2 bg-warm-red text-soft-beige px-6 py-3 rounded-2xl shadow-soft border border-warm-red/40 font-semibold text-base">
                             <svg className="w-5 h-5 text-soft-beige" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            Producto eliminado correctamente
+                            Producto eliminado exitosamente
                         </div>
                     </div>
+
                     {/* Success add */}
                     <div
                         className={`
@@ -210,9 +248,25 @@ export default function ProductsDashboard() {
                     >
                         <div className="flex items-center gap-2 bg-dark-olive text-soft-beige px-6 py-3 rounded-2xl shadow-soft border border-dark-olive/40 font-semibold text-base">
                             <svg className="w-5 h-5 text-soft-beige" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
-                            Producto agregado correctamente
+                            Producto agregado exitosamente
+                        </div>
+                    </div>
+
+                    {/* Success edit */}
+                    <div
+                        className={`
+                            fixed left-1/2 top-8 z-50 -translate-x-1/2
+                            transition-all duration-700
+                            ${editSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
+                        `}
+                    >
+                        <div className="flex items-center gap-2 bg-sunset-orange text-soft-beige px-6 py-3 rounded-2xl shadow-soft border border-sunset-orange/40 font-semibold text-base">
+                            <svg className="w-5 h-5 text-soft-beige" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Producto editado exitosamente
                         </div>
                     </div>
                     {/* Error */}
@@ -234,14 +288,22 @@ export default function ProductsDashboard() {
 
                 {/* Modal Form */}
                 {showForm && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                         <form
                             onSubmit={handleSubmit}
-                            className="card-modern p-8 shadow-soft w-full max-w-md mx-4 space-y-4"
+                            className="card-modern p-8 shadow-soft w-full max-w-lg mx-4 space-y-6 max-h-[90vh] overflow-y-auto"
                         >
-                            <h2 className="text-xl font-bold text-soft-beige mb-2">
+                            <h2 className="text-xl font-bold text-soft-beige mb-4">
                                 {editId ? 'Editar producto' : 'Agregar nuevo producto'}
                             </h2>
+                            
+                            {/* Image Upload */}
+                            <ImageUpload
+                                currentImageUrl={form.imageUrl}
+                                onImageUpload={handleImageUpload}
+                                onError={handleImageError}
+                            />
+
                             <div>
                                 <label className="block text-soft-beige/70 mb-2">Nombre *</label>
                                 <input
@@ -249,8 +311,10 @@ export default function ProductsDashboard() {
                                     value={form.name}
                                     onChange={e => setForm({ ...form, name: e.target.value })}
                                     required
+                                    placeholder="Nombre del producto"
                                 />
                             </div>
+                            
                             <div>
                                 <label className="block text-soft-beige/70 mb-2">Descripción</label>
                                 <textarea
@@ -258,62 +322,22 @@ export default function ProductsDashboard() {
                                     value={form.description}
                                     onChange={e => setForm({ ...form, description: e.target.value })}
                                     rows={3}
+                                    placeholder="Descripción del producto (opcional)"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-soft-beige/70 mb-2">Imagen</label>
-                                <div className="flex justify-center">
-                                    <label
-                                        htmlFor="product-image"
-                                        className="flex flex-col items-center justify-center w-40 h-40 bg-soft-gray/10 border-2 border-dashed border-soft-gray/30 rounded-xl cursor-pointer hover:border-sunset-orange transition-base group"
-                                    >
-                                        {form.imageUrl ? (
-                                            <img
-                                                src={form.imageUrl}
-                                                alt="Vista previa"
-                                                className="object-cover w-full h-full rounded-xl"
-                                            />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center h-full text-soft-beige/50 group-hover:text-sunset-orange transition-base">
-                                                <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                                <span className="font-semibold">Agregar Imagen</span>
-                                                <span className="text-xs text-soft-beige/40 mt-1">PNG, JPG, JPEG</span>
-                                            </div>
-                                        )}
-                                        <input
-                                            id="product-image"
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={e => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    const reader = new FileReader()
-                                                    reader.onloadend = () => {
-                                                        setForm(prev => ({
-                                                            ...prev,
-                                                            imageUrl: reader.result as string
-                                                        }))
-                                                    }
-                                                    reader.readAsDataURL(file)
-                                                }
-                                            }}
-                                        />
-                                    </label>
-                                </div>
-                            </div>
+                            
                             <div className="flex gap-4">
                                 <div className="flex-1">
                                     <label className="block text-soft-beige/70 mb-2">Precio *</label>
                                     <input
                                         type="number"
+                                        step="0.01"
                                         className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
                                         value={form.price}
                                         onChange={e => setForm({ ...form, price: e.target.value })}
                                         required
                                         min={0}
+                                        placeholder="0.00"
                                     />
                                 </div>
                                 <div className="flex-1">
@@ -325,26 +349,23 @@ export default function ProductsDashboard() {
                                         onChange={e => setForm({ ...form, stock: e.target.value })}
                                         required
                                         min={0}
+                                        placeholder="0"
                                     />
                                 </div>
                             </div>
+                            
                             <div className="flex gap-2 pt-4">
                                 <Button
                                     type="submit"
                                     className="flex-1"
-                                    onClick={() => { setAddSuccess(true) }}
                                 >
-                                    {editId ? 'Guardar cambios' : 'Agregar'}
+                                    {editId ? 'Guardar cambios' : 'Agregar producto'}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="secondary"
                                     className="flex-1"
-                                    onClick={() => {
-                                        setShowForm(false)
-                                        setEditId(null)
-                                        setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
-                                    }}
+                                    onClick={resetForm}
                                 >
                                     Cancelar
                                 </Button>
@@ -375,6 +396,9 @@ export default function ProductsDashboard() {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
                                 <p>No hay productos cargados.</p>
+                                <p className="text-sm text-soft-beige/50 mt-2">
+                                    {search ? 'Intenta con otros términos de búsqueda' : 'Comienza agregando tu primer producto'}
+                                </p>
                             </div>
                         )}
                     </div>

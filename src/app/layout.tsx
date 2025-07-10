@@ -9,7 +9,6 @@ import { GlobalCartSidebar } from "./components/cart/GlobalCartSidebar";
 import { FloatingCartButton } from "./components/cart/FloatingCartButton";
 import { Toaster } from 'react-hot-toast';
 import { RegisterSW } from "./register-sw";
-import { PushManager } from "./components/pushNotifications/PushManagerComponent";
 import { PushNotificationsInitializer } from "./(pushNotifications)/PushNotificationInitializer";
 
 
@@ -144,7 +143,6 @@ export default function RootLayout({
 					</QueryProvider>
 				</AuthProvider>
 				<RegisterSW />
-				<PushManager />
 			</body>
 		</html>
 	);

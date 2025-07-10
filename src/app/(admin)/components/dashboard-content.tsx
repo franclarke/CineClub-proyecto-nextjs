@@ -3,7 +3,7 @@
 import { Button } from "@/app/components/ui/button"
 import { useAuth } from "@/app/hooks/use-auth"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Bell, Send } from "lucide-react"
 
 
@@ -16,6 +16,32 @@ export function DashboardContent() {
 	const [sending, setSending] = useState(false)
 	const [success, setSuccess] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [cleaning, setCleaning] = useState(false)
+	const [cleanSuccess, setCleanSuccess] = useState(false)
+	const [needsCleanup, setNeedsCleanup] = useState(false)
+	const [checkingConfig, setCheckingConfig] = useState(true)
+	
+
+
+	// Verificar si necesitamos mostrar la advertencia de limpieza
+	useEffect(() => {
+		const checkSubscriptionsStatus = async () => {
+			try {
+				// Verificar si hay suscripciones y si las claves VAPID están configuradas
+				const response = await fetch('/api/push/test')
+				if (response.ok) {
+					const data = await response.json()
+					// Solo mostrar advertencia si hay suscripciones pero las claves VAPID no están configuradas correctamente
+					setNeedsCleanup(data.config.activeSubscriptions > 0 && !data.config.vapidConfigured)
+				}
+			} catch (error) {
+				console.error('Error verificando estado de suscripciones:', error)
+			} finally {
+				setCheckingConfig(false)
+			}
+		}
+		checkSubscriptionsStatus()
+	}, [cleanSuccess]) // Re-verificar después de limpiar
 
 	if (isLoading) {
 		return (
@@ -48,13 +74,19 @@ export function DashboardContent() {
 				})
 			})
 
+			const data = await response.json()
+			
 			if (response.ok) {
 				setSuccess(true)
 				setNotification({ title: '', body: '' })
 				setTimeout(() => setSuccess(false), 3000)
+				
+				// Mostrar información detallada del envío
+				if (data.details) {
+					console.log(`Notificaciones enviadas: ${data.details.success}/${data.details.total}`)
+				}
 			} else {
-				const data = await response.json()
-				setError(data.message || 'Error al enviar la notificación')
+				setError(data.error || data.message || 'Error al enviar la notificación')
 			}
 		} catch (err) {
 			setError('Error de conexión al enviar la notificación')
@@ -62,6 +94,37 @@ export function DashboardContent() {
 			setSending(false)
 		}
 	}
+
+	const handleCleanSubscriptions = async () => {
+		setCleaning(true)
+		setError(null)
+
+		try {
+			const response = await fetch('/api/push/cleanup', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				}
+			})
+
+			const data = await response.json()
+			
+			if (response.ok) {
+				setCleanSuccess(true)
+				setNeedsCleanup(false) // Resetear el estado de advertencia
+				setTimeout(() => setCleanSuccess(false), 3000)
+				console.log(`Suscripciones eliminadas: ${data.details.deleted}`)
+			} else {
+				setError(data.error || 'Error al limpiar suscripciones')
+			}
+		} catch (err) {
+			setError('Error de conexión al limpiar suscripciones')
+		} finally {
+			setCleaning(false)
+		}
+	}
+
+
 
 	return (
 		<div className="max-w-6xl mx-auto pt-28 px-6">
@@ -180,6 +243,43 @@ export function DashboardContent() {
 					</div>
 				)}
 
+				{/* Clean Success Message */}
+				{cleanSuccess && (
+					<div className="mb-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+						<div className="flex items-center gap-2 text-blue-400">
+							<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+							</svg>
+							<span className="font-medium">Suscripciones eliminadas correctamente</span>
+						</div>
+					</div>
+				)}
+
+
+
+				{/* Cleanup Section - Solo mostrar si hay problemas */}
+				{needsCleanup && !checkingConfig && (
+					<div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+						<h4 className="text-sm font-medium text-yellow-400 mb-2">
+							⚠️ Problema detectado con suscripciones VAPID
+						</h4>
+						<p className="text-xs text-yellow-300 mb-3">
+							Las suscripciones existentes fueron creadas con claves VAPID incorrectas. 
+							Debe limpiarlas para que las notificaciones funcionen correctamente.
+						</p>
+						<Button 
+							onClick={handleCleanSubscriptions}
+							disabled={cleaning}
+							loading={cleaning}
+							variant="outline"
+							size="sm"
+							className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+						>
+							{cleaning ? 'Limpiando...' : 'Limpiar Suscripciones Inválidas'}
+						</Button>
+					</div>
+				)}
+
 				<form onSubmit={handleSendNotification} className="space-y-4">
 					<div>
 						<label htmlFor="title" className="block text-soft-beige/70 font-medium mb-2">
@@ -218,6 +318,8 @@ export function DashboardContent() {
 							{notification.body.length}/120 caracteres
 						</div>
 					</div>
+
+
 
 					<div className="flex justify-end">
 						<Button 

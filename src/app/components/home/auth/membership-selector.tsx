@@ -72,7 +72,7 @@ export function MembershipSelector({
 													alt={membership.name}
 													width={32}
 													height={32}
-													className="w-8 h-8 object-contain filter brightness-110 contrast-110"
+													className="w-12 h-12 object-contain filter brightness-110 contrast-110 rounded-lg"
 												/>
 											) : (
 												<span className="text-xl">🎭</span>

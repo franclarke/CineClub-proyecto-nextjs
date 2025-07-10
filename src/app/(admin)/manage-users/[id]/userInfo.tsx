@@ -3,10 +3,11 @@
 
 import React, { useEffect, useState } from 'react'
 import { User, MembershipTier } from '@prisma/client'
-import { fetchUserByIdClient, editUserByIdClient } from '../actions'
-import { PencilIcon, ArrowLeftIcon, User as UserIcon, Mail, Crown } from 'lucide-react'
+import { fetchUserByIdClient, editUserByIdClient, fetchMembershipOptions } from '../actions'
+import { PencilIcon, ArrowLeftIcon, User as UserIcon, Mail, Crown, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/app/components/ui/button'
+import { Switch } from '@/app/components/ui/switch'
 
 interface UserWithMembership extends User {
   membership: MembershipTier
@@ -18,27 +19,37 @@ interface UserInfoProps {
 
 export default function UserInfo({ userId }: UserInfoProps) {
   const [user, setUser] = useState<UserWithMembership | null>(null)
+  const [memberships, setMemberships] = useState<MembershipTier[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
     name: '',
     email: '',
-    membershipTierId: ''
+    membershipTierId: '',
+    isAdmin: false
   })
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       setIsLoading(true)
       try {
-        const userData = await fetchUserByIdClient(userId)
+        // Fetch user and memberships in parallel
+        const [userData, membershipData] = await Promise.all([
+          fetchUserByIdClient(userId),
+          fetchMembershipOptions()
+        ])
+
         setUser(userData)
+        setMemberships(membershipData)
+        
         if (userData) {
           setEditForm({
             name: userData.name || '',
             email: userData.email,
-            membershipTierId: userData.membership?.id || ''
+            membershipTierId: userData.membership?.id || '',
+            isAdmin: userData.isAdmin
           })
         }
       } catch (error) {
@@ -48,7 +59,7 @@ export default function UserInfo({ userId }: UserInfoProps) {
         setIsLoading(false)
       }
     }
-    fetchUser()
+    fetchData()
   }, [userId])
 
   const handleSave = async () => {
@@ -57,7 +68,8 @@ export default function UserInfo({ userId }: UserInfoProps) {
       const updatedUser = await editUserByIdClient(userId, {
         name: editForm.name,
         email: editForm.email,
-        membershipId: editForm.membershipTierId
+        membershipId: editForm.membershipTierId || null,
+        isAdmin: editForm.isAdmin
       })
       setUser(updatedUser)
       setIsEditing(false)
@@ -74,7 +86,8 @@ export default function UserInfo({ userId }: UserInfoProps) {
       setEditForm({
         name: user.name || '',
         email: user.email,
-        membershipTierId: user.membership?.id || ''
+        membershipTierId: user.membership?.id || '',
+        isAdmin: user.isAdmin
       })
     }
     setIsEditing(false)
@@ -174,9 +187,16 @@ export default function UserInfo({ userId }: UserInfoProps) {
                 <UserIcon className="w-6 h-6 text-sunset-orange" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-soft-beige">
-                  {user.name || 'Usuario sin nombre'}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-soft-beige">
+                    {user.name || 'Usuario sin nombre'}
+                  </h2>
+                  {user.isAdmin && (
+                    <span className="px-2 py-1 bg-sunset-orange/20 text-sunset-orange border border-sunset-orange/30 rounded-full text-xs font-semibold">
+                      Admin
+                    </span>
+                  )}
+                </div>
                 <p className="text-soft-beige/70 text-sm">
                   ID: {user.id.slice(0, 8)}...
                 </p>
@@ -279,9 +299,11 @@ export default function UserInfo({ userId }: UserInfoProps) {
                   className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
                 >
                   <option value="" className="bg-deep-night">Sin membresía</option>
-                  <option value="1" className="bg-deep-night">Banquito</option>
-                  <option value="2" className="bg-deep-night">Reposera Deluxe</option>
-                  <option value="3" className="bg-deep-night">Puff XXL Estelar</option>
+                  {memberships.map(membership => (
+                    <option key={membership.id} value={membership.id} className="bg-deep-night">
+                      {membership.name}
+                    </option>
+                  ))}
                 </select>
               ) : (
                 <div className="px-4 py-3 bg-soft-gray/10 rounded-xl">
@@ -295,6 +317,42 @@ export default function UserInfo({ userId }: UserInfoProps) {
                     `}>
                     {user.membership?.name || 'Sin membresía'}
                   </span>
+                </div>
+              )}
+            </div>
+
+            {/* Admin Role Field */}
+            <div>
+              <label className="block text-soft-beige/70 font-medium mb-2">
+                <Shield className="w-4 h-4 inline mr-2" />
+                Rol de Administrador
+              </label>
+              {isEditing ? (
+                <div className="px-4 py-3 bg-soft-gray/10 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-soft-beige font-medium">¿Es administrador?</span>
+                      <p className="text-soft-beige/60 text-sm">
+                        Los administradores tienen acceso completo al panel de gestión
+                      </p>
+                    </div>
+                    <Switch
+                      checked={editForm.isAdmin}
+                      onChange={(checked) => setEditForm({ ...editForm, isAdmin: checked })}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="px-4 py-3 bg-soft-gray/10 rounded-xl text-soft-beige">
+                  {user.isAdmin ? (
+                    <span className="px-3 py-1 bg-sunset-orange/20 text-sunset-orange border border-sunset-orange/30 rounded-full text-xs font-semibold inline-block">
+                      Administrador
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-soft-gray/20 text-soft-gray border border-soft-gray/30 rounded-full text-xs font-semibold inline-block">
+                      Usuario estándar
+                    </span>
+                  )}
                 </div>
               )}
             </div>
