@@ -1,6 +1,48 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/2gizGE2c)
 # Proyecto 2 - Desarrollo de Aplicación Web Completa con Next.js y PostgreSQL
 
+## Integraciones con IA
+
+Se agregaron las siguientes integraciones con IA:	
+- **Añadir/Editar Productos**: 
+-- Se implementó la generacion de imagenes de productos utilizando IA.
+-- Se implementó la generación de descripciones de productos utilizando IA.
+
+- **Añadir/Editar Eventos**:
+-- Se implementó la generación de descripciones de eventos utilizando IA.
+
+
+# **Entrega**
+
+**🔗 Link a nuestro repositorio:**  
+[https://github.com/franclarke/CineClub-proyecto-nextjs](https://github.com/franclarke/CineClub-proyecto-nextjs)
+
+**🌐 Link a producción:**  
+[https://cine-club-proyecto-nextjs.vercel.app](https://cine-club-proyecto-nextjs.vercel.app)
+
+---
+
+# **Información Importante**
+
+## 👤 Usuarios y contraseñas de prueba
+
+### 🛠 Administrador
+- **Email:** `admin@puffandchill.com`  
+- **Contraseña:** `admin123`
+
+### 🙋‍♀️ Usuarios comunes
+- **Ana** → `ana@test.com`  
+- **María** → `maria@test.com`  
+- **Carlos** → `carlos@test.com`  
+- **Contraseña (para todos):** `user123`
+
+## 🎟️ Códigos de descuento
+- **Código para registrarse y comprar gratis:** `FREE`
+
+---
+
+
+
 ### 📌 Introducción
 
 En este segundo proyecto, cada comisión desarrollará una aplicación web más avanzada utilizando **Next.js y PostgreSQL**. Se incluirá autenticación de usuarios y la integración con servicios externos, entre ellos **Mercado Pago** para pagos en línea. El proyecto permitirá a los alumnos trabajar con una aplicación realista y reforzar conceptos clave como **gestión de datos, autenticación y pagos online**.
