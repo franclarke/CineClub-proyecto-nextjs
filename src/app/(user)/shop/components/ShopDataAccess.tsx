@@ -1,9 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { ShopClientComponent } from './ShopClientComponent'
 
-
 export async function ShopDataAccess() {
-	// Obtener todos los productos disponibles
+	// Obtener todos los productos disponibles sin caché
 	const products = await prisma.product.findMany({
 		where: {
 			stock: {

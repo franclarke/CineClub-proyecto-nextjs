@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import { Product } from '@prisma/client'
-import { Search, Package2 } from 'lucide-react'
+import { Search, Package2, RefreshCw } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProductCard } from '@/app/components/products/ProductCard'
+import { useRouter } from 'next/navigation'
 
 interface ShopClientComponentProps {
 	initialProducts: Product[]
@@ -20,6 +21,8 @@ export function ShopClientComponent({ initialProducts, categorizedProducts }: Sh
 	const [selectedCategory] = useState('all')
 	const [searchQuery, setSearchQuery] = useState('')
 	const [sortBy] = useState<'name' | 'price'>('name')
+	const [isRefreshing, setIsRefreshing] = useState(false)
+	const router = useRouter()
 
 	// Filtrar y ordenar productos
 	const filteredProducts = useMemo(() => {
@@ -42,24 +45,51 @@ export function ShopClientComponent({ initialProducts, categorizedProducts }: Sh
 		})
 	}, [selectedCategory, searchQuery, sortBy, initialProducts, categorizedProducts])
 
+	const handleRefresh = async () => {
+		setIsRefreshing(true)
+		try {
+			// Limpiar caché
+			await fetch('/api/products/clear-cache', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				}
+			})
+			// Recargar la página
+			router.refresh()
+		} catch (error) {
+			console.error('Error refreshing:', error)
+		} finally {
+			setIsRefreshing(false)
+		}
+	}
+
 	return (
 		<div className="space-y-8">
 			{/* Filters and Search */}
 			<div className="bg-soft-gray/5 backdrop-blur-sm border border-soft-gray/10 rounded-3xl p-6">
 				<div className="space-y-6">
-					{/* Search Bar */}
-					<div className="relative">
-						<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/40" />
-						<input
-							type="text"
-							placeholder="Buscar productos..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full pl-12 pr-4 py-3 bg-deep-night/50 border border-soft-gray/20 rounded-2xl text-soft-beige placeholder-soft-beige/40 focus:outline-none focus:border-sunset-orange/50 transition-colors duration-300"
-						/>
+					{/* Search Bar and Refresh Button */}
+					<div className="flex items-center gap-4">
+						<div className="relative flex-1">
+							<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-soft-beige/40" />
+							<input
+								type="text"
+								placeholder="Buscar productos..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="w-full pl-12 pr-4 py-3 bg-deep-night/50 border border-soft-gray/20 rounded-2xl text-soft-beige placeholder-soft-beige/40 focus:outline-none focus:border-sunset-orange/50 transition-colors duration-300"
+							/>
+						</div>
+						<button
+							onClick={handleRefresh}
+							disabled={isRefreshing}
+							className="p-3 bg-sunset-orange/10 border border-sunset-orange/20 rounded-2xl text-sunset-orange hover:bg-sunset-orange/20 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+							title="Refrescar productos"
+						>
+							<RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+						</button>
 					</div>
-
-
 				</div>
 			</div>
 

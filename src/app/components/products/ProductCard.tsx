@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useCart } from '@/lib/cart/cart-context'
 import { Product } from '@prisma/client'
 import { Button } from '@/app/components/ui/button'
+import { NoSSR } from '@/app/components/ui/no-ssr'
 import { 
 	Plus, 
 	Minus, 
@@ -23,8 +24,22 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 	const { addProduct, getProductQuantity, updateProductQuantity } = useCart()
 	const [isAdding, setIsAdding] = useState(false)
 	const [imageError, setImageError] = useState(false)
+	const [imageUrl, setImageUrl] = useState<string>('')
+	const [isImageLoading, setIsImageLoading] = useState(true)
 	const currentQuantity = getProductQuantity(product.id)
 	const isOutOfStock = product.stock === 0
+
+	// Establecer la URL de imagen después del montaje para evitar errores de hidratación
+	useEffect(() => {
+		if (product.imageUrl && !imageError) {
+			// Agregar timestamp solo en el cliente para evitar caché
+			const timestamp = Date.now()
+			setImageUrl(`${product.imageUrl}?t=${timestamp}`)
+		} else {
+			setImageUrl('/placeholder-poster.jpg')
+		}
+		setIsImageLoading(false)
+	}, [product.imageUrl, imageError])
 
 	const handleAddToCart = async () => {
 		if (isOutOfStock) return
@@ -51,16 +66,6 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 		if (currentQuantity >= 1) {
 			updateProductQuantity(product.id, currentQuantity - 1)
 		}
-	}
-
-	// Obtener la imagen del producto desde Supabase o usar placeholder
-	const getProductImage = () => {
-		// Si hay una imageUrl y no hubo error de carga, usar la imagen de Supabase
-		if (product.imageUrl && !imageError) {
-			return product.imageUrl
-		}
-		// Fallback al placeholder
-		return '/placeholder-poster.jpg'
 	}
 
 	return (
@@ -204,16 +209,39 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 					
 					{/* Product Image */}
 					<div className="relative w-full h-full">
-						<Image
-							src={getProductImage()}
-							alt={product.name}
-							fill
-							className="object-cover"
-							onError={() => setImageError(true)}
-							sizes="(max-width: 640px) 100vw, 220px"
-							priority={false}
-							unoptimized={!!product.imageUrl} // Don't optimize Supabase images since they're external
-						/>
+						{/* Loading state */}
+						{isImageLoading && (
+							<div className="absolute inset-0 bg-gradient-to-br from-soft-gray/20 to-soft-gray/10 flex items-center justify-center">
+								<div className="w-8 h-8 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin" />
+							</div>
+						)}
+						
+						{/* Image with NoSSR to avoid hydration issues */}
+						<NoSSR fallback={
+							<div className="absolute inset-0 bg-gradient-to-br from-soft-gray/20 to-soft-gray/10 flex items-center justify-center">
+								<div className="w-8 h-8 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin" />
+							</div>
+						}>
+							{imageUrl && !isImageLoading && (
+								<Image
+									src={imageUrl}
+									alt={product.name}
+									fill
+									className="object-cover"
+									onError={() => setImageError(true)}
+									sizes="(max-width: 640px) 100vw, 220px"
+									priority={false}
+									unoptimized={!!product.imageUrl} // Don't optimize Supabase images since they're external
+								/>
+							)}
+						</NoSSR>
+						
+						{/* Fallback cuando la imagen no carga */}
+						{imageError && !isImageLoading && (
+							<div className="absolute inset-0 bg-gradient-to-br from-soft-gray/20 to-soft-gray/10 flex items-center justify-center">
+								<Package className="w-12 h-12 text-soft-gray/40" />
+							</div>
+						)}
 					</div>
 
 					{/* Quick add indicator when item in cart */}

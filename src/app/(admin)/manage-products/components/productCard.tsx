@@ -38,7 +38,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
     return (
         <div className="card-modern overflow-hidden flex flex-col hover-lift w-full max-w-xs mx-auto">
             <div className="relative w-full h-48 bg-soft-gray/10 flex items-center justify-center">
-                {product.imageUrl && !imageError ? (
+                {product.imageUrl ? (
                     <>
                         {imageLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-soft-gray/10">
@@ -67,7 +67,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
                 )}
             </div>
             
-            <div className="p-4 flex-1 flex flex-col">
+            <div className="p-4 flex flex-col flex-grow">
                 <h3 className="text-lg font-bold text-soft-beige mb-1">{product.name}</h3>
                 
                 <div className="flex items-center justify-between mt-auto">

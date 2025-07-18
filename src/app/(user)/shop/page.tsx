@@ -9,6 +9,10 @@ export const metadata: Metadata = {
 	description: 'Descubre nuestros productos exclusivos para tu experiencia de cine'
 }
 
+// Deshabilitar caché para esta página
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function ShopPage() {
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-deep-night via-deep-night/95 to-deep-night/90">

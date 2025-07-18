@@ -282,6 +282,18 @@ export default function ProductsDashboard() {
             await deleteProduct(id)
             setDeleteSuccess(true)
             fetchProducts()
+            
+            // Forzar recarga de la página de la tienda
+            try {
+                await fetch('/api/products/clear-cache', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+            } catch (error) {
+                console.error('Error clearing cache:', error)
+            }
         } catch (e) {
             setError('Error al eliminar el producto')
         }
