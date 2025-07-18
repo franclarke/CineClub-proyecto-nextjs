@@ -63,6 +63,7 @@ export default function NewEventPage() {
     const [notificationSent, setNotificationSent] = useState(false)
     const [distributionError, setDistributionError] = useState<string | null>(null)
     const [selectedMovie, setSelectedMovie] = useState<TMDbMovie | null>(null)
+    const [generatingDescription, setGeneratingDescription] = useState(false)
 
     // Modal y búsqueda
     const [modalOpen, setModalOpen] = useState(false)
@@ -150,6 +151,48 @@ export default function NewEventPage() {
             setForm(prev => ({ ...prev, imdbId: '' }))
         }
         setModalOpen(false)
+    }
+
+    // Handle AI description generation
+    const handleGenerateDescription = async () => {
+        if (!selectedMovie) {
+            setError('Debes seleccionar una película antes de generar la descripción')
+            return
+        }
+
+        setGeneratingDescription(true)
+        setError(null)
+
+        try {
+            const response = await fetch('/api/events/generate-description', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    movieTitle: selectedMovie.title,
+                    movieOverview: selectedMovie.overview,
+                    movieYear: selectedMovie.release_date?.slice(0, 4),
+                    movieRating: selectedMovie.vote_average
+                })
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error generando descripción')
+            }
+
+            if (data.success && data.description) {
+                setForm(prev => ({ ...prev, description: data.description }))
+            } else {
+                throw new Error('No se pudo generar la descripción')
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Error generando descripción con IA')
+        } finally {
+            setGeneratingDescription(false)
+        }
     }
 
 
@@ -381,9 +424,35 @@ export default function NewEventPage() {
                             </div>
 
                             <div>
-                                <label className="block text-soft-beige/70 font-medium mb-2">
-                                    Descripción
-                                </label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-soft-beige/70 font-medium">
+                                        Descripción
+                                    </label>
+                                    {selectedMovie && (
+                                        <Button
+                                            type="button"
+                                            onClick={handleGenerateDescription}
+                                            disabled={generatingDescription}
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-xs px-3 py-1 border-sunset-orange text-sunset-orange hover:bg-sunset-orange/10"
+                                        >
+                                            {generatingDescription ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin mr-1" />
+                                                    Generando...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                                    </svg>
+                                                    Generar con IA
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
+                                </div>
                                 <textarea
                                     name="description"
                                     placeholder="Describe la experiencia del evento..."
@@ -393,6 +462,11 @@ export default function NewEventPage() {
                                     rows={4}
                                     className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base placeholder:text-soft-beige/50 resize-none"
                                 />
+                                {selectedMovie && (
+                                    <p className="text-xs text-soft-beige/50 mt-1">
+                                        💡 Usa "Generar con IA" para crear una descripción automática basada en la película seleccionada
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </GlassCard>

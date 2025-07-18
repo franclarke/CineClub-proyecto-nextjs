@@ -22,9 +22,12 @@ interface ImageUploadProps {
     onImageSelect: (file: File | null) => void
     onError: (error: string) => void
     onImageRemove?: () => void
+    onRegenerateImage?: () => void
+    isGenerating?: boolean
+    productName?: string
 }
 
-function ImageUpload({ currentImageUrl, onImageSelect, onError, onImageRemove }: ImageUploadProps) {
+function ImageUpload({ currentImageUrl, onImageSelect, onError, onImageRemove, onRegenerateImage, isGenerating, productName }: ImageUploadProps) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
@@ -78,7 +81,9 @@ function ImageUpload({ currentImageUrl, onImageSelect, onError, onImageRemove }:
 
     return (
         <div className="space-y-4">
-            <label className="block text-soft-beige/70 mb-2">Imagen del producto</label>
+            <div className="flex items-center justify-between mb-2">
+                <label className="block text-soft-beige/70">Imagen del producto</label>
+            </div>
             
             {/* Image Preview or Upload Area */}
             {previewUrl ? (
@@ -142,6 +147,10 @@ export default function ProductsDashboard() {
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
     const [submitting, setSubmitting] = useState(false)
     const [imageRemoved, setImageRemoved] = useState(false)
+    const [generatingImage, setGeneratingImage] = useState(false)
+    const [imageGeneratedSuccess, setImageGeneratedSuccess] = useState(false)
+    // Estado para loading de descripción
+    const [generatingDescription, setGeneratingDescription] = useState(false)
 
     // Ocultar mensajes de success automáticamente
     useEffect(() => {
@@ -164,6 +173,13 @@ export default function ProductsDashboard() {
             return () => clearTimeout(timer)
         }
     }, [editSuccess])
+
+    useEffect(() => {
+        if (imageGeneratedSuccess) {
+            const timer = setTimeout(() => setImageGeneratedSuccess(false), 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [imageGeneratedSuccess])
 
     useEffect(() => {
         if (error) {
@@ -311,6 +327,81 @@ export default function ProductsDashboard() {
         setError(errorMessage)
     }
 
+    // Handle AI image generation
+    const handleGenerateImage = async () => {
+        if (!form.name.trim()) {
+            setError('Ingresa el nombre del producto para generar una imagen')
+            return
+        }
+
+        setGeneratingImage(true)
+        setError(null)
+
+        try {
+            const response = await fetch('/api/products/generate-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productName: form.name.trim()
+                })
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error generando imagen')
+            }
+
+            if (data.success && data.imageData) {
+                // Convertir data URL a File para que funcione con el sistema existente
+                const response2 = await fetch(data.imageData)
+                const blob = await response2.blob()
+                const file = new File([blob], `generated-${Date.now()}.png`, { type: 'image/png' })
+                
+                setSelectedImageFile(file)
+                setImageRemoved(false)
+                setForm({ ...form, imageUrl: data.imageData })
+                setImageGeneratedSuccess(true)
+            } else {
+                throw new Error('No se pudo generar la imagen')
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Error generando imagen con IA')
+        } finally {
+            setGeneratingImage(false)
+        }
+    }
+
+    // Handler para generación IA de descripción
+    const handleGenerateDescription = async () => {
+        if (!form.name.trim()) {
+            setError('Ingresa el nombre del producto antes de generar la descripción')
+            return
+        }
+        setGeneratingDescription(true)
+        setError(null)
+        try {
+            const response = await fetch('/api/products/generate-description', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productName: form.name.trim() })
+            })
+            const data = await response.json()
+            if (!response.ok) throw new Error(data.error || 'Error generando descripción')
+            if (data.success && data.description) {
+                setForm(prev => ({ ...prev, description: data.description }))
+            } else {
+                throw new Error('No se pudo generar la descripción')
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Error generando descripción con IA')
+        } finally {
+            setGeneratingDescription(false)
+        }
+    }
+
     // Reset form
     const resetForm = () => {
         setForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
@@ -319,6 +410,9 @@ export default function ProductsDashboard() {
         setEditId(null)
         setShowForm(false)
         setError(null)
+        setGeneratingImage(false)
+        setImageGeneratedSuccess(false)
+        setGeneratingDescription(false) // Reset description generation state
     }
 
     // Filtrado por nombre
@@ -422,6 +516,22 @@ export default function ProductsDashboard() {
                             Producto editado exitosamente
                         </div>
                     </div>
+
+                    {/* Success image generated */}
+                    <div
+                        className={`
+                            fixed left-1/2 top-8 z-50 -translate-x-1/2
+                            transition-all duration-700
+                            ${imageGeneratedSuccess ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
+                        `}
+                    >
+                        <div className="flex items-center gap-2 bg-sunset-orange text-soft-beige px-6 py-3 rounded-2xl shadow-soft border border-sunset-orange/40 font-semibold text-base">
+                            <svg className="w-5 h-5 text-soft-beige" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            Imagen generada exitosamente con IA
+                        </div>
+                    </div>
                     {/* Error */}
                     <div
                         className={`
@@ -456,29 +566,87 @@ export default function ProductsDashboard() {
                                 onImageSelect={handleImageSelect}
                                 onError={handleImageError}
                                 onImageRemove={handleImageRemove}
+                                onRegenerateImage={handleGenerateImage}
+                                isGenerating={generatingImage}
+                                productName={form.name.trim()}
                             />
 
                             <div>
                                 <label className="block text-soft-beige/70 mb-2">Nombre *</label>
-                                <input
-                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
-                                    value={form.name}
-                                    onChange={e => setForm({ ...form, name: e.target.value })}
-                                    required
-                                    placeholder="Nombre del producto"
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        className="flex-1 px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base"
+                                        value={form.name}
+                                        onChange={e => setForm({ ...form, name: e.target.value })}
+                                        required
+                                        placeholder="Nombre del producto"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={handleGenerateImage}
+                                        disabled={!form.name.trim() || generatingImage}
+                                        variant="outline"
+                                        className="px-4 py-3 border-sunset-orange text-sunset-orange hover:bg-sunset-orange/10 transition-colors"
+                                    >
+                                        {generatingImage ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin mr-2" />
+                                                Generando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                                </svg>
+                                                Generar con IA
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                                {form.name.trim() && (
+                                    <p className="text-xs text-soft-beige/50 mt-1">
+                                        💡 Ingresa el nombre y usa "Generar con IA" para crear una imagen automáticamente
+                                    </p>
+                                )}
                             </div>
                             
-                            <div>
+                            <div className="flex items-center justify-between mb-2">
                                 <label className="block text-soft-beige/70 mb-2">Descripción</label>
-                                <textarea
-                                    className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base resize-none"
-                                    value={form.description}
-                                    onChange={e => setForm({ ...form, description: e.target.value })}
-                                    rows={3}
-                                    placeholder="Descripción del producto (opcional)"
-                                />
+                                <Button
+                                    type="button"
+                                    onClick={handleGenerateDescription}
+                                    disabled={generatingDescription || !form.name.trim()}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs px-3 py-1 border-sunset-orange text-sunset-orange hover:bg-sunset-orange/10"
+                                >
+                                    {generatingDescription ? (
+                                        <>
+                                            <div className="w-3 h-3 border-2 border-sunset-orange border-t-transparent rounded-full animate-spin mr-1" />
+                                            Generando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                            </svg>
+                                            Generar con IA
+                                        </>
+                                    )}
+                                </Button>
                             </div>
+                            <textarea
+                                className="w-full px-4 py-3 rounded-xl bg-soft-gray/10 text-soft-beige border border-soft-gray/20 focus:outline-none focus:ring-2 focus:ring-sunset-orange focus:border-transparent transition-base resize-none"
+                                value={form.description}
+                                onChange={e => setForm({ ...form, description: e.target.value })}
+                                rows={3}
+                                placeholder="Descripción del producto (opcional)"
+                            />
+                            {form.name.trim() && (
+                                <p className="text-xs text-soft-beige/50 mt-1">
+                                    💡 Usa "Generar con IA" para crear una descripción automática basada en el nombre del producto
+                                </p>
+                            )}
                             
                             <div className="flex gap-4">
                                 <div className="flex-1">
