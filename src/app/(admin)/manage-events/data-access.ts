@@ -2,24 +2,35 @@
 import webpush from 'web-push'
 import { prisma } from "@/lib/prisma"
 
-webpush.setVapidDetails(
-    'mailto:tu@email.com',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY!
-)
+// Configurar webpush solo si las variables de entorno están disponibles
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        'mailto:tu@email.com',
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY
+    )
+} else {
+    console.warn('⚠️  Variables de entorno VAPID no configuradas - Push notifications deshabilitadas')
+}
 
 export async function notifyAllUsersAboutNewEvent(event: {
     title: string;
     dateTime: Date;
     location: string;
 }) {
+    // Verificar si webpush está configurado
+    if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY) {
+        console.log('⚠️  Push notifications no configuradas - saltando notificaciones')
+        return
+    }
+
     const subscriptions = await prisma.pushSubscription.findMany()
-    
+
     if (subscriptions.length === 0) {
         console.log('No hay usuarios suscritos a notificaciones push')
         return
     }
-    
+
     // Formatear la fecha para mostrar en español
     const eventDate = new Date(event.dateTime)
     const formattedDate = eventDate.toLocaleDateString('es-AR', {
@@ -32,7 +43,7 @@ export async function notifyAllUsersAboutNewEvent(event: {
         hour: '2-digit',
         minute: '2-digit'
     })
-    
+
     const payload = JSON.stringify({
         title: `🎬 Nueva película: ${event.title}`,
         body: `${formattedDate} a las ${formattedTime} en ${event.location}. ¡Reservá tu lugar ahora!`,
@@ -42,7 +53,7 @@ export async function notifyAllUsersAboutNewEvent(event: {
             url: '/events'
         }
     })
-    
+
     const sendPromises = subscriptions.map(async (subscription) => {
         try {
             await webpush.sendNotification(
@@ -55,7 +66,7 @@ export async function notifyAllUsersAboutNewEvent(event: {
             return { success: true }
         } catch (error) {
             console.error('Error al enviar notificación:', error)
-            
+
             // Si la suscripción es inválida, la eliminamos
             if ((error as any)?.statusCode === 410 || (error as any)?.statusCode === 403) {
                 try {
@@ -70,7 +81,7 @@ export async function notifyAllUsersAboutNewEvent(event: {
             return { success: false }
         }
     })
-    
+
     const results = await Promise.all(sendPromises)
     const successCount = results.filter(r => r.success).length
     console.log(`Notificaciones push enviadas: ${successCount}/${subscriptions.length}`)
@@ -195,11 +206,11 @@ export async function createEvent(form: {
                 imageUrl: form.imageUrl || null,
             },
         })
-        
+
         // Crear asientos automáticamente basados en la distribución
         const seats = []
         let seatNumber = 1
-        
+
         // Asientos Puff XXL Estelar (fila frontal VIP)
         for (let i = 0; i < form.seatDistribution.puffXXLEstelar; i++) {
             seats.push({
@@ -208,7 +219,7 @@ export async function createEvent(form: {
                 tier: 'Puff XXL Estelar',
             })
         }
-        
+
         // Asientos Reposera Deluxe (fila media)
         for (let i = 0; i < form.seatDistribution.reposeraDeluxe; i++) {
             seats.push({
@@ -217,7 +228,7 @@ export async function createEvent(form: {
                 tier: 'Reposera Deluxe',
             })
         }
-        
+
         // Asientos Banquito (fila trasera)
         for (let i = 0; i < form.seatDistribution.banquito; i++) {
             seats.push({
@@ -238,7 +249,7 @@ export async function createEvent(form: {
             'Reposera Deluxe': form.seatDistribution.reposeraDeluxe,
             'Banquito': form.seatDistribution.banquito
         })
-        
+
         // Enviar notificación push automáticamente
         console.log('Enviando notificación push para el nuevo evento:', event.title)
         await notifyAllUsersAboutNewEvent({
@@ -246,7 +257,7 @@ export async function createEvent(form: {
             dateTime: event.dateTime,
             location: event.location
         })
-        
+
         return { success: true, event, notificationSent: true, seatsCreated: seats.length }
     } catch (error) {
         console.error('Error al crear evento:', error)
@@ -301,8 +312,8 @@ export async function getEventWithSeats(id: string) {
             banquito: event.seats.filter(seat => seat.tier === 'Banquito').length,
         }
 
-        return { 
-            success: true, 
+        return {
+            success: true,
             event: {
                 ...event,
                 seatDistribution
@@ -373,7 +384,7 @@ export async function updateEvent(id: string, form: {
                 imageUrl: form.imageUrl || null,
             },
         })
-        
+
         // Solo regenerar asientos si no hay reservas activas
         let seatsUpdated = false
         if (!hasReservations) {
@@ -385,7 +396,7 @@ export async function updateEvent(id: string, form: {
             // Crear nuevos asientos basados en la distribución actualizada
             const seats = []
             let seatNumber = 1
-            
+
             // Asientos Puff XXL Estelar (fila frontal VIP)
             for (let i = 0; i < form.seatDistribution.puffXXLEstelar; i++) {
                 seats.push({
@@ -394,7 +405,7 @@ export async function updateEvent(id: string, form: {
                     tier: 'Puff XXL Estelar',
                 })
             }
-            
+
             // Asientos Reposera Deluxe (fila media)
             for (let i = 0; i < form.seatDistribution.reposeraDeluxe; i++) {
                 seats.push({
@@ -403,7 +414,7 @@ export async function updateEvent(id: string, form: {
                     tier: 'Reposera Deluxe',
                 })
             }
-            
+
             // Asientos Banquito (fila trasera)
             for (let i = 0; i < form.seatDistribution.banquito; i++) {
                 seats.push({
@@ -426,12 +437,12 @@ export async function updateEvent(id: string, form: {
                 'Banquito': form.seatDistribution.banquito
             })
         }
-        
-        return { 
-            success: true, 
-            event: updatedEvent, 
+
+        return {
+            success: true,
+            event: updatedEvent,
             seatsUpdated,
-            hasReservations 
+            hasReservations
         }
     } catch (error) {
         console.error('Error al actualizar evento:', error)

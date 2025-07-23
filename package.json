@@ -19,7 +19,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
     "@hookform/resolvers": "^5.0.1",
-    "@prisma/client": "^6.9.0",
+    "@prisma/client": "^5.22.0",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.50.4",
@@ -64,7 +64,7 @@
     "cross-env": "^7.0.3",
     "eslint": "9.28.0",
     "eslint-config-next": "15.3.3",
-    "prisma": "^6.9.0",
+    "prisma": "^5.22.0",
     "tsx": "^4.19.4",
     "typescript": "^5"
   }

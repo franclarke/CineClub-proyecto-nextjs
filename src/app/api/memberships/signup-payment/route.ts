@@ -36,7 +36,7 @@ interface MPPreferenceData {
 async function createMPPreference(data: MPPreferenceData) {
 	try {
 		const { MercadoPagoConfig, Preference } = await import('mercadopago')
-		
+
 		const accessToken = process.env.NODE_ENV === 'production'
 			? process.env.MP_ACCESS_TOKEN
 			: process.env.MP_TEST_ACCESS_TOKEN
@@ -73,7 +73,7 @@ async function createMPPreference(data: MPPreferenceData) {
 export async function POST(request: NextRequest) {
 	try {
 		console.log('=== Signup Payment API Called ===')
-		
+
 		// Parsear body
 		const body = await request.json()
 		const { userData, membershipId, discountCode, skipPayment } = body
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
 		if (discountCode) {
 			const discount = await prisma.discount.findUnique({
-				where: { 
+				where: {
 					code: discountCode.toUpperCase()
 				},
 				include: {
@@ -147,8 +147,8 @@ export async function POST(request: NextRequest) {
 
 			// Verificar si el descuento es aplicable a la membresía seleccionada
 			if (discount.membershipTierId && discount.membershipTierId !== membershipId) {
-				return NextResponse.json({ 
-					error: `Este código es exclusivo para la membresía ${discount.membershipTier?.name}` 
+				return NextResponse.json({
+					error: `Este código es exclusivo para la membresía ${discount.membershipTier?.name}`
 				}, { status: 400 })
 			}
 
@@ -165,10 +165,10 @@ export async function POST(request: NextRequest) {
 		// Si skipPayment es true y el precio final es 0, crear el usuario directamente
 		if (skipPayment && finalPrice === 0) {
 			console.log('✓ Precio final es 0, creando usuario directamente')
-			
+
 			// Hash de la contraseña
 			const hashedPassword = await bcrypt.hash(validatedUserData.password, 12)
-			
+
 			// Crear el usuario con la membresía seleccionada
 			const newUser = await prisma.user.create({
 				data: {
@@ -259,9 +259,21 @@ export async function POST(request: NextRequest) {
 
 		console.log('✓ Orden de signup creada:', order.id)
 
-		// Determinar URLs base
-		const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('origin') || 'http://localhost:3000'
+		// Determinar URLs base - mejorada para producción
+		let baseUrl = process.env.NEXTAUTH_URL ||
+			process.env.VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_BASE_URL}` :
+			request.headers.get('origin') ||
+				request.headers.get('host') ? `https://${request.headers.get('host')}` :
+				'http://localhost:3000'
+
+		// Asegurar protocolo HTTPS en producción
+		if (process.env.NODE_ENV === 'production' && baseUrl.startsWith('http://')) {
+			baseUrl = baseUrl.replace('http://', 'https://')
+		}
+
 		const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+
+		console.log('✓ URLs determinadas:', { baseUrl, cleanBaseUrl, nodeEnv: process.env.NODE_ENV })
 
 		const successUrl = `${cleanBaseUrl}/memberships/signup/success?order_id=${order.id}`
 		const failureUrl = `${cleanBaseUrl}/memberships/signup/failure?order_id=${order.id}`
@@ -277,7 +289,7 @@ export async function POST(request: NextRequest) {
 		// Verificar si el precio final es $0 y procesar como membresía gratuita
 		if (finalPrice === 0) {
 			console.log('✓ Membresía gratuita detectada, procesando directamente')
-			
+
 			try {
 				// Crear el usuario directamente
 				const newUser = await prisma.user.create({
@@ -313,11 +325,14 @@ export async function POST(request: NextRequest) {
 				console.log('✓ Usuario creado y membresía gratuita activada:', newUser.id)
 
 				// Retornar URL de éxito para membresía gratuita
+				const redirectUrl = `${cleanBaseUrl}/memberships/signup/success?user_id=${newUser.id}&auto_login=true`
+				console.log('✓ Redirect URL generada:', redirectUrl)
+
 				return NextResponse.json({
 					isFreeSignup: true,
 					userId: newUser.id,
 					orderId: order.id,
-					redirectUrl: `${cleanBaseUrl}/memberships/signup/success?user_id=${newUser.id}&auto_login=true`,
+					redirectUrl: redirectUrl,
 					originalPrice: originalPrice,
 					discountAmount: discountAmount,
 					finalPrice: finalPrice,
@@ -327,8 +342,8 @@ export async function POST(request: NextRequest) {
 
 			} catch (error) {
 				console.error('Error procesando membresía gratuita:', error)
-				return NextResponse.json({ 
-					error: 'Error procesando membresía gratuita' 
+				return NextResponse.json({
+					error: 'Error procesando membresía gratuita'
 				}, { status: 500 })
 			}
 		}
