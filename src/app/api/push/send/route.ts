@@ -4,21 +4,25 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-// Configurar VAPID details
-webpush.setVapidDetails(
-    'mailto:puffandchill@example.com',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY!
-)
+// Configurar VAPID details solo si las variables de entorno están disponibles
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        'mailto:puffandchill@example.com',
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY
+    )
+} else {
+    console.warn('⚠️  Variables de entorno VAPID no configuradas - Push notifications deshabilitadas')
+}
 
 export async function POST(req: NextRequest) {
     try {
         // Verificar autenticación y rol de admin
         const session = await getServerSession(authOptions)
-        
+
         if (!session?.user) {
             return NextResponse.json(
-                { error: 'No autorizado' }, 
+                { error: 'No autorizado' },
                 { status: 401 }
             )
         }
@@ -30,8 +34,16 @@ export async function POST(req: NextRequest) {
 
         if (!user?.isAdmin) {
             return NextResponse.json(
-                { error: 'Acceso denegado. Se requieren permisos de administrador.' }, 
+                { error: 'Acceso denegado. Se requieren permisos de administrador.' },
                 { status: 403 }
+            )
+        }
+
+        // Verificar si webpush está configurado
+        if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY) {
+            return NextResponse.json(
+                { error: 'Push notifications no están configuradas en el servidor' },
+                { status: 500 }
             )
         }
 
@@ -40,7 +52,7 @@ export async function POST(req: NextRequest) {
 
         if (!title || !body) {
             return NextResponse.json(
-                { error: 'Título y mensaje son requeridos' }, 
+                { error: 'Título y mensaje son requeridos' },
                 { status: 400 }
             )
         }
@@ -78,7 +90,7 @@ export async function POST(req: NextRequest) {
                 )
                 return { success: true, endpoint: subscription.endpoint }
             } catch (error) {
-                
+
                 // Si la suscripción es inválida (410 o 403), la eliminamos
                 if ((error as any)?.statusCode === 410 || (error as any)?.statusCode === 403) {
                     try {
@@ -88,7 +100,7 @@ export async function POST(req: NextRequest) {
                     } catch (deleteError) {
                     }
                 }
-                
+
                 return { success: false, endpoint: subscription.endpoint, error: (error as Error).message }
             }
         })
